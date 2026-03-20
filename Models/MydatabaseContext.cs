@@ -16,7 +16,8 @@ public partial class MydatabaseContext : DbContext
         : base(options)
     {
     }
-
+    public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
+    public DbSet<AcctGrp> AcctGrps { get; set; }
     public DbSet<ProjVendorEmployeeLabcat> ProjVendorEmployeeLabcats { get; set; }
     public DbSet<ProjEmployeeLabcat> ProjEmployeeLabcats { get; set; }
     public DbSet<pl_EmployeeBurdenCalculated> EmployeeBurdenCalculated { get; set; }
@@ -131,6 +132,21 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<AcctGrp>(entity =>
+        {
+            entity.ToTable("acct_grp");
+
+            // ✅ Composite Primary Key
+            entity.HasKey(e => new { e.AcctGrpCd, e.CompanyId });
+
+            // ✅ Indexes
+            entity.HasIndex(e => e.CompanyId)
+                .HasDatabaseName("idx_acct_grp_company_id");
+
+            entity.HasIndex(e => e.AcctGrpDesc)
+                .HasDatabaseName("idx_acct_grp_desc");
+        });
 
         modelBuilder.Entity<NbiPrmtrcRt>()
             .HasKey(p => p.ParaId); // Primary key
