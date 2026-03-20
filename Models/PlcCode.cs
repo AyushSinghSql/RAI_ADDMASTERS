@@ -21,3 +21,9 @@ public partial class PlcCodeDTO
     public string? Description { get; set; }
 
 }
+
+public class PlcCodesDto
+{
+    public string PlcCode { get; set; }
+    public string Description { get; set; }
+}
