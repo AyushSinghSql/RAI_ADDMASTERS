@@ -5772,7 +5772,7 @@ select new
 
         return Ok("Organization deleted successfully");
     }
-
+    [NonAction]
     public string GetFriendlyErrorMessage(DbUpdateException ex)
     {
         if (ex.InnerException is PostgresException pgEx)
@@ -5792,7 +5792,7 @@ select new
 
         return "An error occurred while saving data.";
     }
-
+    [NonAction]
     private string HandleForeignKeyError(PostgresException pgEx)
     {
         var constraint = pgEx.ConstraintName;
@@ -5808,7 +5808,7 @@ select new
 
         return "One of the related records does not exist. Please check your input.";
     }
-
+    [NonAction]
     private string HandleDuplicateKeyError(PostgresException pgEx)
     {
         var constraint = pgEx.ConstraintName;
