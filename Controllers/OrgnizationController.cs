@@ -45,11 +45,11 @@ public class OrgnizationController : ControllerBase
 
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Organization>>> Get()
-    {
-        return await _context.Organizations.ToListAsync();
-    }
+    //[HttpGet]
+    //public async Task<ActionResult<IEnumerable<Organization>>> Get()
+    //{
+    //    return await _context.Organizations.ToListAsync();
+    //}
 
 
     //[HttpGet("GetAllOrgs")]
@@ -67,7 +67,7 @@ public class OrgnizationController : ControllerBase
     //    return Ok(orgs);
     //}
 
-    [HttpGet("{id}")]
+    [HttpGet("Get/{id}")]
     public async Task<ActionResult<Organization>> Get(string id)
     {
         var org = await _context.Organizations.FindAsync(id);
