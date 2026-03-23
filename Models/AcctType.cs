@@ -8,12 +8,10 @@
     [Table("acct_type")]
     public class AcctType
     {
-        [Key]
         [Column("acct_type_cd", Order = 0)]
         [MaxLength(10)]
         public string AcctTypeCode { get; set; }
 
-        [Key]
         [Column("company_id", Order = 1)]
         [MaxLength(10)]
         public string CompanyId { get; set; }

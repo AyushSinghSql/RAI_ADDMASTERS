@@ -16,6 +16,8 @@ public partial class MydatabaseContext : DbContext
         : base(options)
     {
     }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<AcctType> AcctTypes { get; set; }
     public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
     public DbSet<AcctGrp> AcctGrps { get; set; }
     public DbSet<ProjVendorEmployeeLabcat> ProjVendorEmployeeLabcats { get; set; }
@@ -132,6 +134,9 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<AcctType>()
+         .HasKey(x => new { x.AcctTypeCode, x.CompanyId });
 
         modelBuilder.Entity<AcctGrp>(entity =>
         {
