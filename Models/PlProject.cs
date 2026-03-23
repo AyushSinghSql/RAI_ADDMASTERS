@@ -160,7 +160,7 @@ public class ProjectFinancial
 {
     [Key]
     [Column("proj_id")]
-    public string? ProjId { get; set; }
+    public string? ProjectId { get; set; }
 
     [Column("proj_v_tot_amt")]
     public decimal ProjVTotAmt { get; set; }
@@ -193,7 +193,7 @@ public class ProjectFlag
 {
     [Key]
     [Column("proj_id")]
-    public string ProjId { get; set; }
+    public string ProjectId { get; set; }
 
     [Column("flag_name")]
     [MaxLength(50)]
@@ -208,8 +208,9 @@ public class ProjectFlag
 [Table("proj_hierarchy")]
 public class ProjectHierarchy
 {
+    [Key]
     [Column("proj_id")]
-    public string ProjId { get; set; }
+    public string ProjectId { get; set; }
 
     [Column("level_no")]
     public int? LevelNo { get; set; }
@@ -228,7 +229,7 @@ public class ProjectContract
 {
     [Key]
     [Column("proj_id")]
-    public string ProjId { get; set; }
+    public string ProjectId { get; set; }
 
     [Column("prime_contr_id")]
     public string PrimeContrId { get; set; }
@@ -256,7 +257,7 @@ public class ProjectAddress
 {
     [Key]
     [Column("proj_id")]
-    public string ProjId { get; set; }
+    public string ProjectId { get; set; }
 
     [Column("proj_ln_1_adr")]
     public string ProjLn1Adr { get; set; }

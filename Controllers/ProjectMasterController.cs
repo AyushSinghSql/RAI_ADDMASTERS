@@ -138,7 +138,7 @@ namespace PlanningAPI.Controllers
 
                 hierarchies.Add(new ProjectHierarchy
                 {
-                    ProjId = project.ProjId,
+                    ProjectId = project.ProjId,
                     LevelNo = i + 1,
                     ProjSegId = segId,
                     ProjSegName = segName
@@ -230,10 +230,10 @@ namespace PlanningAPI.Controllers
             var project = await _context.PlProjects.FindAsync(id);
             if (project == null) return NotFound();
 
-            _context.ProjectAddress.RemoveRange(_context.ProjectAddress.Where(e => e.ProjId == id));
-            _context.ProjectContract.RemoveRange(_context.ProjectContract.Where(a => a.ProjId == id));
-            _context.ProjectFlags.RemoveRange(_context.ProjectFlags.Where(c => c.ProjId == id));
-            _context.ProjectHierarchy.RemoveRange(_context.ProjectHierarchy.Where(l => l.ProjId == id));
+            _context.ProjectAddress.RemoveRange(_context.ProjectAddress.Where(e => e.ProjectId == id));
+            _context.ProjectContract.RemoveRange(_context.ProjectContract.Where(a => a.ProjectId == id));
+            _context.ProjectFlags.RemoveRange(_context.ProjectFlags.Where(c => c.ProjectId == id));
+            _context.ProjectHierarchy.RemoveRange(_context.ProjectHierarchy.Where(l => l.ProjectId == id));
             _context.PlProjects.Remove(project);
 
             try
