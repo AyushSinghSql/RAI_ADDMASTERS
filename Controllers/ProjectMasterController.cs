@@ -19,18 +19,22 @@ namespace PlanningAPI.Controllers
         {
             _context = context;
         }
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlProject>>> Get()
+        public async Task<ActionResult<IEnumerable<PlProject>>> Get([FromQuery] int? take = null)
         {
-            return await _context.PlProjects
-                .Include(p => p.Organization)
+            var query = _context.PlProjects
+                .Include(p => p.Org)
                 .Include(p => p.Financial)
                 .Include(p => p.Contract)
-                .Include(p => p.Address)
                 .Include(p => p.Flags)
-                .Include(p => p.Hierarchy).ToListAsync();
-            //return await _context.Projects.ToListAsync();
+                .Include(p => p.Hierarchy)
+                .Include(p => p.Address);
+
+            var projects = take.HasValue && take.Value > 0
+                ? await query.Take(take.Value).ToListAsync()
+                : await query.ToListAsync();
+
+            return Ok(projects);
         }
 
         [HttpPost]

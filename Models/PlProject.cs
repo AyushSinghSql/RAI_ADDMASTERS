@@ -43,6 +43,7 @@ public partial class PlProject
 
     public DateOnly? InactiveDt { get; set; }
 
+    //[ForeignKey("OrgId")]
     public virtual Organization? Org { get; set; } = null!;
 
     public virtual ICollection<PlForecast> PlForecasts { get; set; } = new List<PlForecast>();
@@ -50,7 +51,7 @@ public partial class PlProject
     public virtual ICollection<PlProjectPlan> PlProjectPlans { get; set; } = new List<PlProjectPlan>();
     public ICollection<UserProjectMap> UserProjects { get; set; } = new List<UserProjectMap>();
 
-    public Organization? Organization { get; set; }
+    //public Organization? Organization { get; set; }
     //[JsonIgnore]
     public ICollection<ProjectFlag>? Flags { get; set; }
     //[JsonIgnore]
@@ -191,7 +192,7 @@ public class ProjectFinancial
 [Table("proj_flags")]
 public class ProjectFlag
 {
-    [Key]
+    
     [Column("proj_id")]
     public string ProjectId { get; set; }
 
@@ -208,7 +209,7 @@ public class ProjectFlag
 [Table("proj_hierarchy")]
 public class ProjectHierarchy
 {
-    [Key]
+    
     [Column("proj_id")]
     public string ProjectId { get; set; }
 

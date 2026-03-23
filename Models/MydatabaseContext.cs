@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NPOI.SS.Formula.Functions;
 using PlanningAPI.Helpers;
+using System;
+using System.Collections.Generic;
 using WebApi.DTO;
 using YourNamespace.Models;
 
@@ -2089,8 +2090,23 @@ public partial class MydatabaseContext : DbContext
                 .HasForeignKey(d => d.OrgId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("proj_org_id_fkey");
-        });
 
+            modelBuilder.Entity<PlProject>()
+                .HasOne(p => p.Org)
+                .WithMany(o => o.PlProjects)
+                .HasForeignKey(p => p.OrgId);
+
+            //modelBuilder.Entity<PlProject>()
+            //    .HasMany(p => p.Flags)
+            //    .WithOne(a => a.Project)
+            //    .HasForeignKey<ProjectFlag>(a => a.ProjectId);
+
+        });
+        modelBuilder.Entity<ProjectHierarchy>()
+            .HasKey(h => new { h.ProjectId, h.LevelNo });
+
+        modelBuilder.Entity<ProjectFlag>()
+            .HasKey(h => new { h.ProjectId, h.FlagName });
         modelBuilder.Entity<PlProjectPlan>(entity =>
         {
             entity.HasKey(e => e.PlId).HasName("pl_project_plan_pkey");
@@ -2690,7 +2706,10 @@ public partial class MydatabaseContext : DbContext
             entity.ToTable("organization");
 
             entity.HasKey(e => e.OrgId);
-
+            //modelBuilder.Entity<Organization>()
+            //    .HasOne(p=>p.OrgId)
+            //    .WithMany(p=>p.PlProjects)
+            //    .HasForeignKey(p => p.OrgId);
             //entity.Property(e => e.OrgId).HasColumnName("org_id").HasMaxLength(30);
             //entity.Property(e => e.OrgName).HasColumnName("org_name").HasMaxLength(100).IsRequired();
             //entity.Property(e => e.LvlNo).HasColumnName("lvl_no");
