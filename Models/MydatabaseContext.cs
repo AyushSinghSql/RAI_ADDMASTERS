@@ -2875,6 +2875,17 @@ public partial class MydatabaseContext : DbContext
                   .HasForeignKey<AccountGroupSetup>(e => e.AccountId)
                   .HasConstraintName("fk_accounts")
                   .OnDelete(DeleteBehavior.Restrict);
+
+            // --------------------------
+            // Foreign Key to AcctType
+            // --------------------------
+            entity.HasOne(e => e.AcctType)
+                  .WithMany(a => a.AccountGroupSetups)
+                  .HasForeignKey(e => new { e.AccountFunctionDescription, e.CompanyId })
+                  .HasPrincipalKey(a => new { a.AcctTypeCode, a.CompanyId })
+                  .HasConstraintName("fk_accountgroup_accttype")
+                  .OnDelete(DeleteBehavior.Restrict);
+
         });
 
         modelBuilder.Entity<PlCeilHrCat>(entity =>
