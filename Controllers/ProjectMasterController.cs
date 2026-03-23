@@ -250,6 +250,76 @@ namespace PlanningAPI.Controllers
             }
             return NoContent();
         }
+
+        [HttpGet("SearchProjects")]
+        public async Task<ActionResult> SearchProjects(
+[FromQuery] string? search,
+[FromQuery] string? orgId,
+[FromQuery] string? startsWith,
+[FromQuery] string? sortBy = "ProjId",
+[FromQuery] string? sortOrder = "asc",
+[FromQuery] int page = 1,
+[FromQuery] int pageSize = 10)
+        {
+            var query = _context.PlProjects.AsQueryable();
+
+            // 🔍 Search by name or ID
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p =>
+                    p.ProjId.Contains(search) ||
+                    p.ProjName.Contains(search) ||
+                    p.ProjTypeDc.Contains(search));
+            }
+
+            // 🏢 Filter by Organization
+            if (!string.IsNullOrEmpty(orgId))
+            {
+                query = query.Where(p => p.Org.OrgId == orgId);
+            }
+
+            // 🔎 Filter by ProjId prefix
+            if (!string.IsNullOrEmpty(startsWith))
+            {
+                query = query.Where(p => p.ProjId.StartsWith(startsWith));
+            }
+
+            // ↕️ Sorting
+            query = (sortBy.ToLower(), sortOrder.ToLower()) switch
+            {
+                ("projname", "desc") => query.OrderByDescending(p => p.ProjName),
+                ("projname", _) => query.OrderBy(p => p.ProjName),
+
+                ("projtypedc", "desc") => query.OrderByDescending(p => p.ProjTypeDc),
+                ("projtypedc", _) => query.OrderBy(p => p.ProjTypeDc),
+
+                ("projid", "desc") => query.OrderByDescending(p => p.ProjId),
+                _ => query.OrderBy(p => p.ProjId),
+            };
+
+            // 📄 Total count BEFORE pagination
+            var totalRecords = await query.CountAsync();
+
+            // 📄 Pagination + Includes
+            var projects = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.Org)
+                .Include(p => p.Financial)
+                .Include(p => p.Contract)
+                .Include(p => p.Address).Include(p => p.Flags)
+                .Include(p => p.Hierarchy)
+                .AsSplitQuery() // ✅ avoids Cartesian explosion
+                .ToListAsync();
+
+            return Ok(new
+            {
+                totalRecords,
+                page,
+                pageSize,
+                data = projects
+            });
+        }
         [NonAction]
         public string GetFriendlyErrorMessage(DbUpdateException ex)
         {
