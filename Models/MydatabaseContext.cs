@@ -39,6 +39,11 @@ public partial class MydatabaseContext : DbContext
     //public virtual DbSet<PlOrgnization> PlOrgnizations { get; set; }
 
     public virtual DbSet<PlProject> PlProjects { get; set; }
+    public DbSet<ProjectAddress> ProjectAddress { get; set; }
+    public DbSet<ProjectContract> ProjectContract { get; set; }
+    public DbSet<ProjectFinancial> ProjectFinancial { get; set; }
+    public DbSet<ProjectHierarchy> ProjectHierarchy { get; set; }
+    public DbSet<ProjectFlag> ProjectFlags { get; set; }
 
     public virtual DbSet<PlProjectPlan> PlProjectPlans { get; set; }
 
@@ -2075,6 +2080,7 @@ public partial class MydatabaseContext : DbContext
                 .HasMaxLength(25)
                 .HasColumnName("proj_name");
             entity.Property(e => e.ProjStartDt).HasColumnName("proj_start_dt");
+            entity.Property(e => e.LevelNo).HasColumnName("level_no");
             entity.Property(e => e.ProjTypeDc)
                 .HasMaxLength(15)
                 .HasColumnName("proj_type_dc");
