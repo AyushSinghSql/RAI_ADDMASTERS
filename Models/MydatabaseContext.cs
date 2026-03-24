@@ -2044,7 +2044,13 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.proj_v_cst_amt).HasColumnName("proj_v_cst_amt").HasColumnType("numeric(20,4)");
             entity.Property(e => e.proj_f_fee_amt).HasColumnName("proj_f_fee_amt").HasColumnType("numeric(20,4)");
             entity.Property(e => e.proj_f_cst_amt).HasColumnName("proj_f_cst_amt").HasColumnType("numeric(20,4)");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(6)
+                .HasColumnName("modified_by");
 
+            entity.Property(e => e.ProjAbbrCd)
+                .HasMaxLength(6)
+                .HasColumnName("proj_abbrv_cd");
             entity.Property(e => e.ProjId)
                 .HasMaxLength(30)
                 .HasColumnName("proj_id");

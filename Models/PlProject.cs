@@ -24,12 +24,13 @@ public partial class PlProject
     public DateOnly? ProjStartDt { get; set; }
 
     public string AcctGrpCd { get; set; } = null!;
+    public string ProjAbbrCd { get; set; } = null!;
 
     public string ActiveFl { get; set; } = null!;
     public int? LevelNo { get; set; }
     public string CompanyId { get; set; } = null!;
 
-    public string AcctGrpFl { get; set; } = null!;
+    public string? AcctGrpFl { get; set; } = null!;
 
     public string ProjMgrName { get; set; } = null!;
 
@@ -40,6 +41,7 @@ public partial class PlProject
     public decimal? proj_v_cst_amt { get; set; } = 0m;
     public decimal? proj_f_fee_amt { get; set; } = 0m;
     public decimal? proj_f_cst_amt { get; set; } = 0m;
+    public string ModifiedBy { get; set; } = null!;
 
     public DateOnly? InactiveDt { get; set; }
 
