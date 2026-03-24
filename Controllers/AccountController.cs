@@ -98,7 +98,7 @@ namespace PlanningAPI.Controllers
             account.SAcctTypeCd = updatedAccount.SAcctTypeCd;
             account.ModifiedBy = updatedAccount.ModifiedBy;
 
-            account.Updatedat = DateTime.UtcNow;
+            //account.Updatedat = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
