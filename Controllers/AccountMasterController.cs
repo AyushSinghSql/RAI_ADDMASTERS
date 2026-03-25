@@ -165,95 +165,215 @@ namespace PlanningAPI.Controllers
                 return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
             }
 
+        [HttpPost("CreateAcctMasterV1")]
+        public async Task<ActionResult<Account>> CreateAcctMasterV1(Account acctMaster)
+        {
+            var parts = acctMaster.AcctId.Split('-');
+            int level = parts.Length;
 
-            [HttpPost("CreateAcctMasterV1")]
-            public async Task<ActionResult<Account>> CreateAcctMasterV1(Account acctMaster)
+            // Validate level matches
+            if (acctMaster.LvlNo != level)
+                return BadRequest($"Invalid Level. AccountId {acctMaster.AcctId} should have Level {level}");
+
+            var levelConfigs = await _context.AcctLevels
+                .ToDictionaryAsync(l => l.Level, l => l.Lenght);
+
+            for (int i = 0; i < parts.Length; i++)
             {
-                var parts = acctMaster.AcctId.Split('-');
-                int level = parts.Length;
+                int currentLevel = i + 1;
 
-                // Validate level matches
-                if (acctMaster.LvlNo != level)
-                    return BadRequest($"Invalid Level. AccountId {acctMaster.AcctId} should have Level {level}");
+                if (!levelConfigs.ContainsKey(currentLevel))
+                    return BadRequest($"Level configuration missing for Level {currentLevel}");
 
-                // Check parent exists if level > 1
-                if (level > 1)
-                {
-                    string parentId = string.Join("-", parts.Take(level - 1));
-
-                    bool parentExists = await _context.Accounts
-                        .AnyAsync(a => a.AcctId == parentId);
-
-                    if (!parentExists)
-                        return BadRequest($"Parent account {parentId} must exist before creating {acctMaster.AcctId}");
-                }
-
-                // Update LxAcctName and LxAcctSegId
-                for (int i = 1; i <= level; i++)
-                {
-                    string currentId = string.Join("-", parts.Take(i));
-
-                    // Get account name for this level if exists
-                    string? acctNameForLevel = i == level ? acctMaster.AcctName :
-                        await _context.Accounts
-                            .Where(a => a.AcctId == currentId)
-                            .Select(a => a.AcctName)
-                            .FirstOrDefaultAsync();
-
-                    string segId = parts[i - 1]; // Last segment
-
-                    switch (i)
-                    {
-                        case 1:
-                            acctMaster.L1AcctName = acctNameForLevel;
-                            acctMaster.L1AcctSegId = segId;
-                            break;
-                        case 2:
-                            acctMaster.L2AcctName = acctNameForLevel;
-                            acctMaster.L2AcctSegId = segId;
-                            break;
-                        case 3:
-                            acctMaster.L3AcctName = acctNameForLevel;
-                            acctMaster.L3AcctSegId = segId;
-                            break;
-                        case 4:
-                            acctMaster.L4AcctName = acctNameForLevel;
-                            acctMaster.L4AcctSegId = segId;
-                            break;
-                        case 5:
-                            acctMaster.L5AcctName = acctNameForLevel;
-                            acctMaster.L5AcctSegId = segId;
-                            break;
-                        case 6:
-                            acctMaster.L6AcctName = acctNameForLevel;
-                            acctMaster.L6AcctSegId = segId;
-                            break;
-                        case 7:
-                            acctMaster.L7AcctName = acctNameForLevel;
-                            acctMaster.L7AcctSegId = segId;
-                            break;
-                        case 8:
-                            acctMaster.L8AcctSegId = segId;
-                            break;
-                    }
-                }
-
-                _context.Accounts.Add(acctMaster);
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException ex)
-                {
-                    var message = GetFriendlyErrorMessage(ex);
-                    return BadRequest(new { message });
-                }
-
-                return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+                if (parts[i].Length != levelConfigs[currentLevel])
+                    return BadRequest($"Invalid length at Level {currentLevel}");
             }
 
-            // PUT: api/AcctMaster/{id}
-            [HttpPut("{id}")]
+            //// 🔥 NEW: Validate segment length from acct_levels table
+            //for (int i = 0; i < parts.Length; i++)
+            //{
+            //    int currentLevel = i + 1;
+
+            //    var levelConfig = await _context.AcctLevels
+            //        .FirstOrDefaultAsync(l => l.Level == currentLevel);
+
+            //    if (levelConfig == null)
+            //        return BadRequest($"Level configuration missing for Level {currentLevel}");
+
+            //    if (parts[i].Length != levelConfig.Lenght)
+            //    {
+            //        return BadRequest(
+            //            $"Invalid segment length at Level {currentLevel}. " +
+            //            $"Expected {levelConfig.Lenght}, got {parts[i].Length} in '{parts[i]}'"
+            //        );
+            //    }
+            //}
+
+            // Check parent exists if level > 1
+            if (level > 1)
+            {
+                string parentId = string.Join("-", parts.Take(level - 1));
+
+                bool parentExists = await _context.Accounts
+                    .AnyAsync(a => a.AcctId == parentId);
+
+                if (!parentExists)
+                    return BadRequest($"Parent account {parentId} must exist before creating {acctMaster.AcctId}");
+            }
+
+            // Update LxAcctName and LxAcctSegId
+            for (int i = 1; i <= level; i++)
+            {
+                string currentId = string.Join("-", parts.Take(i));
+
+                string? acctNameForLevel = i == level ? acctMaster.AcctName :
+                    await _context.Accounts
+                        .Where(a => a.AcctId == currentId)
+                        .Select(a => a.AcctName)
+                        .FirstOrDefaultAsync();
+
+                string segId = parts[i - 1];
+
+                switch (i)
+                {
+                    case 1:
+                        acctMaster.L1AcctName = acctNameForLevel;
+                        acctMaster.L1AcctSegId = segId;
+                        break;
+                    case 2:
+                        acctMaster.L2AcctName = acctNameForLevel;
+                        acctMaster.L2AcctSegId = segId;
+                        break;
+                    case 3:
+                        acctMaster.L3AcctName = acctNameForLevel;
+                        acctMaster.L3AcctSegId = segId;
+                        break;
+                    case 4:
+                        acctMaster.L4AcctName = acctNameForLevel;
+                        acctMaster.L4AcctSegId = segId;
+                        break;
+                    case 5:
+                        acctMaster.L5AcctName = acctNameForLevel;
+                        acctMaster.L5AcctSegId = segId;
+                        break;
+                    case 6:
+                        acctMaster.L6AcctName = acctNameForLevel;
+                        acctMaster.L6AcctSegId = segId;
+                        break;
+                    case 7:
+                        acctMaster.L7AcctName = acctNameForLevel;
+                        acctMaster.L7AcctSegId = segId;
+                        break;
+                    case 8:
+                        acctMaster.L8AcctSegId = segId;
+                        break;
+                }
+            }
+
+            _context.Accounts.Add(acctMaster);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                var message = GetFriendlyErrorMessage(ex);
+                return BadRequest(new { message });
+            }
+
+            return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+        }
+
+
+        //[HttpPost("CreateAcctMasterV1")]
+        //public async Task<ActionResult<Account>> CreateAcctMasterV1(Account acctMaster)
+        //{
+        //    var parts = acctMaster.AcctId.Split('-');
+        //    int level = parts.Length;
+
+        //    // Validate level matches
+        //    if (acctMaster.LvlNo != level)
+        //        return BadRequest($"Invalid Level. AccountId {acctMaster.AcctId} should have Level {level}");
+
+        //    // Check parent exists if level > 1
+        //    if (level > 1)
+        //    {
+        //        string parentId = string.Join("-", parts.Take(level - 1));
+
+        //        bool parentExists = await _context.Accounts
+        //            .AnyAsync(a => a.AcctId == parentId);
+
+        //        if (!parentExists)
+        //            return BadRequest($"Parent account {parentId} must exist before creating {acctMaster.AcctId}");
+        //    }
+
+        //    // Update LxAcctName and LxAcctSegId
+        //    for (int i = 1; i <= level; i++)
+        //    {
+        //        string currentId = string.Join("-", parts.Take(i));
+
+        //        // Get account name for this level if exists
+        //        string? acctNameForLevel = i == level ? acctMaster.AcctName :
+        //            await _context.Accounts
+        //                .Where(a => a.AcctId == currentId)
+        //                .Select(a => a.AcctName)
+        //                .FirstOrDefaultAsync();
+
+        //        string segId = parts[i - 1]; // Last segment
+
+        //        switch (i)
+        //        {
+        //            case 1:
+        //                acctMaster.L1AcctName = acctNameForLevel;
+        //                acctMaster.L1AcctSegId = segId;
+        //                break;
+        //            case 2:
+        //                acctMaster.L2AcctName = acctNameForLevel;
+        //                acctMaster.L2AcctSegId = segId;
+        //                break;
+        //            case 3:
+        //                acctMaster.L3AcctName = acctNameForLevel;
+        //                acctMaster.L3AcctSegId = segId;
+        //                break;
+        //            case 4:
+        //                acctMaster.L4AcctName = acctNameForLevel;
+        //                acctMaster.L4AcctSegId = segId;
+        //                break;
+        //            case 5:
+        //                acctMaster.L5AcctName = acctNameForLevel;
+        //                acctMaster.L5AcctSegId = segId;
+        //                break;
+        //            case 6:
+        //                acctMaster.L6AcctName = acctNameForLevel;
+        //                acctMaster.L6AcctSegId = segId;
+        //                break;
+        //            case 7:
+        //                acctMaster.L7AcctName = acctNameForLevel;
+        //                acctMaster.L7AcctSegId = segId;
+        //                break;
+        //            case 8:
+        //                acctMaster.L8AcctSegId = segId;
+        //                break;
+        //        }
+        //    }
+
+        //    _context.Accounts.Add(acctMaster);
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        var message = GetFriendlyErrorMessage(ex);
+        //        return BadRequest(new { message });
+        //    }
+
+        //    return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+        //}
+
+        // PUT: api/AcctMaster/{id}
+        [HttpPut("{id}")]
             public async Task<IActionResult> UpdateAcctMaster(string id, Account acctMaster)
             {
                 if (id != acctMaster.AcctId)
