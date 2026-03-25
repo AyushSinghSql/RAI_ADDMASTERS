@@ -134,6 +134,12 @@ public class Account
     [StringLength(1)]
     public string? MesFlag { get; set; }
 
+    [Column("fs_ln")]
+    [StringLength(50)]
+    public string? FinalcialStatementLine { get; set; }
+
+    
+
     [Column("s_acct_type_cd")]
     [StringLength(1)]
     public string? SAcctTypeCd { get; set; }
