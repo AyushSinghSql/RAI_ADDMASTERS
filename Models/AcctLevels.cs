@@ -14,6 +14,13 @@ namespace PlanningAPI.Models
         [Column("lenght")] // matches DB spelling
         public int Lenght { get; set; }
     }
+    public class LevelDto
+    {
+        public int Level { get; set; }
+        public int Lenght { get; set; }
+
+        public int Count { get; set; } // 🔥 New field
+    }
 
     [Table("org_levels", Schema = "public")]
     public class OrgLevel

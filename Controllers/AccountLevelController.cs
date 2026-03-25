@@ -24,6 +24,24 @@ namespace PlanningAPI.Controllers
             return await _context.AcctLevels.ToListAsync();
         }
 
+        [HttpGet("GetAllAccountLevelsV1")]
+        public async Task<ActionResult<IEnumerable<LevelDto>>> GetAllAccountLevelsV1()
+        {
+            var result = await (
+                from lvl in _context.AcctLevels
+                join acc in _context.Accounts
+                    on lvl.Level equals acc.LvlNo into accGroup
+                select new LevelDto
+                {
+                    Level = lvl.Level,
+                    Lenght = lvl.Lenght,
+                    Count = accGroup.Count()
+                }
+            ).OrderBy(x => x.Level).ToListAsync();
+
+            return result;
+        }
+
         // GET: api/AcctLevels/5
         [HttpGet("GetAccountLevel/{id}")]
         public async Task<ActionResult<AcctLevel>> GetAccountLevel(int id)
@@ -90,6 +108,24 @@ namespace PlanningAPI.Controllers
         public async Task<ActionResult<IEnumerable<OrgLevel>>> GetAllOrgLevels()
         {
             return await _context.OrgLevels.ToListAsync();
+        }
+
+        [HttpGet("GetAllOrgLevelsV1")]
+        public async Task<ActionResult<IEnumerable<LevelDto>>> GetAllOrgLevelsV1()
+        {
+            var result = await (
+                from lvl in _context.OrgLevels
+                join org in _context.Organizations
+                    on lvl.Level equals org.LvlNo into OrgGroup
+                select new LevelDto
+                {
+                    Level = lvl.Level,
+                    Lenght = lvl.Lenght,
+                    Count = OrgGroup.Count()
+                }
+            ).OrderBy(x => x.Level).ToListAsync();
+
+            return result;
         }
 
         // GET: api/AcctLevels/5
