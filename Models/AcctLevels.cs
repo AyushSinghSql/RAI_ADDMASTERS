@@ -14,4 +14,16 @@ namespace PlanningAPI.Models
         [Column("lenght")] // matches DB spelling
         public int Lenght { get; set; }
     }
+
+    [Table("org_levels", Schema = "public")]
+    public class OrgLevel
+    {
+        [Key]
+        [Column("level")]
+        public int Level { get; set; }
+
+        [Required]
+        [Column("lenght")] // matches DB spelling
+        public int Lenght { get; set; }
+    }
 }

@@ -18,6 +18,7 @@ public partial class MydatabaseContext : DbContext
     {
     }
 
+    public DbSet<OrgLevel> OrgLevels { get; set; }
     public DbSet<AcctLevel> AcctLevels { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<AcctType> AcctTypes { get; set; }
