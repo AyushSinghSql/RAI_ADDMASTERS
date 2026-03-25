@@ -17,6 +17,8 @@ public partial class MydatabaseContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<AcctLevel> AcctLevels { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<AcctType> AcctTypes { get; set; }
     public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
