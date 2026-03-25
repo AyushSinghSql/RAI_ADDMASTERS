@@ -185,6 +185,22 @@ public class OrgnizationController : ControllerBase
         if (org.LvlNo != levelCount)
             return BadRequest($"LvlNo should be {levelCount} for OrgId {org.OrgId}");
 
+
+        var levelConfigs = await _context.OrgLevels
+            .ToDictionaryAsync(l => l.Level, l => l.Lenght);
+
+        for (int i = 0; i < segments.Length; i++)
+        {
+            int currentLevel = i + 1;
+
+            if (!levelConfigs.ContainsKey(currentLevel))
+                return BadRequest($"Level configuration missing for Level {currentLevel}");
+
+            if (segments[i].Length != levelConfigs[currentLevel])
+                return BadRequest($"Invalid length at Level {currentLevel} it should be {levelConfigs[currentLevel]}");
+        }
+
+
         // Loop through each level and populate LxOrgName / LxOrgSegId
         for (int i = 1; i <= levelCount; i++)
         {
