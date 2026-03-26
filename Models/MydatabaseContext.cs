@@ -81,19 +81,17 @@ public partial class MydatabaseContext : DbContext
     public DbSet<LabHours> LabHours { get; set; }
     public DbSet<PSRFinalData> PSRFinalData { get; set; }
     public DbSet<PsrHeader> PsrHeader { get; set; }
-    public DbSet<EmployeeMaster> EmployeeMasters { get; set; }
+    //public DbSet<EmployeeMaster> EmployeeMasters { get; set; }
     public DbSet<PlFinancialTransaction> PlFinancialTransactions { get; set; }
 
     public DbSet<ProjectWithPlanDto> ProjectWithPlanDto { get; set; }
     public DbSet<EmployeeDTOs> EmployeeDTOs { get; set; }
     public DbSet<VendorEmployeeDTOs> VendorEmployeeDTOs { get; set; }
     public DbSet<PlWarning> PLWarnings { get; set; }
-
-
-
+    public DbSet<EmployeeMaster> Empls { get; set; }
+    public DbSet<EmplLabInfo> EmplLabInfos { get; set; }
     public DbSet<Empl_Master> Empl_Master { get; set; }
     public DbSet<Empl_Master_Dto> Empl_Master_Dto { get; set; }
-
     public DbSet<PlEmployeee> PlEmployeees { get; set; }
     public DbSet<ProjBgtRevSetup> ProjBgtRevSetups { get; set; }
     public DbSet<ProjEmplRt> ProjEmplRts { get; set; }
@@ -143,6 +141,11 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<EmployeeMaster>()
+            .HasKey(e => e.EmplId);
+
+        modelBuilder.Entity<EmplLabInfo>()
+       .HasKey(e => new { e.EmplId, e.EffectDt });
 
         modelBuilder.Entity<AcctType>()
          .HasKey(x => new { x.AcctTypeCode, x.CompanyId });
@@ -1651,104 +1654,104 @@ public partial class MydatabaseContext : DbContext
             //entity.Property(e => e.BsrTrnCrncy).HasColumnName("bsr_trn_crncy");
         });
 
-        modelBuilder.Entity<EmployeeMaster>(entity =>
-        {
-            entity.ToTable("empl");
-            entity.HasKey(e => e.EmplId);
-            entity.Property(e => e.EmplId).HasColumnName("empl_id");
-            entity.Property(e => e.LvPdCd).HasColumnName("lv_pd_cd");
-            entity.Property(e => e.TaxbleEntityId).HasColumnName("taxble_entity_id");
-            entity.Property(e => e.SsnId).HasColumnName("ssn_id");
-            entity.Property(e => e.OrigHireDt).HasColumnName("orig_hire_dt");
-            entity.Property(e => e.AdjHireDt).HasColumnName("adj_hire_dt");
-            entity.Property(e => e.TermDt).HasColumnName("term_dt");
-            entity.Property(e => e.SEmplStatusCd).HasColumnName("s_empl_status_cd");
-            entity.Property(e => e.SpvsrName).HasColumnName("spvsr_name");
-            entity.Property(e => e.LastName).HasColumnName("last_name");
-            entity.Property(e => e.FirstName).HasColumnName("first_name");
-            entity.Property(e => e.MidName).HasColumnName("mid_name");
-            entity.Property(e => e.PrefName).HasColumnName("pref_name");
-            entity.Property(e => e.NamePrfxCd).HasColumnName("name_prfx_cd");
-            entity.Property(e => e.NameSfxCd).HasColumnName("name_sfx_cd");
-            entity.Property(e => e.Notes).HasColumnName("notes");
-            entity.Property(e => e.TsPdCd).HasColumnName("ts_pd_cd");
-            entity.Property(e => e.BirthDt).HasColumnName("birth_dt");
-            entity.Property(e => e.CityName).HasColumnName("city_name");
-            entity.Property(e => e.CountryCd).HasColumnName("country_cd");
-            entity.Property(e => e.LastFirstName).HasColumnName("last_first_name");
-            entity.Property(e => e.Ln1Adr).HasColumnName("ln_1_adr");
-            entity.Property(e => e.Ln2Adr).HasColumnName("ln_2_adr");
-            entity.Property(e => e.Ln3Adr).HasColumnName("ln_3_adr");
-            entity.Property(e => e.MailStateDc).HasColumnName("mail_state_dc");
-            entity.Property(e => e.PostalCd).HasColumnName("postal_cd");
-            entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
-            entity.Property(e => e.TimeStamp).HasColumnName("time_stamp");
-            entity.Property(e => e.LocatorCd).HasColumnName("locator_cd");
-            entity.Property(e => e.PrirName).HasColumnName("prir_name");
-            entity.Property(e => e.CompanyId).HasColumnName("company_id");
-            entity.Property(e => e.LastReviewDt).HasColumnName("last_review_dt");
-            entity.Property(e => e.NextReviewDt).HasColumnName("next_review_dt");
-            entity.Property(e => e.SexCd).HasColumnName("sex_cd");
-            entity.Property(e => e.MaritalCd).HasColumnName("marital_cd");
-            entity.Property(e => e.EligAutoPayFl).HasColumnName("elig_auto_pay_fl");
-            entity.Property(e => e.EmailId).HasColumnName("email_id");
-            entity.Property(e => e.MgrEmplId).HasColumnName("mgr_empl_id");
-            entity.Property(e => e.SRaceCd).HasColumnName("s_race_cd");
-            entity.Property(e => e.PrServEmplId).HasColumnName("pr_serv_empl_id");
-            entity.Property(e => e.CountyName).HasColumnName("county_name");
-            entity.Property(e => e.TsPdRegHrsNo).HasColumnName("ts_pd_reg_hrs_no");
-            entity.Property(e => e.PayPdRegHrsNo).HasColumnName("pay_pd_reg_hrs_no");
-            entity.Property(e => e.DisabledFl).HasColumnName("disabled_fl");
-            entity.Property(e => e.MosReviewNo).HasColumnName("mos_review_no");
-            entity.Property(e => e.ContName1).HasColumnName("cont_name_1");
-            entity.Property(e => e.ContName2).HasColumnName("cont_name_2");
-            entity.Property(e => e.ContPhone1).HasColumnName("cont_phone_1");
-            entity.Property(e => e.ContPhone2).HasColumnName("cont_phone_2");
-            entity.Property(e => e.ContRel1).HasColumnName("cont_rel_1");
-            entity.Property(e => e.ContRel2).HasColumnName("cont_rel_2");
-            entity.Property(e => e.UnionEmplFl).HasColumnName("union_empl_fl");
-            entity.Property(e => e.VisaTypeCd).HasColumnName("visa_type_cd");
-            entity.Property(e => e.VetStatusS).HasColumnName("vet_status_s");
-            entity.Property(e => e.VetStatusV).HasColumnName("vet_status_v");
-            entity.Property(e => e.VetStatusO).HasColumnName("vet_status_o");
-            entity.Property(e => e.VetStatusR).HasColumnName("vet_status_r");
-            entity.Property(e => e.EssPinId).HasColumnName("ess_pin_id");
-            entity.Property(e => e.PinUpdatedFl).HasColumnName("pin_updated_fl");
-            entity.Property(e => e.SEssCosCd).HasColumnName("s_ess_cos_cd");
-            entity.Property(e => e.HomeEmailId).HasColumnName("home_email_id");
-            entity.Property(e => e.Rowversion).HasColumnName("rowversion");
-            entity.Property(e => e.VetReleaseDt).HasColumnName("vet_release_dt");
-            entity.Property(e => e.ContractorFl).HasColumnName("contractor_fl");
-            entity.Property(e => e.BlindFl).HasColumnName("blind_fl");
-            entity.Property(e => e.VisaDt).HasColumnName("visa_dt");
-            entity.Property(e => e.VetStatusD).HasColumnName("vet_status_d");
-            entity.Property(e => e.VetStatusA).HasColumnName("vet_status_a");
-            entity.Property(e => e.TimeEntryType).HasColumnName("time_entry_type");
-            entity.Property(e => e.BadgeGroup).HasColumnName("badge_group");
-            entity.Property(e => e.BadgeId).HasColumnName("badge_id");
-            entity.Property(e => e.LoginId).HasColumnName("login_id");
-            entity.Property(e => e.SftFl).HasColumnName("sft_fl");
-            entity.Property(e => e.MesFl).HasColumnName("mes_fl");
-            entity.Property(e => e.ClockFl).HasColumnName("clock_fl");
-            entity.Property(e => e.PlantId).HasColumnName("plant_id");
-            entity.Property(e => e.EmplSourceCd).HasColumnName("empl_source_cd");
-            entity.Property(e => e.SrExportDt).HasColumnName("sr_export_dt");
-            entity.Property(e => e.HrsmartExportDt).HasColumnName("hrsmart_export_dt");
-            entity.Property(e => e.VetStatusP).HasColumnName("vet_status_p");
-            entity.Property(e => e.BirthCityName).HasColumnName("birth_city_name");
-            entity.Property(e => e.BirthMailStateDc).HasColumnName("birth_mail_state_dc");
-            entity.Property(e => e.BirthCountryCd).HasColumnName("birth_country_cd");
-            entity.Property(e => e.UserLoginId).HasColumnName("user_login_id");
-            entity.Property(e => e.EmplAuthMthd).HasColumnName("empl_auth_mthd");
-            entity.Property(e => e.EssUserFl).HasColumnName("ess_user_fl");
-            entity.Property(e => e.LastDayDt).HasColumnName("last_day_dt");
-            entity.Property(e => e.GovwiniqLoginId).HasColumnName("govwiniq_login_id");
-            entity.Property(e => e.HuaId).HasColumnName("hua_id");
-            entity.Property(e => e.HuaActvMapFl).HasColumnName("hua_actv_map_fl");
-            entity.Property(e => e.VetStatusNp).HasColumnName("vet_status_np");
-            entity.Property(e => e.VetStatusDeclined).HasColumnName("vet_status_declined");
-            entity.Property(e => e.VetStatusRs).HasColumnName("vet_status_rs");
-        });
+        //modelBuilder.Entity<EmployeeMaster>(entity =>
+        //{
+        //    entity.ToTable("empl");
+        //    entity.HasKey(e => e.EmplId);
+        //    entity.Property(e => e.EmplId).HasColumnName("empl_id");
+        //    entity.Property(e => e.LvPdCd).HasColumnName("lv_pd_cd");
+        //    entity.Property(e => e.TaxbleEntityId).HasColumnName("taxble_entity_id");
+        //    entity.Property(e => e.SsnId).HasColumnName("ssn_id");
+        //    entity.Property(e => e.OrigHireDt).HasColumnName("orig_hire_dt");
+        //    entity.Property(e => e.AdjHireDt).HasColumnName("adj_hire_dt");
+        //    entity.Property(e => e.TermDt).HasColumnName("term_dt");
+        //    entity.Property(e => e.SEmplStatusCd).HasColumnName("s_empl_status_cd");
+        //    entity.Property(e => e.SpvsrName).HasColumnName("spvsr_name");
+        //    entity.Property(e => e.LastName).HasColumnName("last_name");
+        //    entity.Property(e => e.FirstName).HasColumnName("first_name");
+        //    entity.Property(e => e.MidName).HasColumnName("mid_name");
+        //    entity.Property(e => e.PrefName).HasColumnName("pref_name");
+        //    entity.Property(e => e.NamePrfxCd).HasColumnName("name_prfx_cd");
+        //    entity.Property(e => e.NameSfxCd).HasColumnName("name_sfx_cd");
+        //    entity.Property(e => e.Notes).HasColumnName("notes");
+        //    entity.Property(e => e.TsPdCd).HasColumnName("ts_pd_cd");
+        //    entity.Property(e => e.BirthDt).HasColumnName("birth_dt");
+        //    entity.Property(e => e.CityName).HasColumnName("city_name");
+        //    entity.Property(e => e.CountryCd).HasColumnName("country_cd");
+        //    entity.Property(e => e.LastFirstName).HasColumnName("last_first_name");
+        //    entity.Property(e => e.Ln1Adr).HasColumnName("ln_1_adr");
+        //    entity.Property(e => e.Ln2Adr).HasColumnName("ln_2_adr");
+        //    entity.Property(e => e.Ln3Adr).HasColumnName("ln_3_adr");
+        //    entity.Property(e => e.MailStateDc).HasColumnName("mail_state_dc");
+        //    entity.Property(e => e.PostalCd).HasColumnName("postal_cd");
+        //    entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
+        //    entity.Property(e => e.TimeStamp).HasColumnName("time_stamp");
+        //    entity.Property(e => e.LocatorCd).HasColumnName("locator_cd");
+        //    entity.Property(e => e.PrirName).HasColumnName("prir_name");
+        //    entity.Property(e => e.CompanyId).HasColumnName("company_id");
+        //    entity.Property(e => e.LastReviewDt).HasColumnName("last_review_dt");
+        //    entity.Property(e => e.NextReviewDt).HasColumnName("next_review_dt");
+        //    entity.Property(e => e.SexCd).HasColumnName("sex_cd");
+        //    entity.Property(e => e.MaritalCd).HasColumnName("marital_cd");
+        //    entity.Property(e => e.EligAutoPayFl).HasColumnName("elig_auto_pay_fl");
+        //    entity.Property(e => e.EmailId).HasColumnName("email_id");
+        //    entity.Property(e => e.MgrEmplId).HasColumnName("mgr_empl_id");
+        //    entity.Property(e => e.SRaceCd).HasColumnName("s_race_cd");
+        //    entity.Property(e => e.PrServEmplId).HasColumnName("pr_serv_empl_id");
+        //    entity.Property(e => e.CountyName).HasColumnName("county_name");
+        //    entity.Property(e => e.TsPdRegHrsNo).HasColumnName("ts_pd_reg_hrs_no");
+        //    entity.Property(e => e.PayPdRegHrsNo).HasColumnName("pay_pd_reg_hrs_no");
+        //    entity.Property(e => e.DisabledFl).HasColumnName("disabled_fl");
+        //    entity.Property(e => e.MosReviewNo).HasColumnName("mos_review_no");
+        //    entity.Property(e => e.ContName1).HasColumnName("cont_name_1");
+        //    entity.Property(e => e.ContName2).HasColumnName("cont_name_2");
+        //    entity.Property(e => e.ContPhone1).HasColumnName("cont_phone_1");
+        //    entity.Property(e => e.ContPhone2).HasColumnName("cont_phone_2");
+        //    entity.Property(e => e.ContRel1).HasColumnName("cont_rel_1");
+        //    entity.Property(e => e.ContRel2).HasColumnName("cont_rel_2");
+        //    entity.Property(e => e.UnionEmplFl).HasColumnName("union_empl_fl");
+        //    entity.Property(e => e.VisaTypeCd).HasColumnName("visa_type_cd");
+        //    entity.Property(e => e.VetStatusS).HasColumnName("vet_status_s");
+        //    entity.Property(e => e.VetStatusV).HasColumnName("vet_status_v");
+        //    entity.Property(e => e.VetStatusO).HasColumnName("vet_status_o");
+        //    entity.Property(e => e.VetStatusR).HasColumnName("vet_status_r");
+        //    entity.Property(e => e.EssPinId).HasColumnName("ess_pin_id");
+        //    entity.Property(e => e.PinUpdatedFl).HasColumnName("pin_updated_fl");
+        //    entity.Property(e => e.SEssCosCd).HasColumnName("s_ess_cos_cd");
+        //    entity.Property(e => e.HomeEmailId).HasColumnName("home_email_id");
+        //    entity.Property(e => e.Rowversion).HasColumnName("rowversion");
+        //    entity.Property(e => e.VetReleaseDt).HasColumnName("vet_release_dt");
+        //    entity.Property(e => e.ContractorFl).HasColumnName("contractor_fl");
+        //    entity.Property(e => e.BlindFl).HasColumnName("blind_fl");
+        //    entity.Property(e => e.VisaDt).HasColumnName("visa_dt");
+        //    entity.Property(e => e.VetStatusD).HasColumnName("vet_status_d");
+        //    entity.Property(e => e.VetStatusA).HasColumnName("vet_status_a");
+        //    entity.Property(e => e.TimeEntryType).HasColumnName("time_entry_type");
+        //    entity.Property(e => e.BadgeGroup).HasColumnName("badge_group");
+        //    entity.Property(e => e.BadgeId).HasColumnName("badge_id");
+        //    entity.Property(e => e.LoginId).HasColumnName("login_id");
+        //    entity.Property(e => e.SftFl).HasColumnName("sft_fl");
+        //    entity.Property(e => e.MesFl).HasColumnName("mes_fl");
+        //    entity.Property(e => e.ClockFl).HasColumnName("clock_fl");
+        //    entity.Property(e => e.PlantId).HasColumnName("plant_id");
+        //    entity.Property(e => e.EmplSourceCd).HasColumnName("empl_source_cd");
+        //    entity.Property(e => e.SrExportDt).HasColumnName("sr_export_dt");
+        //    entity.Property(e => e.HrsmartExportDt).HasColumnName("hrsmart_export_dt");
+        //    entity.Property(e => e.VetStatusP).HasColumnName("vet_status_p");
+        //    entity.Property(e => e.BirthCityName).HasColumnName("birth_city_name");
+        //    entity.Property(e => e.BirthMailStateDc).HasColumnName("birth_mail_state_dc");
+        //    entity.Property(e => e.BirthCountryCd).HasColumnName("birth_country_cd");
+        //    entity.Property(e => e.UserLoginId).HasColumnName("user_login_id");
+        //    entity.Property(e => e.EmplAuthMthd).HasColumnName("empl_auth_mthd");
+        //    entity.Property(e => e.EssUserFl).HasColumnName("ess_user_fl");
+        //    entity.Property(e => e.LastDayDt).HasColumnName("last_day_dt");
+        //    entity.Property(e => e.GovwiniqLoginId).HasColumnName("govwiniq_login_id");
+        //    entity.Property(e => e.HuaId).HasColumnName("hua_id");
+        //    entity.Property(e => e.HuaActvMapFl).HasColumnName("hua_actv_map_fl");
+        //    entity.Property(e => e.VetStatusNp).HasColumnName("vet_status_np");
+        //    entity.Property(e => e.VetStatusDeclined).HasColumnName("vet_status_declined");
+        //    entity.Property(e => e.VetStatusRs).HasColumnName("vet_status_rs");
+        //});
         modelBuilder.Entity<Holidaycalender>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("holidaycalender_pkey");
