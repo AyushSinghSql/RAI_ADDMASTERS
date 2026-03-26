@@ -200,6 +200,31 @@ public class OrgnizationController : ControllerBase
                 return BadRequest($"Invalid length at Level {currentLevel} it should be {levelConfigs[currentLevel]}");
         }
 
+        // ✅ Hierarchy validation: check parent levels exist
+        var parentCodes = Enumerable.Range(1, segments.Length - 1)
+            .Select(i => string.Join(".", segments.Take(i)))
+            .ToList();
+
+        // Get existing parents from DB
+        var existingParents = await _context.Organizations
+            .Where(o => parentCodes.Contains(o.OrgId))
+            .Select(o => o.OrgId)
+            .ToListAsync();
+
+        // Find all missing parents (reverse order: deepest first)
+        var missingParents = parentCodes
+            .Where(p => !existingParents.Contains(p))
+            .OrderByDescending(p => p.Count(c => c == '.')) // deeper hierarchy first
+            .ToList();
+
+        if (missingParents.Any())
+        {
+            return BadRequest(new
+            {
+                message = "Parent hierarchy missing. Please create below levels first.",
+                missingLevels = missingParents
+            });
+        }
 
         // Loop through each level and populate LxOrgName / LxOrgSegId
         for (int i = 1; i <= levelCount; i++)
