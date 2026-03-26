@@ -20,8 +20,15 @@ namespace PlanningAPI.Models
         public int Lenght { get; set; }
 
         public int Count { get; set; } // 🔥 New field
-    }
 
+    }
+    public class LevelResponseDto
+    {
+        public bool IsEditAllowed { get; set; }
+        public bool IsAddNextLevelAllowed { get; set; }
+
+        public List<LevelDto> Levels { get; set; } = new();
+    }
     [Table("org_levels", Schema = "public")]
     public class OrgLevel
     {

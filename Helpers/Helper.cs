@@ -2729,7 +2729,7 @@ namespace WebApi.Helpers
                     plForecast.Plc = dct.PlcGlc;
                     plForecast.DirectCost = new PlDct() { Id = dct.Id };
                     DateTime forecastDay = new DateTime(plForecast.Year, plForecast.Month, DateTime.DaysInMonth(plForecast.Year, plForecast.Month));
-                    if (plForecast.Year == 2024 && plForecast.Month == 2 && plForecast.EmplId == "1002141")
+                    if (plForecast.Year == 2026 && plForecast.Month == 2)
                     {
 
                     }
@@ -2813,7 +2813,9 @@ namespace WebApi.Helpers
                                .Where(p => p.Month == plForecast.Month &&
                                p.Year == plForecast.Year &&
                                p.EmplId == plForecast.EmplId &&
-                               p.AcctId == plForecast.AcctId && p.Plc == plForecast.Plc &&
+                               //p.DctId != null &&
+                               p.AcctId == plForecast.AcctId && 
+                               //p.Plc == plForecast.Plc &&
                                p.OrgId == plForecast.OrgId).ToList();
 
                         if (forecastData.Count() > 0)

@@ -1602,8 +1602,8 @@ string type)
                     plForecasts.Add(PlForecast.CloneWithoutIdForEAC(forecast));
 
                 }
-                actualEmployees = helper.GetEmployeeActulHoursData(newPlan, forecastDetailsToCopy);
-                actualAmountsData = helper.GetEmployeeActulAmountData(newPlan, forecastDetailsToCopy);
+                actualEmployees = helper.GetEmployeeActulHoursData(newPlan, forecastDetailsToCopy.Where(p => p.DctId == null).ToList());
+                actualAmountsData = helper.GetEmployeeActulAmountData(newPlan, forecastDetailsToCopy.Where(p=>p.Emple == null).ToList());
             }
             var hours = plForecasts.Where(p => p.DirectCost == null).ToList();
             var amounts = plForecasts.Where(p => p.Emple == null && p.DirectCost != null).Select(p => p.DirectCost).Distinct().ToList();

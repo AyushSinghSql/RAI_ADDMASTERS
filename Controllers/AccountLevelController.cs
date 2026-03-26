@@ -42,6 +42,65 @@ namespace PlanningAPI.Controllers
             return result;
         }
 
+        [HttpGet("GetAllAccountLevelsV2")]
+        public async Task<ActionResult<LevelResponseDto>> GetAllAccountLevelsV2()
+        {
+            // Step 1: Evaluate conditions
+
+            var hasDetailedAccounts = await _context.Accounts
+                .AnyAsync(a => a.DetailFlag == "Y");
+
+            var hasCOA = await _context.Set<Charts_Of_Accounts>()
+                .AnyAsync();
+
+            bool isEditAllowed = true;
+            bool isAddNextLevelAllowed = false;
+
+            if (hasDetailedAccounts && hasCOA)
+            {
+                // ❌ Fully locked
+                isEditAllowed = false;
+                isAddNextLevelAllowed = false;
+            }
+            else if (hasDetailedAccounts && !hasCOA)
+            {
+                // ⚠️ Partial
+                isEditAllowed = false;
+                isAddNextLevelAllowed = true;
+            }
+            else
+            {
+                // ✅ Open
+                isEditAllowed = true;
+                isAddNextLevelAllowed = true;
+            }
+
+            // Step 2: Fetch Levels
+            var levels = await (
+                from lvl in _context.AcctLevels
+                join acc in _context.Accounts
+                    on lvl.Level equals acc.LvlNo into accGroup
+                select new LevelDto
+                {
+                    Level = lvl.Level,
+                    Lenght = lvl.Lenght,
+                    Count = accGroup.Count()
+                }
+            )
+            .OrderBy(x => x.Level)
+            .ToListAsync();
+
+            // Step 3: Return wrapped response
+            var response = new LevelResponseDto
+            {
+                IsEditAllowed = isEditAllowed,
+                IsAddNextLevelAllowed = isAddNextLevelAllowed,
+                Levels = levels
+            };
+
+            return response;
+        }
+
         // GET: api/AcctLevels/5
         [HttpGet("GetAccountLevel/{id}")]
         public async Task<ActionResult<AcctLevel>> GetAccountLevel(int id)
