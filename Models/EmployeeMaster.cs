@@ -29,7 +29,7 @@ namespace PlanningAPI.Models
         public DateOnly? AdjHireDt { get; set; }
 
         [Column("term_dt")]
-        public DateTime? TermDt { get; set; }
+        public DateOnly? TermDt { get; set; }
 
         [Column("s_empl_status_cd"), MaxLength(10)]
         public string? SEmplStatusCd { get; set; }
@@ -62,7 +62,7 @@ namespace PlanningAPI.Models
         public string? TsPdCd { get; set; }
 
         [Column("birth_dt")]
-        public DateTime? BirthDt { get; set; }
+        public DateOnly? BirthDt { get; set; }
 
         [Column("city_name"), MaxLength(100)]
         public string? CityName { get; set; }
@@ -197,7 +197,7 @@ namespace PlanningAPI.Models
         public byte[]? Rowversion { get; set; }
 
         [Column("vet_release_dt")]
-        public DateTime? VetReleaseDt { get; set; }
+        public DateOnly? VetReleaseDt { get; set; }
 
         [Column("contractor_fl")]
         public bool? ContractorFl { get; set; }
