@@ -23,10 +23,10 @@ namespace PlanningAPI.Models
         public string? SsnId { get; set; }
 
         [Column("orig_hire_dt")]
-        public DateTime? OrigHireDt { get; set; }
+        public DateOnly? OrigHireDt { get; set; }
 
         [Column("adj_hire_dt")]
-        public DateTime? AdjHireDt { get; set; }
+        public DateOnly? AdjHireDt { get; set; }
 
         [Column("term_dt")]
         public DateTime? TermDt { get; set; }
@@ -104,10 +104,10 @@ namespace PlanningAPI.Models
         public string? CompanyId { get; set; }
 
         [Column("last_review_dt")]
-        public DateTime? LastReviewDt { get; set; }
+        public DateOnly? LastReviewDt { get; set; }
 
         [Column("next_review_dt")]
-        public DateTime? NextReviewDt { get; set; }
+        public DateOnly? NextReviewDt { get; set; }
 
         [Column("sex_cd"), MaxLength(1)]
         public string? SexCd { get; set; }
@@ -206,7 +206,7 @@ namespace PlanningAPI.Models
         public bool? BlindFl { get; set; }
 
         [Column("visa_dt")]
-        public DateTime? VisaDt { get; set; }
+        public DateOnly? VisaDt { get; set; }
 
         [Column("vet_status_d")]
         public bool? VetStatusD { get; set; }
@@ -242,10 +242,10 @@ namespace PlanningAPI.Models
         public string? EmplSourceCd { get; set; }
 
         [Column("sr_export_dt")]
-        public DateTime? SrExportDt { get; set; }
+        public DateOnly? SrExportDt { get; set; }
 
         [Column("hrsmart_export_dt")]
-        public DateTime? HrsmartExportDt { get; set; }
+        public DateOnly? HrsmartExportDt { get; set; }
 
         [Column("vet_status_p")]
         public bool? VetStatusP { get; set; }
@@ -269,7 +269,7 @@ namespace PlanningAPI.Models
         public bool? EssUserFl { get; set; }
 
         [Column("last_day_dt")]
-        public DateTime? LastDayDt { get; set; }
+        public DateOnly? LastDayDt { get; set; }
 
         [Column("govwiniq_login_id"), MaxLength(50)]
         public string? GovwiniqLoginId { get; set; }
