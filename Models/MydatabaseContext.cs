@@ -18,6 +18,10 @@ public partial class MydatabaseContext : DbContext
     {
     }
 
+    public DbSet<Race> Race { get; set; }
+    public DbSet<TaxableEntity> TaxableEntites { get; set; }
+    public DbSet<VisaType> VisaTypes { get; set; }
+    public DbSet<TimesheetCycle> TimesheetCycles { get; set; }
     public DbSet<OrgLevel> OrgLevels { get; set; }
     public DbSet<AcctLevel> AcctLevels { get; set; }
     public DbSet<Company> Companies { get; set; }
@@ -141,6 +145,17 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TaxableEntity>(entity =>
+        {
+
+            entity.HasIndex(e => new { e.TaxId, e.CompanyId })
+
+                .IsUnique()
+
+                .HasDatabaseName("unique_tax_per_company");
+
+        });
+
         modelBuilder.Entity<EmployeeMaster>()
             .HasKey(e => e.EmplId);
 
