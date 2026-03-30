@@ -25,6 +25,28 @@ namespace PlanningAPI.Controllers
             _context = context;
         }
 
+        [HttpPost("CallForecastRolloverFlexibleAsync")]
+        public async Task CallForecastRolloverFlexibleAsync(
+        string periodType,
+        DateOnly baseDate,
+        DateOnly targetStartDate,
+        string projId,
+        int plId,
+        decimal increasePct = 0)
+        {
+            bool dryRun = false; // Set to true to only log the SQL without executing
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL public.sp_forecast_rollover_flexible(
+                    {periodType},
+                    {baseDate},
+                    {targetStartDate},
+                    {projId},
+                    {plId},
+                    {increasePct},
+                    {dryRun}
+                );");
+        }
+
         [HttpPost("generate")]
         public async Task<IActionResult> GenerateForecastReport([FromBody] PlanForecastSummary forecast)
         {
