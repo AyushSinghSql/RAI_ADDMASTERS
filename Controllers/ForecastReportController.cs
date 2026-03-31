@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Mathematics;
 using Npgsql;
 using PlanningAPI.Models;
 using QuestPDF.Fluent;
@@ -26,25 +27,330 @@ namespace PlanningAPI.Controllers
         }
 
         [HttpPost("CallForecastRolloverFlexibleAsync")]
-        public async Task CallForecastRolloverFlexibleAsync(
-        string periodType,
-        DateOnly baseDate,
-        DateOnly targetStartDate,
-        string projId,
-        int plId,
-        decimal increasePct = 0)
+        public async Task<IActionResult> CallForecastRolloverFlexibleAsync(
+            string periodType,
+            DateOnly baseDate,
+            DateOnly targetStartDate,
+            string? projId,
+            int? plId,
+            decimal increasePct = 0)
         {
-            bool dryRun = false; // Set to true to only log the SQL without executing
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                CALL public.sp_forecast_rollover_flexible(
-                    {periodType},
-                    {baseDate},
-                    {targetStartDate},
-                    {projId},
-                    {plId},
-                    {increasePct},
-                    {dryRun}
-                );");
+            try
+            {
+                // ✅ Basic Validations
+                if (string.IsNullOrWhiteSpace(periodType))
+                    return BadRequest("periodType is required");
+
+                var allowedPeriods = new[] { "DAILY", "MONTHLY", "YEARLY" };
+                if (!allowedPeriods.Contains(periodType.ToUpper()))
+                    return BadRequest("Invalid periodType. Allowed: DAILY, MONTHLY, YEARLY");
+
+                if (increasePct < 0)
+                    return BadRequest("increasePct cannot be negative");
+
+                if (plId.HasValue && plId <= 0)
+                    return BadRequest("plId must be greater than 0");
+
+                // Convert DateOnly → DateTime (required for EF)
+                //var baseDateTime = baseDate.ToDateTime(TimeOnly.MinValue);
+                //var targetStartDateTime = targetStartDate.ToDateTime(TimeOnly.MinValue);
+
+                bool dryRun = false;
+
+                // ✅ Execute SP with proper DATE casting
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            CALL public.sp_forecast_rollover_flexible(
+                {periodType},
+                {baseDate.ToString("yyyy-MM-dd")}::date,
+                {targetStartDate.ToString("yyyy-MM-dd")}::date,
+                {projId},
+                {plId},
+                {increasePct},
+                {dryRun}
+            );
+        ");
+
+                return Ok(new
+                {
+                    message = "Stored procedure executed successfully"
+                });
+            }
+            catch (Npgsql.NpgsqlException ex)
+            {
+                // ✅ PostgreSQL-specific errors
+                return StatusCode(500, new
+                {
+                    message = "Database error while executing stored procedure",
+                    detail = ex.Message,
+                    sqlState = ex.SqlState
+                });
+            }
+            catch (Exception ex)
+            {
+                // ✅ General errors
+                return StatusCode(500, new
+                {
+                    message = "Unexpected error",
+                    detail = ex.Message
+                });
+            }
+        }
+        [HttpGet("UpdateForecastFromYearAsync")]
+        public async Task UpdateForecastFromYearAsync(int plId, int sourceYear, int targetYear)
+        {
+            // Step 1: Get source data
+            var sourceData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == sourceYear)
+                .ToListAsync();
+
+            if (!sourceData.Any())
+                return;
+
+            // Step 2: Get target data
+            var targetData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == targetYear)
+                .ToListAsync();
+
+            foreach (var src in sourceData)
+            {
+                var target = targetData.FirstOrDefault(x =>
+                    x.EmplId == src.EmplId &&
+                    x.Plc == src.Plc &&
+                    x.empleId == src.empleId &&
+                    x.Month == src.Month &&     // ✅ keep same month mapping
+                    x.DctId == src.DctId);      // optional but recommended
+
+                if (target != null)
+                {
+                    if (target.Forecastedhours == src.Forecastedhours &&
+                        target.Forecastedamt == src.Forecastedamt)
+                    {
+                        // ✅ Skip if no changes
+                        continue;
+                    }
+                    if(src.DctId == null && target.Forecastedhours == 0)
+                    {
+                        target.Forecastedhours = src.Forecastedhours;
+                    }
+
+                    if(src.empleId == null && target.Forecastedamt == 0)
+                    {
+                        target.Forecastedamt = src.Forecastedamt;
+                    }
+                    // ✅ Update only required fields
+                    
+                    
+
+                    //target.Updatedat = DateTime.UtcNow;
+                }
+                else
+                {
+                    // ✅ Insert if missing
+                    var clone = PlForecast.CloneWithoutId(src);
+
+                    clone.Year = targetYear;
+                    clone.PlId = plId;
+                    //clone.Createdat = DateTime.UtcNow;
+
+                    await _context.PlForecasts.AddAsync(clone);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        [HttpGet("UpdateForecastFlexibleAsync")]
+        public async Task UpdateForecastFlexibleAsync(
+    int plId,
+    int sourceYear,
+    int targetYear,
+    decimal percentage,          // e.g. 2 for 2%
+    string periodType            // Monthly, Quarterly, HalfYearly, Yearly
+)
+        {
+            var factor = 1 + (percentage / 100);
+
+            var sourceData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == sourceYear)
+                .ToListAsync();
+
+            if (!sourceData.Any())
+                return;
+
+            var targetData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == targetYear)
+                .ToListAsync();
+
+            foreach (var src in sourceData)
+            {
+                var target = targetData.FirstOrDefault(x =>
+                    x.EmplId == src.EmplId &&
+                    x.Plc == src.Plc &&
+                    x.empleId == src.empleId &&
+                    IsMonthMatch(src.Month, x.Month, periodType) &&
+                    x.DctId == src.DctId);
+
+                if (target != null)
+                {
+                    // Skip if same
+                    if (target.Forecastedhours == src.Forecastedhours &&
+                        target.Forecastedamt == src.Forecastedamt)
+                        continue;
+
+                    // ✅ Apply conditions + percentage
+                    if (src.DctId == null && target.Forecastedhours == 0)
+                    {
+                        target.Forecastedhours = src.Forecastedhours * factor;
+                    }
+
+                    if (src.empleId == null && target.Forecastedamt == 0)
+                    {
+                        target.Forecastedamt = src.Forecastedamt * factor;
+                    }
+
+                    target.Updatedat = DateTime.UtcNow;
+                }
+                else
+                {
+                    var clone = PlForecast.CloneWithoutId(src);
+
+                    clone.Year = targetYear;
+                    clone.PlId = plId;
+
+                    // ✅ Apply percentage
+                    clone.Forecastedhours = src.Forecastedhours * factor;
+                    clone.Forecastedamt = src.Forecastedamt * factor;
+
+                    await _context.PlForecasts.AddAsync(clone);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        [NonAction]
+        private bool IsMonthMatch(int sourceMonth, int targetMonth, string periodType)
+        {
+            switch (periodType.ToLower())
+            {
+                case "monthly":
+                    return sourceMonth == targetMonth;
+
+                case "quarterly":
+                    return GetQuarter(sourceMonth) == GetQuarter(targetMonth);
+
+                case "halfyearly":
+                    return GetHalf(sourceMonth) == GetHalf(targetMonth);
+
+                case "yearly":
+                    return true; // all months match
+
+                default:
+                    return false;
+            }
+        }
+
+        private int GetQuarter(int month) => (month - 1) / 3 + 1;
+
+        private int GetHalf(int month) => (month - 1) / 6 + 1;
+
+
+
+        [HttpGet("UpdateForecastWithPeriodShift")]
+        public async Task UpdateForecastWithPeriodShift(
+    int plId,
+    int sourceYear,
+    int targetYear,
+    int sourcePeriod,     // month (1-12) OR quarter (1-4) OR half (1-2)
+    int targetPeriod,
+    decimal percentage,
+    string periodType     // Monthly, Quarterly, HalfYearly
+)
+        {
+            var factor = 1 + (percentage / 100);
+
+            var sourceData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == sourceYear)
+                .ToListAsync();
+
+            var targetData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == targetYear)
+                .ToListAsync();
+
+            foreach (var src in sourceData)
+            {
+                if (!IsSourceMatch(src.Month, sourcePeriod, periodType))
+                    continue;
+
+                var targetMonth = GetTargetMonth(src.Month, sourcePeriod, targetPeriod, periodType);
+
+                var target = targetData.FirstOrDefault(x =>
+                    x.EmplId == src.EmplId &&
+                    x.Plc == src.Plc &&
+                    x.empleId == src.empleId &&
+                    x.Month == targetMonth &&
+                    x.DctId == src.DctId);
+
+                if (target != null)
+                {
+                    if (src.DctId == null && target.Forecastedhours == 0)
+                        target.Forecastedhours = src.Forecastedhours * factor;
+
+                    if (src.empleId == null && target.Forecastedamt == 0)
+                        target.Forecastedamt = src.Forecastedamt * factor;
+
+                    //target.Updatedat = DateTime.UtcNow;
+                }
+                else
+                {
+                    var clone = PlForecast.CloneWithoutId(src);
+
+                    clone.Year = targetYear;
+                    clone.Month = targetMonth;
+                    clone.PlId = plId;
+
+                    clone.Forecastedhours = src.Forecastedhours * factor;
+                    clone.Forecastedamt = src.Forecastedamt * factor;
+
+                    await _context.PlForecasts.AddAsync(clone);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private bool IsSourceMatch(int month, int sourcePeriod, string type)
+        {
+            return type.ToLower() switch
+            {
+                "monthly" => month == sourcePeriod,
+
+                "quarterly" => GetQuarter(month) == sourcePeriod,
+
+                "halfyearly" => GetHalf(month) == sourcePeriod,
+
+                _ => false
+            };
+        }
+
+        private int GetTargetMonth(int sourceMonth, int sourcePeriod, int targetPeriod, string type)
+        {
+            switch (type.ToLower())
+            {
+                case "monthly":
+                    return targetPeriod; // direct month mapping
+
+                case "quarterly":
+                    int monthOffsetQ = sourceMonth % 3 == 0 ? 3 : sourceMonth % 3;
+                    return (targetPeriod - 1) * 3 + monthOffsetQ;
+
+                case "halfyearly":
+                    int monthOffsetH = sourceMonth % 6 == 0 ? 6 : sourceMonth % 6;
+                    return (targetPeriod - 1) * 6 + monthOffsetH;
+
+                default:
+                    return sourceMonth;
+            }
         }
 
         [HttpPost("generate")]
