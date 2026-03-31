@@ -256,7 +256,7 @@ namespace PlanningAPI.Controllers
 
 
 
-        [HttpGet("UpdateForecastWithPeriodShift")]
+        [HttpPost("UpdateForecastWithPeriodShift")]
         public async Task UpdateForecastWithPeriodShift(
     int plId,
     int sourceYear,
