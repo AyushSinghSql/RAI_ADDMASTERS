@@ -43,6 +43,34 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
+        [HttpGet("by-profile/{profCd}")]
+        public async Task<IActionResult> GetOrgsByProfile(string profCd)
+        {
+            var data = await _context.OrgSecProfileOrgs
+                .Include(x => x.OrgSecProfile)
+                .Include(x => x.Organization)
+                .Include(x => x.Company)
+                .Where(x => x.OrgSecProfCd == profCd)
+                .Select(x => new OrgSecProfileOrgDto
+                {
+                    OrgSecProfCd = x.OrgSecProfCd,
+                    OrgId = x.OrgId,
+                    CompanyId = x.CompanyId,
+                    OrgWildcardFl = x.OrgWildcardFl,
+                    SOrgRightsCd = x.SOrgRightsCd,
+
+                    ProfileName = x.OrgSecProfile.Name,
+                    OrgName = x.Organization.OrgName,
+                    CompanyName = x.Company.CompanyName
+                })
+                .ToListAsync();
+
+            if (data == null || !data.Any())
+                return NotFound(new { message = "No organizations found for this profile." });
+
+            return Ok(data);
+        }
+
         // ✅ GET BY KEY
         [HttpGet("{profCd}/{orgId}/{companyId}")]
         public async Task<IActionResult> Get(string profCd, string orgId, string companyId)

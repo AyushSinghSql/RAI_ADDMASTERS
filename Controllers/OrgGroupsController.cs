@@ -164,5 +164,85 @@ namespace PlanningAPI.Controllers
                 DeletedCount = orgGroups.Count
             });
         }
+
+
+        [HttpPost("AddUserToGroup")]
+        public async Task<IActionResult> AddUserToGroup(AddUserToGroupDto dto)
+        {
+            if (dto.UserId <= 0)
+                return BadRequest(new { message = "Invalid UserId." });
+
+            if (string.IsNullOrWhiteSpace(dto.UserGroupId))
+                return BadRequest(new { message = "UserGroupId is required." });
+
+            if (string.IsNullOrWhiteSpace(dto.CompanyId))
+                return BadRequest(new { message = "CompanyId is required." });
+
+            // 🔍 Check if mapping already exists
+            var exists = await _context.UserGroupUsers.AnyAsync(x =>
+                x.UserId == dto.UserId &&
+                x.UserGroupId == dto.UserGroupId &&
+                x.CompanyId == dto.CompanyId);
+
+            if (exists)
+                return BadRequest(new { message = "User already assigned to this group." });
+
+            // 🔍 Validate User
+            var userExists = await _context.Users
+                .AnyAsync(x => x.UserId == dto.UserId);
+
+            if (!userExists)
+                return BadRequest(new { message = "User not found." });
+
+            // 🔍 Validate Group
+            var groupExists = await _context.UserGroups
+                .AnyAsync(x => x.UserGroupId == dto.UserGroupId && x.CompanyId == dto.CompanyId);
+
+            if (!groupExists)
+                return BadRequest(new { message = "User group not found." });
+
+            var entity = new UserGroupUser
+            {
+                UserId = dto.UserId,
+                UserGroupId = dto.UserGroupId,
+                CompanyId = dto.CompanyId
+            };
+
+            _context.UserGroupUsers.Add(entity);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User assigned to group successfully." });
+        }
+
+        [HttpGet("{userId}/groups/{companyId}")]
+        public async Task<IActionResult> GetUserWithGroups(int userId, string companyId)
+        {
+            var user = await _context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => new UserWithGroupsDto
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    FullName = u.FullName,
+                    Email = u.Email,
+
+                    Groups = u.UserGroups
+                        .Where(g => g.CompanyId == companyId)
+                        .Select(g => new UserGroupDto
+                        {
+                            UserGroupId = g.UserGroup.UserGroupId,
+                            OrgGroupName = g.UserGroup.OrgGroupName,
+                            CompanyId = g.CompanyId
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            return Ok(user);
+        }
     }
 }

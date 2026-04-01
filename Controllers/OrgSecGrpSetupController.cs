@@ -65,6 +65,34 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
+        [HttpGet("by-group/{grpCd}")]
+        public async Task<IActionResult> GetByGroupStructured(string grpCd)
+        {
+            var data = await _context.OrgSecGrpSetups
+                .Where(x => x.OrgSecGrpCd == grpCd)
+                .ToListAsync();
+
+            if (!data.Any())
+                return NotFound(new { message = "No mappings found for this group." });
+
+            var result = new
+            {
+                GroupCode = grpCd,
+
+                Modules = data
+                    .Select(x => new { x.ModuleCd, ModuleName = x.Module.Name })
+                    .Distinct()
+                    .ToList(),
+
+                Profiles = data
+                    .Select(x => new { x.OrgSecProfCd, ProfileName = x.OrgSecProfile.Name })
+                    .Distinct()
+                    .ToList()
+            };
+
+            return Ok(result);
+        }
+
         // ✅ GET BY KEY
         [HttpGet("{grpCd}/{moduleCd}/{companyId}")]
         public async Task<IActionResult> Get(string grpCd, string moduleCd, string companyId)

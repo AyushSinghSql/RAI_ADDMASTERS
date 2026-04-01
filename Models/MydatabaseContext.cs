@@ -148,10 +148,26 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<OrgSecGrp> OrgSecGrps { get; set; }
     public DbSet<OrgSecProfileOrg> OrgSecProfileOrgs { get; set; }
     public DbSet<UserGroup> UserGroups { get; set; }
+    public DbSet<UserGroupUser> UserGroupUsers { get; set; }
 
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<UserGroupUser>()
+    .HasKey(x => new { x.UserId, x.UserGroupId, x.CompanyId });
+
+        // 🔗 User → Mapping
+        modelBuilder.Entity<UserGroupUser>()
+            .HasOne(x => x.User)
+            .WithMany(u => u.UserGroups)
+            .HasForeignKey(x => x.UserId);
+
+        // 🔗 UserGroup → Mapping
+        modelBuilder.Entity<UserGroupUser>()
+            .HasOne(x => x.UserGroup)
+            .WithMany(g => g.Users)
+            .HasForeignKey(x => x.UserGroupId);
 
         modelBuilder.Entity<UserGroup>(entity =>
         {

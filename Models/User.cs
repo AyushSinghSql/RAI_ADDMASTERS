@@ -37,6 +37,9 @@ namespace PlanningAPI.Models
         public ICollection<UserScreenPermission> ScreenOverrides { get; set; } = new List<UserScreenPermission>();
         public ICollection<UserFieldPermission> FieldOverrides { get; set; } = new List<UserFieldPermission>();
 
+        public ICollection<UserGroupUser> UserGroups { get; set; }
+        = new List<UserGroupUser>();
+
     }
 
     public class UserProjectMap
@@ -59,6 +62,22 @@ namespace PlanningAPI.Models
         public OrgGroup OrgGroup { get; set; } = null!;
     }
 
+    [Table("user_group_users", Schema = "public")]
+    public class UserGroupUser
+    {
+        [Column("user_id")]
+        public int UserId { get; set; }
+
+        [Column("user_group_id")]
+        public string UserGroupId { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        // 🔗 Navigation
+        public User User { get; set; }
+        public UserGroup UserGroup { get; set; }
+    }
     public class OrgGroupUserMapping
     {
         public int OrgGroupId { get; set; }
@@ -212,6 +231,26 @@ namespace PlanningAPI.Models
 
         // 🔗 Navigation
         public Company Company { get; set; }
+
+        public ICollection<UserGroupUser> Users { get; set; }
+        = new List<UserGroupUser>();
+    }
+
+    public class AddUserToGroupDto
+    {
+        public int UserId { get; set; }
+        public string UserGroupId { get; set; }
+        public string CompanyId { get; set; }
+    }
+
+    public class UserWithGroupsDto
+    {
+        public int UserId { get; set; }
+        public string Username { get; set; }
+        public string FullName { get; set; }
+        public string Email { get; set; }
+
+        public List<UserGroupDto> Groups { get; set; }
     }
 
     public class UserGroupDto
