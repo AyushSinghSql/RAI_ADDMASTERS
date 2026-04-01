@@ -15,6 +15,7 @@
       <None Remove="Logs\**" />
     </ItemGroup>
     <ItemGroup>
+      <Compile Remove="Controllers\TaxableEntityController.cs" />
       <Compile Remove="Helpers\DataContext.cs" />
       <Compile Remove="Helpers\DbSettings.cs" />
       <Compile Remove="Models\NonWorkingDaycs.cs" />
