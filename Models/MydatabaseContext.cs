@@ -145,12 +145,32 @@ public partial class MydatabaseContext : DbContext
     public DbSet<Module> Modules { get; set; }
     public DbSet<OrgSecProfile> OrgSecProfiles { get; set; }
     public DbSet<OrgSecGrpSetup> OrgSecGrpSetups { get; set; }
+    //public DbSet<OrgSecGrp> OrgSecGrps { get; set; }
     public DbSet<OrgSecProfileOrg> OrgSecProfileOrgs { get; set; }
-
+    public DbSet<UserGroup> UserGroups { get; set; }
 
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<UserGroup>(entity =>
+        {
+            entity.HasKey(x => x.UserGroupId)
+                  .HasName("user_groups_pkey");
+
+            // 🔗 FK → Company
+            entity.HasOne(x => x.Company)
+                  .WithMany()
+                  .HasForeignKey(x => x.CompanyId)
+                  .HasConstraintName("fk_company");
+
+            // Default value (optional if handled by DB)
+            entity.Property(x => x.CreatedAt)
+                  .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(x => new { x.OrgGroupName, x.CompanyId })
+             .IsUnique();
+        });
 
         // 🔑 Composite Primary Key
         modelBuilder.Entity<OrgSecProfileOrg>()

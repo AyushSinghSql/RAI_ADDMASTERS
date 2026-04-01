@@ -35,6 +35,16 @@ namespace PlanningAPI.Controllers
         }
 
         // ✅ GET ALL (with joins)
+        [HttpGet("GetAllOrgGroups")]
+        public async Task<IActionResult> GetAllOrgGroups()
+        {
+            var data = await _context.OrgGroup
+                       .ToListAsync();
+
+            return Ok(data);
+        }
+
+        // ✅ GET ALL (with joins)
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

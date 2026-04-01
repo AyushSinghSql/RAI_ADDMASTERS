@@ -279,4 +279,5 @@ public class OrgGroupCreateUpdateDto
     public string OrgGroupName { get; set; } = null!;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
+    public string CompanyId { get; set; }
 }

@@ -180,4 +180,48 @@ namespace PlanningAPI.Models
         public List<int> GroupIds { get; set; } = new();
     }
 
+    [Table("user_groups", Schema = "public")]
+    public class UserGroup
+    {
+        [Key]
+        [Column("user_group_id")]
+        [MaxLength(50)]
+        public string UserGroupId { get; set; }
+
+        [Column("org_group_name")]
+        [MaxLength(150)]
+        public string OrgGroupName { get; set; }
+
+        [Column("created_by")]
+        [MaxLength(50)]
+        public string? CreatedBy { get; set; }
+
+        [Column("company_id")]
+        [MaxLength(10)]
+        public string CompanyId { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
+
+        [Column("modified_by")]
+        [MaxLength(50)]
+        public string? ModifiedBy { get; set; }
+
+        [Column("modified_at")]
+        public DateTime? ModifiedAt { get; set; }
+
+        // 🔗 Navigation
+        public Company Company { get; set; }
+    }
+
+    public class UserGroupDto
+    {
+        public string UserGroupId { get; set; }
+        public string OrgGroupName { get; set; }
+        public string CompanyId { get; set; }
+
+        public string CompanyName { get; set; } // 🔥 join field
+        public DateTime CreatedAt { get; set; }
+    }
+
 }
