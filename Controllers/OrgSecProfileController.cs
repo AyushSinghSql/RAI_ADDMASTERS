@@ -26,7 +26,9 @@ namespace PlanningAPI.Controllers
                 {
                     OrgSecProfCd = x.OrgSecProfCd,
                     CompanyId = x.CompanyId,
-                    Name = x.Name
+                    Name = x.Name,
+                    RightsAppCOde_Flag = x.RightsAppCOde_Flag,
+                    Profile_Org_Flag = x.Profile_Org_Flag
                 })
                 .ToListAsync();
 
@@ -43,7 +45,9 @@ namespace PlanningAPI.Controllers
                 {
                     OrgSecProfCd = x.OrgSecProfCd,
                     CompanyId = x.CompanyId,
-                    Name = x.Name
+                    Name = x.Name,
+                    RightsAppCOde_Flag = x.RightsAppCOde_Flag,
+                    Profile_Org_Flag = x.Profile_Org_Flag
                 })
                 .FirstOrDefaultAsync();
 
