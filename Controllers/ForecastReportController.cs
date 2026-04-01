@@ -8,6 +8,7 @@ using SQLitePCL;
 using System.Collections.Generic;
 using WebApi.DTO;
 using WebApi.Helpers;
+using static PlanningAPI.Models.ForecastReport;
 
 namespace PlanningAPI.Controllers
 {
@@ -351,6 +352,96 @@ namespace PlanningAPI.Controllers
                 default:
                     return sourceMonth;
             }
+        }
+
+
+        [HttpPost("UpdateForecastByProject")]
+        public async Task<IActionResult> UpdateForecastByProject([FromBody] ForecastShiftByProjectRequest request)
+        {
+            if (request == null)
+                return BadRequest("Invalid request");
+
+            // Step 1: Get PlId from Project + PlanType + Version
+            var plan = await _context.PlProjectPlans
+                .FirstOrDefaultAsync(x =>
+                    x.ProjId == request.ProjectId &&
+                    x.PlType == request.PlanType &&
+                    x.Version == request.Version);
+
+            if (plan == null)
+                return NotFound("Project Plan not found");
+
+            int plId = plan.PlId.Value;
+
+            var factor = 1 + (request.Percentage / 100);
+
+            // Step 2: Get source data
+            var sourceData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == request.SourceYear)
+                .ToListAsync();
+
+            if (!sourceData.Any())
+                return NotFound("No source data found");
+
+            // Step 3: Get target data
+            var targetData = await _context.PlForecasts
+                .Where(x => x.PlId == plId && x.Year == request.TargetYear)
+                .ToListAsync();
+
+            int updated = 0, inserted = 0;
+
+            foreach (var src in sourceData)
+            {
+                if (!IsSourceMatch(src.Month, request.SourcePeriod, request.PeriodType))
+                    continue;
+
+                var targetMonth = GetTargetMonth(src.Month, request.SourcePeriod, request.TargetPeriod, request.PeriodType);
+
+                var target = targetData.FirstOrDefault(x =>
+                    x.EmplId == src.EmplId &&
+                    x.Plc == src.Plc &&
+                    x.empleId == src.empleId &&
+                    x.Month == targetMonth &&
+                    x.DctId == src.DctId);
+
+                if (target != null)
+                {
+                    if (src.DctId == null && target.Forecastedhours == 0)
+                        target.Forecastedhours = Math.Round(src.Forecastedhours * factor, 2);
+
+                    if (src.empleId == null && target.Forecastedamt == 0)
+                        target.Forecastedamt = Math.Round(src.Forecastedamt.GetValueOrDefault() * factor, 2);
+
+                    //target.Updatedat = DateTime.UtcNow;
+                    updated++;
+                }
+                else
+                {
+                    var clone = PlForecast.CloneWithoutId(src);
+
+                    clone.PlId = plId;
+                    clone.Year = request.TargetYear;
+                    clone.Month = targetMonth;
+
+                    clone.Forecastedhours = Math.Round(src.Forecastedhours * factor, 2);
+                    clone.Forecastedamt = Math.Round(src.Forecastedamt.GetValueOrDefault() * factor, 2);
+
+                    await _context.PlForecasts.AddAsync(clone);
+                    inserted++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Message = "Forecast updated successfully",
+                ProjectId = request.ProjectId,
+                PlanType = request.PlanType,
+                Version = request.Version,
+                Updated = updated,
+                Inserted = inserted
+            });
         }
 
         [HttpPost("generate")]

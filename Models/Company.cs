@@ -33,6 +33,7 @@
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
+        public TaxableEntity TaxableEntity { get; set; }
         public ICollection<AcctType>? AcctTypes { get; set; }
         public ICollection<AcctGrp>? AcctGrps { get; set; }
     }
@@ -43,6 +44,8 @@
         public string CompanyName { get; set; }
         public string? CompanyShortName { get; set; }
         public bool ActiveFlag { get; set; }
+        public TaxableEntity TaxableEntity { get; set; }
+
     }
     public static class CompanyExtensions
     {
@@ -55,7 +58,8 @@
                 CompanyShortName = dto.CompanyShortName,
                 ActiveFlag = dto.ActiveFlag,
                 ModifiedBy = modifiedBy,
-                TimeStamp = DateTime.UtcNow
+                TimeStamp = DateTime.UtcNow,
+                TaxableEntity = dto.TaxableEntity
             };
         }
 
@@ -66,7 +70,8 @@
                 CompanyId = entity.CompanyId,
                 CompanyName = entity.CompanyName,
                 CompanyShortName = entity.CompanyShortName,
-                ActiveFlag = entity.ActiveFlag
+                ActiveFlag = entity.ActiveFlag,
+                TaxableEntity = entity.TaxableEntity
             };
         }
     }

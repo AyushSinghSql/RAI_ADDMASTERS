@@ -116,7 +116,7 @@ namespace PlanningAPI.Controllers
                 var duplicate = await _context.TaxableEntites.AnyAsync(x =>
                     x.TaxId == dto.TaxId &&
                     x.CompanyId == dto.CompanyId &&
-                    x.TaxableId != dto.TaxableId
+                    x.TaxId != dto.TaxId
                 );
 
                 if (duplicate)

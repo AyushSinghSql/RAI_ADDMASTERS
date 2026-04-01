@@ -6,16 +6,11 @@ namespace PlanningAPI.Models
     [Table("taxable_entity")]
     public class TaxableEntity
     {
-        [Key]
-        [Column("taxable_id")]
-        //[MaxLength(100)]
-        public int TaxableId { get; set; }
-
         [Column("taxable_name")]
         [MaxLength(255)]
         [Required]
         public string TaxableName { get; set; }
-
+        [Key]
         [Column("tax_id")]
         [MaxLength(100)]
         [Required]
@@ -66,7 +61,6 @@ namespace PlanningAPI.Models
         {
             return new TaxableEntity
             {
-                TaxableId = dto.TaxableId,
                 TaxableName = dto.TaxableName,
                 TaxId = dto.TaxId,
                 CompanyId = dto.CompanyId,
@@ -82,7 +76,6 @@ namespace PlanningAPI.Models
         {
             return new TaxableEntityDto
             {
-                TaxableId = entity.TaxableId,
                 TaxableName = entity.TaxableName,
                 TaxId = entity.TaxId,
                 CompanyId = entity.CompanyId,
