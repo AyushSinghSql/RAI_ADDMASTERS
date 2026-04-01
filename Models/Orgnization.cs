@@ -88,21 +88,41 @@ public class OrganizationDto
     public string OrgName { get; set; }
     public int LvlNo { get; set; }
 }
+[Table("org_groups")]
 public class OrgGroup
 {
+    [Key]
+    [Column("org_group_id")]
     public int OrgGroupId { get; set; }
 
-    public string OrgGroupCode { get; set; }
-    public string OrgGroupName { get; set; }
+    [Column("org_group_code")]
+    [MaxLength(50)]
+    public string? OrgGroupCode { get; set; }
+
+    [Column("org_group_name")]
+    [MaxLength(150)]
+    public string? OrgGroupName { get; set; }
+
+    [Column("description")]
     public string? Description { get; set; }
 
-    public bool IsActive { get; set; }
+    [Column("is_active")]
+    public bool? IsActive { get; set; }
 
+    [Column("created_at")]
+    public DateTime? CreatedAt { get; set; }
+
+    [Column("created_by")]
     public string? CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
 
-    public string? ModifiedBy { get; set; }
+    [Column("modified_at")]
     public DateTime? ModifiedAt { get; set; }
+
+    [Column("modified_by")]
+    public string? ModifiedBy { get; set; }
+    [Column("company_id")]
+    public string? CompanyId { get; set; }
+
 
     // Navigation Properties
     public ICollection<OrgGroupUserMapping> UserMappings { get; set; }
@@ -112,6 +132,60 @@ public class OrgGroup
         = new List<OrgGroupOrgMapping>();
 }
 
+[Table("org_sec_grp_setup", Schema = "public")]
+public class OrgSecGrpSetup
+{
+    [Column("org_sec_grp_cd")]
+    public string OrgSecGrpCd { get; set; }
+
+    [Column("s_module_cd")]
+    public string ModuleCd { get; set; }
+
+    [Column("company_id")]
+    public string CompanyId { get; set; }
+
+    [Column("org_sec_prof_cd")]
+    public string OrgSecProfCd { get; set; }
+
+    [Column("modified_by")]
+    public string ModifiedBy { get; set; }
+
+    [Column("time_stamp")]
+    public DateTime TimeStamp { get; set; }
+
+    [Column("rowversion")]
+    public int? Rowversion { get; set; }
+
+    // 🔗 Navigation
+    public Module Module { get; set; }
+    public OrgSecProfile OrgSecProfile { get; set; }
+}
+
+[Table("org_sec_profile", Schema = "public")]
+public class OrgSecProfile
+{
+    [Column("org_sec_prof_cd")]
+    public string OrgSecProfCd { get; set; }
+
+    [Column("company_id")]
+    public string CompanyId { get; set; }
+
+    [Column("org_sec_prof_name")]
+    public string Name { get; set; }
+
+    // 🔗 Navigation
+    public ICollection<OrgSecGrpSetup> OrgSecGrpSetups { get; set; }
+}
+public class OrgSecGrpSetupDto
+{
+    public string OrgSecGrpCd { get; set; }
+    public string ModuleCd { get; set; }
+    public string CompanyId { get; set; }
+    public string OrgSecProfCd { get; set; }
+
+    public string ModuleName { get; set; }
+    public string ProfileName { get; set; }
+}
 public class OrgGroupOrgMapping
 {
     public int OrgGroupId { get; set; }

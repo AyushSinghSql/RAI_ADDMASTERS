@@ -142,17 +142,41 @@ public partial class MydatabaseContext : DbContext
     public DbSet<LaborProjectAccount> LaborProjectAccount { get; set; }
     public DbSet<NbiPrmtrcRt> NbiPrmtrcRts { get; set; }
     public DbSet<ParametricView> ParametricViews { get; set; } = null!;
+    public DbSet<Module> Modules { get; set; }
+
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        // Module PK
+        modelBuilder.Entity<Module>()
+            .HasKey(x => new { x.ModuleCd, x.CompanyId });
+
+        // OrgSecGrpSetup PK
+        modelBuilder.Entity<OrgSecGrpSetup>()
+            .HasKey(x => new { x.OrgSecGrpCd, x.ModuleCd, x.CompanyId });
+
+        // OrgSecProfile PK
+        modelBuilder.Entity<OrgSecProfile>()
+            .HasKey(x => new { x.OrgSecProfCd, x.CompanyId });
+
+        // 🔗 Module → OrgSecGrpSetup
+        modelBuilder.Entity<OrgSecGrpSetup>()
+            .HasOne(x => x.Module)
+            .WithMany(m => m.OrgSecGrpSetups)
+            .HasForeignKey(x => new { x.ModuleCd, x.CompanyId });
+
+        // 🔗 Profile → OrgSecGrpSetup
+        modelBuilder.Entity<OrgSecGrpSetup>()
+            .HasOne(x => x.OrgSecProfile)
+            .WithMany(p => p.OrgSecGrpSetups)
+            .HasForeignKey(x => new { x.OrgSecProfCd, x.CompanyId });
+
         modelBuilder.Entity<TaxableEntity>(entity =>
         {
 
             entity.HasIndex(e => new { e.TaxId, e.CompanyId })
-
-                .IsUnique()
-
-                .HasDatabaseName("unique_tax_per_company");
+                .IsUnique().HasDatabaseName("unique_tax_per_company");
 
         });
 
@@ -671,41 +695,41 @@ public partial class MydatabaseContext : DbContext
         });
 
 
-        modelBuilder.Entity<OrgGroup>(entity =>
-        {
-            entity.ToTable("org_groups");
+        //modelBuilder.Entity<OrgGroup>(entity =>
+        //{
+        //    entity.ToTable("org_groups");
 
-            entity.HasKey(e => e.OrgGroupId);
+        //    entity.HasKey(e => e.OrgGroupId);
 
-            entity.Property(e => e.OrgGroupId)
-                .HasColumnName("org_group_id");
+        //    entity.Property(e => e.OrgGroupId)
+        //        .HasColumnName("org_group_id");
 
-            entity.Property(e => e.OrgGroupCode)
-                .HasColumnName("org_group_code")
-                .HasMaxLength(50);
+        //    entity.Property(e => e.OrgGroupCode)
+        //        .HasColumnName("org_group_code")
+        //        .HasMaxLength(50);
 
-            entity.Property(e => e.OrgGroupName)
-                .HasColumnName("org_group_name")
-                .HasMaxLength(150);
+        //    entity.Property(e => e.OrgGroupName)
+        //        .HasColumnName("org_group_name")
+        //        .HasMaxLength(150);
 
-            entity.Property(e => e.Description)
-                .HasColumnName("description");
+        //    entity.Property(e => e.Description)
+        //        .HasColumnName("description");
 
-            entity.Property(e => e.IsActive)
-                .HasColumnName("is_active");
+        //    entity.Property(e => e.IsActive)
+        //        .HasColumnName("is_active");
 
-            entity.Property(e => e.CreatedAt)
-                .HasColumnName("created_at");
+        //    entity.Property(e => e.CreatedAt)
+        //        .HasColumnName("created_at");
 
-            entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+        //    entity.Property(e => e.CreatedBy)
+        //        .HasColumnName("created_by");
 
-            entity.Property(e => e.ModifiedAt)
-                .HasColumnName("modified_at");
+        //    entity.Property(e => e.ModifiedAt)
+        //        .HasColumnName("modified_at");
 
-            entity.Property(e => e.ModifiedBy)
-                .HasColumnName("modified_by");
-        });
+        //    entity.Property(e => e.ModifiedBy)
+        //        .HasColumnName("modified_by");
+        //});
 
 
 
