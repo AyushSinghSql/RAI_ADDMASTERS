@@ -173,8 +173,51 @@ public class OrgSecProfile
     [Column("org_sec_prof_name")]
     public string Name { get; set; }
 
+    [Column("s_rights_appl_cd")]
+    public string RightsAppCOde_Flag { get; set; }
+    [Column("prof_org_sec_fl")]
+    public string Profile_Org_Flag { get; set; }
+
+    [Column("modified_by")]
+    public string ModifiedBy { get; set; }
+    [Column("time_stamp")]
+    public DateTime TimeStamp { get; set; }
+
     // 🔗 Navigation
     public ICollection<OrgSecGrpSetup> OrgSecGrpSetups { get; set; }
+}
+
+[Table("org_sec_profile_org_setup", Schema = "public")]
+public class OrgSecProfileOrg
+{
+    [Column("org_sec_prof_cd")]
+    public string OrgSecProfCd { get; set; }
+
+    [Column("org_id")]
+    public string OrgId { get; set; }
+
+    [Column("company_id")]
+    public string CompanyId { get; set; }
+
+    [Column("org_wildcard_fl")]
+    public string OrgWildcardFl { get; set; }
+
+    [Column("s_org_rights_cd")]
+    public string SOrgRightsCd { get; set; }
+
+    [Column("modified_by")]
+    public string ModifiedBy { get; set; }
+
+    [Column("time_stamp")]
+    public DateTime TimeStamp { get; set; }
+
+    [Column("rowversion")]
+    public int? Rowversion { get; set; }
+
+    // 🔗 Navigation Properties
+    public OrgSecProfile OrgSecProfile { get; set; }
+    public Organization Organization { get; set; }
+    public Company Company { get; set; }
 }
 public class OrgSecGrpSetupDto
 {
@@ -185,6 +228,29 @@ public class OrgSecGrpSetupDto
 
     public string ModuleName { get; set; }
     public string ProfileName { get; set; }
+}
+
+public class OrgSecProfileOrgDto
+{
+    public string OrgSecProfCd { get; set; }
+    public string OrgId { get; set; }
+    public string CompanyId { get; set; }
+
+    public string OrgWildcardFl { get; set; }
+    public string SOrgRightsCd { get; set; }
+
+    // 🔥 Joined Fields
+    public string ProfileName { get; set; }
+    public string OrgName { get; set; }
+    public string CompanyName { get; set; }
+}
+public class OrgSecProfileDto
+{
+    public string OrgSecProfCd { get; set; }
+    public string CompanyId { get; set; }
+    public string Name { get; set; }
+    public string RightsAppCOde_Flag { get; set; }
+    public string Profile_Org_Flag { get; set; }
 }
 public class OrgGroupOrgMapping
 {

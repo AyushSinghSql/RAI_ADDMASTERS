@@ -143,10 +143,39 @@ public partial class MydatabaseContext : DbContext
     public DbSet<NbiPrmtrcRt> NbiPrmtrcRts { get; set; }
     public DbSet<ParametricView> ParametricViews { get; set; } = null!;
     public DbSet<Module> Modules { get; set; }
+    public DbSet<OrgSecProfile> OrgSecProfiles { get; set; }
+    public DbSet<OrgSecGrpSetup> OrgSecGrpSetups { get; set; }
+    public DbSet<OrgSecProfileOrg> OrgSecProfileOrgs { get; set; }
+
 
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        // 🔑 Composite Primary Key
+        modelBuilder.Entity<OrgSecProfileOrg>()
+            .HasKey(x => new { x.OrgSecProfCd, x.OrgId, x.CompanyId });
+
+        // 🔗 Profile FK
+        modelBuilder.Entity<OrgSecProfileOrg>()
+            .HasOne(x => x.OrgSecProfile)
+            .WithMany()
+            .HasForeignKey(x => new { x.OrgSecProfCd, x.CompanyId })
+            .HasConstraintName("fk_profile_org");
+
+        // 🔗 Organization FK
+        modelBuilder.Entity<OrgSecProfileOrg>()
+            .HasOne(x => x.Organization)
+            .WithMany()
+            .HasForeignKey(x => x.OrgId)
+            .HasConstraintName("fk_org_groups");
+
+        // 🔗 Company FK
+        modelBuilder.Entity<OrgSecProfileOrg>()
+            .HasOne(x => x.Company)
+            .WithMany()
+            .HasForeignKey(x => x.CompanyId)
+            .HasConstraintName("fk_company");
 
         // Module PK
         modelBuilder.Entity<Module>()
