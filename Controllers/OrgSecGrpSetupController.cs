@@ -223,6 +223,7 @@ namespace PlanningAPI.Controllers
                 if (match != null)
                 {
                     // UPDATE
+                    match.OrgSecProfCd = dto.OrgSecProfCd;
                     match.ModifiedBy = "system";
                     match.TimeStamp = DateTime.UtcNow;
 
