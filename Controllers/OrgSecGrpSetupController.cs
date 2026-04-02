@@ -25,6 +25,24 @@ namespace PlanningAPI.Controllers
                 .ToListAsync());
         }
 
+        // Modules dropdown
+        [HttpGet("GetAllModules/{profileCD}/{profileName}")]
+        public async Task<IActionResult> GetAllModules(string profileCD, string profileName)
+        {
+            return Ok(await _context.Modules
+                .Select(x => new OrgSecGrpSetupDto
+                {
+                    OrgSecGrpCd = string.Empty,
+                    ModuleCd = x.ModuleCd,
+                    CompanyId = x.CompanyId,
+                    OrgSecProfCd = profileCD,
+                    ModuleName = x.Name,
+                    ProfileName = profileName
+                })
+                .ToListAsync());
+        }
+
+
         // Profiles dropdown
         [HttpGet("profiles-dropdown")]
         public async Task<IActionResult> GetProfiles()
@@ -65,66 +83,29 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
-        //[HttpGet("by-group/{grpCd}")]
-        //public async Task<IActionResult> GetByGroupStructured(string grpCd)
-        //{
-        //    var data = await _context.OrgSecGrpSetups
-        //        .Where(x => x.OrgSecGrpCd == grpCd)
-        //        .ToListAsync();
-
-        //    if (!data.Any())
-        //        return NotFound(new { message = "No mappings found for this group." });
-
-        //    var result = new
-        //    {
-        //        GroupCode = grpCd,
-
-        //        Modules = data
-        //            .Select(x => new { x.ModuleCd, ModuleName = x.Module.Name })
-        //            .Distinct()
-        //            .ToList(),
-
-        //        Profiles = data
-        //            .Select(x => new { x.OrgSecProfCd, ProfileName = x.OrgSecProfile.Name })
-        //            .Distinct()
-        //            .ToList()
-        //    };
-
-        //    return Ok(result);
-        //}
-
-        [HttpGet("all-groups-structured")]
-        public async Task<IActionResult> GetAllGroupsStructured()
+        [HttpGet("by-group/{grpCd}")]
+        public async Task<IActionResult> GetByGroupStructured(string grpCd)
         {
-            var result = await _context.OrgGroup
-                .Select(g => new
+            var data = await _context.OrgSecGrpSetups
+                .Include(x => x.Module)
+                .Include(x => x.OrgSecProfile)
+                .Where(x => x.OrgSecGrpCd == grpCd)
+                .Select(x => new
                 {
-                    GroupCode = g.OrgGroupCode,
-                    GroupName = g.OrgGroupName,
+                    x.OrgSecGrpCd,
 
-                    Modules = _context.OrgSecGrpSetups
-                        .Where(s => s.OrgSecGrpCd == g.OrgGroupCode)
-                        .Select(s => new
-                        {
-                            s.ModuleCd,
-                            ModuleName = s.Module.Name
-                        })
-                        .Distinct()
-                        .ToList(),
+                    x.ModuleCd,
+                    ModuleName = x.Module.Name,
 
-                    Profiles = _context.OrgSecGrpSetups
-                        .Where(s => s.OrgSecGrpCd == g.OrgGroupCode)
-                        .Select(s => new
-                        {
-                            s.OrgSecProfCd,
-                            ProfileName = s.OrgSecProfile.Name
-                        })
-                        .Distinct()
-                        .ToList()
+                    x.OrgSecProfCd,
+                    ProfileName = x.OrgSecProfile.Name
                 })
                 .ToListAsync();
 
-            return Ok(result);
+            if (!data.Any())
+                return NotFound(new { message = "No mappings found for this group." });
+
+            return Ok(data);
         }
 
         // ✅ GET BY KEY
@@ -182,6 +163,76 @@ namespace PlanningAPI.Controllers
             return Ok(new { message = "Record created successfully." });
         }
 
+        // ✅ Bulk Upsert
+        [HttpPost("bulk-upsert")]
+        public async Task<IActionResult> BulkUpsert(List<OrgSecGrpSetupDto> dtos)
+        {
+            if (dtos == null || !dtos.Any())
+                return BadRequest("No data provided.");
+
+            var grpCodes = dtos.Select(x => x.OrgSecGrpCd).Distinct().ToList();
+            var moduleCds = dtos.Select(x => x.ModuleCd).Distinct().ToList();
+            var companyIds = dtos.Select(x => x.CompanyId).Distinct().ToList();
+            var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
+
+            // Fetch existing records in one go
+            var existing = await _context.OrgSecGrpSetups
+                .Where(x => grpCodes.Contains(x.OrgSecGrpCd)
+                         && moduleCds.Contains(x.ModuleCd)
+                         && companyIds.Contains(x.CompanyId)
+                         && profileCds.Contains(x.OrgSecProfCd))
+                .ToListAsync();
+
+            var toInsert = new List<OrgSecGrpSetup>();
+            var toUpdate = new List<OrgSecGrpSetup>();
+
+            foreach (var dto in dtos)
+            {
+                var match = existing.FirstOrDefault(x =>
+                    x.OrgSecGrpCd == dto.OrgSecGrpCd &&
+                    x.ModuleCd == dto.ModuleCd &&
+                    x.CompanyId == dto.CompanyId &&
+                    x.OrgSecProfCd == dto.OrgSecProfCd);
+
+                if (match != null)
+                {
+                    // UPDATE
+                    match.ModifiedBy = "system";
+                    match.TimeStamp = DateTime.UtcNow;
+
+                    toUpdate.Add(match);
+                }
+                else
+                {
+                    // INSERT
+                    toInsert.Add(new OrgSecGrpSetup
+                    {
+                        OrgSecGrpCd = dto.OrgSecGrpCd,
+                        ModuleCd = dto.ModuleCd,
+                        CompanyId = dto.CompanyId,
+                        OrgSecProfCd = dto.OrgSecProfCd,
+                        ModifiedBy = "system",
+                        TimeStamp = DateTime.UtcNow
+                    });
+                }
+            }
+
+            // Perform DB operations
+            if (toInsert.Any())
+                await _context.OrgSecGrpSetups.AddRangeAsync(toInsert);
+
+            if (toUpdate.Any())
+                _context.OrgSecGrpSetups.UpdateRange(toUpdate);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Inserted = toInsert.Count,
+                Updated = toUpdate.Count,
+                Total = dtos.Count
+            });
+        }
         // ✅ UPDATE
         [HttpPut("{grpCd}/{moduleCd}/{companyId}")]
         public async Task<IActionResult> Update(string grpCd, string moduleCd, string companyId, OrgSecGrpSetupDto dto)
