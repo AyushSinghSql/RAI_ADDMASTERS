@@ -204,7 +204,7 @@ namespace PlanningAPI.Controllers
             var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
 
             // Fetch existing records in one go
-            var existing = await _context.OrgSecGrpSetups
+            var existing = await _context.OrgSecGrpSetups.AsNoTracking()
                 .Where(x => grpCodes.Contains(x.OrgSecGrpCd)
                          && moduleCds.Contains(x.ModuleCd)
                          && companyIds.Contains(x.CompanyId)
