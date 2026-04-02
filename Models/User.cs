@@ -281,4 +281,16 @@ namespace PlanningAPI.Models
         public List<User> Users { get; set; }
     }
 
+    public class UserGroupSetupDTO
+    {
+        public int UserId { get; set; }
+
+        public string UserGroupId { get; set; }
+
+        public string? ModuleCd { get; set; }
+
+        public string CompanyId { get; set; }
+
+    }
+
 }
