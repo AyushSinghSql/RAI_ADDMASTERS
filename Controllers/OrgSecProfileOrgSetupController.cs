@@ -31,7 +31,7 @@ namespace PlanningAPI.Controllers
                     OrgId = x.OrgId,
                     CompanyId = x.CompanyId,
                     OrgWildcardFl = x.OrgWildcardFl,
-                    SOrgRightsCd = x.SOrgRightsCd,
+                    SorgRightsCd = x.SOrgRightsCd,
 
                     // 🔥 Joined Fields
                     ProfileName = x.OrgSecProfile.Name,
@@ -57,7 +57,7 @@ namespace PlanningAPI.Controllers
                     OrgId = x.OrgId,
                     CompanyId = x.CompanyId,
                     OrgWildcardFl = x.OrgWildcardFl,
-                    SOrgRightsCd = x.SOrgRightsCd,
+                    SorgRightsCd = x.SOrgRightsCd,
 
                     ProfileName = x.OrgSecProfile.Name,
                     OrgName = x.Organization.OrgName,
@@ -88,7 +88,7 @@ namespace PlanningAPI.Controllers
                     OrgId = x.OrgId,
                     CompanyId = x.CompanyId,
                     OrgWildcardFl = x.OrgWildcardFl,
-                    SOrgRightsCd = x.SOrgRightsCd,
+                    SorgRightsCd = x.SOrgRightsCd,
 
                     ProfileName = x.OrgSecProfile.Name,
                     OrgName = x.Organization.OrgName,
@@ -112,7 +112,7 @@ namespace PlanningAPI.Controllers
                 OrgId = dto.OrgId,
                 CompanyId = dto.CompanyId,
                 OrgWildcardFl = dto.OrgWildcardFl,
-                SOrgRightsCd = dto.SOrgRightsCd,
+                SOrgRightsCd = dto.SorgRightsCd,
                 ModifiedBy = "system",
                 TimeStamp = DateTime.UtcNow
             };
@@ -144,7 +144,7 @@ namespace PlanningAPI.Controllers
                 return NotFound(new { message = "Record not found." });
 
             entity.OrgWildcardFl = dto.OrgWildcardFl;
-            entity.SOrgRightsCd = dto.SOrgRightsCd;
+            entity.SOrgRightsCd = dto.SorgRightsCd;
             entity.ModifiedBy = "system";
             entity.TimeStamp = DateTime.UtcNow;
 

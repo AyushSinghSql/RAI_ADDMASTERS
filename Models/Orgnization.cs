@@ -237,18 +237,18 @@ public class OrgSecProfileOrgDto
     public string CompanyId { get; set; }
 
     public string OrgWildcardFl { get; set; }
-    public string SOrgRightsCd { get; set; }
+    public string SorgRightsCd { get; set; }
 
     // 🔥 Joined Fields
-    public string ProfileName { get; set; }
-    public string OrgName { get; set; }
-    public string CompanyName { get; set; }
+    public string? ProfileName { get; set; }
+    public string? OrgName { get; set; }
+    public string? CompanyName { get; set; }
 }
 public class OrgSecProfileDto
 {
     public string OrgSecProfCd { get; set; }
     public string CompanyId { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public string RightsAppCOde_Flag { get; set; }
     public string Profile_Org_Flag { get; set; }
 }

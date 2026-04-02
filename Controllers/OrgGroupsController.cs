@@ -201,7 +201,7 @@ namespace PlanningAPI.Controllers
             if (!groupExists)
                 return BadRequest(new { message = "User group not found." });
 
-            var entity = new UserGroupUser
+            var entity = new UserGroupSetup
             {
                 UserId = dto.UserId,
                 UserGroupId = dto.UserGroupId,

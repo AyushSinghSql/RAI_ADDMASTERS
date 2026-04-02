@@ -65,30 +65,64 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
-        [HttpGet("by-group/{grpCd}")]
-        public async Task<IActionResult> GetByGroupStructured(string grpCd)
+        //[HttpGet("by-group/{grpCd}")]
+        //public async Task<IActionResult> GetByGroupStructured(string grpCd)
+        //{
+        //    var data = await _context.OrgSecGrpSetups
+        //        .Where(x => x.OrgSecGrpCd == grpCd)
+        //        .ToListAsync();
+
+        //    if (!data.Any())
+        //        return NotFound(new { message = "No mappings found for this group." });
+
+        //    var result = new
+        //    {
+        //        GroupCode = grpCd,
+
+        //        Modules = data
+        //            .Select(x => new { x.ModuleCd, ModuleName = x.Module.Name })
+        //            .Distinct()
+        //            .ToList(),
+
+        //        Profiles = data
+        //            .Select(x => new { x.OrgSecProfCd, ProfileName = x.OrgSecProfile.Name })
+        //            .Distinct()
+        //            .ToList()
+        //    };
+
+        //    return Ok(result);
+        //}
+
+        [HttpGet("all-groups-structured")]
+        public async Task<IActionResult> GetAllGroupsStructured()
         {
-            var data = await _context.OrgSecGrpSetups
-                .Where(x => x.OrgSecGrpCd == grpCd)
+            var result = await _context.OrgGroup
+                .Select(g => new
+                {
+                    GroupCode = g.OrgGroupCode,
+                    GroupName = g.OrgGroupName,
+
+                    Modules = _context.OrgSecGrpSetups
+                        .Where(s => s.OrgSecGrpCd == g.OrgGroupCode)
+                        .Select(s => new
+                        {
+                            s.ModuleCd,
+                            ModuleName = s.Module.Name
+                        })
+                        .Distinct()
+                        .ToList(),
+
+                    Profiles = _context.OrgSecGrpSetups
+                        .Where(s => s.OrgSecGrpCd == g.OrgGroupCode)
+                        .Select(s => new
+                        {
+                            s.OrgSecProfCd,
+                            ProfileName = s.OrgSecProfile.Name
+                        })
+                        .Distinct()
+                        .ToList()
+                })
                 .ToListAsync();
-
-            if (!data.Any())
-                return NotFound(new { message = "No mappings found for this group." });
-
-            var result = new
-            {
-                GroupCode = grpCd,
-
-                Modules = data
-                    .Select(x => new { x.ModuleCd, ModuleName = x.Module.Name })
-                    .Distinct()
-                    .ToList(),
-
-                Profiles = data
-                    .Select(x => new { x.OrgSecProfCd, ProfileName = x.OrgSecProfile.Name })
-                    .Distinct()
-                    .ToList()
-            };
 
             return Ok(result);
         }
