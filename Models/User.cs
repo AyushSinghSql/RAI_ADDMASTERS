@@ -72,14 +72,19 @@ namespace PlanningAPI.Models
         public string UserGroupId { get; set; }
 
         [Column("module_cd")]
-        public string ModuleCd { get; set; }
+        public string? ModuleCd { get; set; }
 
         [Column("company_id")]
         public string CompanyId { get; set; }
 
         // 🔗 Navigation
+        [ForeignKey(nameof(UserId))]
         public User User { get; set; }
-        public Module Module { get; set; }
+
+        //[ForeignKey(nameof(ModuleCd))]
+        //public Module Module { get; set; }
+
+        [ForeignKey(nameof(UserGroupId))]
         public UserGroup UserGroup { get; set; }
     }
     public class OrgGroupUserMapping
@@ -257,6 +262,13 @@ namespace PlanningAPI.Models
         public List<UserGroupDto> Groups { get; set; }
     }
 
+    public class userGroupWithUsersDto
+    {
+        public string UserGroupCD { get; set; }
+        public string UserGroupName { get; set; }
+        public List<UserGroupDto> Groups { get; set; }
+    }
+
     public class UserGroupDto
     {
         public string UserGroupId { get; set; }
@@ -265,6 +277,8 @@ namespace PlanningAPI.Models
 
         public string CompanyName { get; set; } // 🔥 join field
         public DateTime CreatedAt { get; set; }
+
+        public List<User> Users { get; set; }
     }
 
 }

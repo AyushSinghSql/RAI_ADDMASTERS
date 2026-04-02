@@ -38,6 +38,42 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
+        [HttpGet("GetAllUserGroups")]
+        public async Task<IActionResult> GetAllUserGroups(string CompanyId)
+        {
+            var groups = await _context.UserGroups
+                .Where(x => x.CompanyId == CompanyId)
+                .ToListAsync();
+
+            var userMappings = await _context.UserGroupSetups
+                .Include(x => x.User)
+                .Where(x => x.CompanyId == CompanyId)
+                .ToListAsync();
+
+            var result = groups.Select(g => new
+            {
+                g.UserGroupId,
+                g.OrgGroupName,
+                g.CompanyId,
+                g.CreatedAt,
+
+                Users = userMappings
+                    .Where(x => x.UserGroupId == g.UserGroupId)
+                    .Select(x => new
+                    {
+                        x.UserId,
+                        x.User.Username,
+                        x.User.FullName,
+                        x.ModuleCd,
+                        x.CompanyId
+                    })
+                    .Distinct()
+                    .ToList()
+            });
+
+            return Ok(result);
+        }
+
         // ✅ GET BY ID
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)

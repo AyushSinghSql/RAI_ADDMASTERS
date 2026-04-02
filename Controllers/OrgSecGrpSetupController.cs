@@ -26,8 +26,8 @@ namespace PlanningAPI.Controllers
         }
 
         // Modules dropdown
-        [HttpGet("GetAllModules/{profileCD}/{profileName}")]
-        public async Task<IActionResult> GetAllModules(string profileCD, string profileName)
+        [HttpGet("GetAllModules")]
+        public async Task<IActionResult> GetAllModules(string? profileCD, string? profileName)
         {
             return Ok(await _context.Modules
                 .Select(x => new OrgSecGrpSetupDto
@@ -35,9 +35,9 @@ namespace PlanningAPI.Controllers
                     OrgSecGrpCd = string.Empty,
                     ModuleCd = x.ModuleCd,
                     CompanyId = x.CompanyId,
-                    OrgSecProfCd = profileCD,
+                    OrgSecProfCd = profileCD??string.Empty,
                     ModuleName = x.Name,
-                    ProfileName = profileName
+                    ProfileName = profileName??string.Empty
                 })
                 .ToListAsync());
         }
@@ -86,27 +86,55 @@ namespace PlanningAPI.Controllers
         [HttpGet("by-group/{grpCd}")]
         public async Task<IActionResult> GetByGroupStructured(string grpCd)
         {
-            var data = await _context.OrgSecGrpSetups
-                .Include(x => x.Module)
-                .Include(x => x.OrgSecProfile)
-                .Where(x => x.OrgSecGrpCd == grpCd)
-                .Select(x => new
+            var data = await (
+                from m in _context.Modules
+
+                join s in _context.OrgSecGrpSetups
+                    .Where(x => x.OrgSecGrpCd == grpCd)
+                    on m.ModuleCd equals s.ModuleCd into ms
+                from s in ms.DefaultIfEmpty()
+
+                join p in _context.OrgSecProfiles
+                    on s.OrgSecProfCd equals p.OrgSecProfCd into sp
+                from p in sp.DefaultIfEmpty()
+
+                select new
                 {
-                    x.OrgSecGrpCd,
+                    ModuleCd = m.ModuleCd,
+                    ModuleName = m.Name,
 
-                    x.ModuleCd,
-                    ModuleName = x.Module.Name,
-
-                    x.OrgSecProfCd,
-                    ProfileName = x.OrgSecProfile.Name
-                })
-                .ToListAsync();
-
-            if (!data.Any())
-                return NotFound(new { message = "No mappings found for this group." });
+                    OrgSecProfCd = s != null ? s.OrgSecProfCd : string.Empty,
+                    ProfileName = p != null ? p.Name : string.Empty
+                }
+            ).ToListAsync();
 
             return Ok(data);
         }
+
+        //[HttpGet("by-group/{grpCd}")]
+        //public async Task<IActionResult> GetByGroupStructured(string grpCd)
+        //{
+        //    var data = await _context.OrgSecGrpSetups
+        //        .Include(x => x.Module)
+        //        .Include(x => x.OrgSecProfile)
+        //        .Where(x => x.OrgSecGrpCd == grpCd)
+        //        .Select(x => new
+        //        {
+        //            x.OrgSecGrpCd,
+
+        //            x.ModuleCd,
+        //            ModuleName = x.Module.Name,
+
+        //            x.OrgSecProfCd,
+        //            ProfileName = x.OrgSecProfile.Name
+        //        })
+        //        .ToListAsync();
+
+        //    if (!data.Any())
+        //        return NotFound(new { message = "No mappings found for this group." });
+
+        //    return Ok(data);
+        //}
 
         // ✅ GET BY KEY
         [HttpGet("{grpCd}/{moduleCd}/{companyId}")]

@@ -148,7 +148,7 @@ public partial class MydatabaseContext : DbContext
     //public DbSet<OrgSecGrp> OrgSecGrps { get; set; }
     public DbSet<OrgSecProfileOrg> OrgSecProfileOrgs { get; set; }
     public DbSet<UserGroup> UserGroups { get; set; }
-    public DbSet<UserGroupSetup> UserGroupUsers { get; set; }
+    public DbSet<UserGroupSetup> UserGroupSetups { get; set; }
 
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

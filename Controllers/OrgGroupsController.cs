@@ -179,7 +179,7 @@ namespace PlanningAPI.Controllers
                 return BadRequest(new { message = "CompanyId is required." });
 
             // 🔍 Check if mapping already exists
-            var exists = await _context.UserGroupUsers.AnyAsync(x =>
+            var exists = await _context.UserGroupSetups.AnyAsync(x =>
                 x.UserId == dto.UserId &&
                 x.UserGroupId == dto.UserGroupId &&
                 x.CompanyId == dto.CompanyId);
@@ -208,7 +208,7 @@ namespace PlanningAPI.Controllers
                 CompanyId = dto.CompanyId
             };
 
-            _context.UserGroupUsers.Add(entity);
+            _context.UserGroupSetups.Add(entity);
 
             await _context.SaveChangesAsync();
 
