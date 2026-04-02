@@ -40,6 +40,8 @@ namespace PlanningAPI.Models
         public ICollection<UserGroupSetup> UserGroups { get; set; }
         = new List<UserGroupSetup>();
 
+        public ICollection<UserFavorite> Favorites { get; set; } = new List<UserFavorite>();
+
     }
 
     public class UserProjectMap
@@ -291,6 +293,29 @@ namespace PlanningAPI.Models
 
         public string CompanyId { get; set; }
 
+    }
+
+    [Table("user_favorites")]
+    public class UserFavorite
+    {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Required]
+        [Column("user_id")]
+        public int UserId { get; set; }
+
+        [Required]
+        [Column("item_id")]
+        public int ItemId { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
     }
 
 }
