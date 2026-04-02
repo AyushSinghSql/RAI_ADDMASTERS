@@ -149,10 +149,16 @@ public partial class MydatabaseContext : DbContext
     public DbSet<OrgSecProfileOrg> OrgSecProfileOrgs { get; set; }
     public DbSet<UserGroup> UserGroups { get; set; }
     public DbSet<UserGroupSetup> UserGroupSetups { get; set; }
+    public DbSet<UserFavorite> UserFavorites { get; set; }
 
     //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<UserFavorite>()
+    .HasIndex(e => new { e.UserId, e.ItemId })
+    .IsUnique();
+
 
         modelBuilder.Entity<UserGroupSetup>()
     .HasKey(x => new { x.UserId, x.UserGroupId, x.CompanyId });
@@ -219,7 +225,7 @@ public partial class MydatabaseContext : DbContext
 
         // OrgSecGrpSetup PK
         modelBuilder.Entity<OrgSecGrpSetup>()
-            .HasKey(x => new { x.OrgSecGrpCd, x.ModuleCd, x.CompanyId });
+            .HasKey(x => new { x.OrgSecGrpCd, x.ModuleCd, x.CompanyId, x.OrgSecProfCd });
 
         // OrgSecProfile PK
         modelBuilder.Entity<OrgSecProfile>()
