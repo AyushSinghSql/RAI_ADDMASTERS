@@ -201,14 +201,13 @@ namespace PlanningAPI.Controllers
             var grpCodes = dtos.Select(x => x.OrgSecGrpCd).Distinct().ToList();
             var moduleCds = dtos.Select(x => x.ModuleCd).Distinct().ToList();
             var companyIds = dtos.Select(x => x.CompanyId).Distinct().ToList();
-            var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
+            //var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
 
             // Fetch existing records in one go
             var existing = await _context.OrgSecGrpSetups.AsNoTracking()
                 .Where(x => grpCodes.Contains(x.OrgSecGrpCd)
                          && moduleCds.Contains(x.ModuleCd)
-                         && companyIds.Contains(x.CompanyId)
-                         && profileCds.Contains(x.OrgSecProfCd))
+                         && companyIds.Contains(x.CompanyId))
                 .ToListAsync();
 
             var toInsert = new List<OrgSecGrpSetup>();
@@ -219,8 +218,7 @@ namespace PlanningAPI.Controllers
                 var match = existing.FirstOrDefault(x =>
                     x.OrgSecGrpCd == dto.OrgSecGrpCd &&
                     x.ModuleCd == dto.ModuleCd &&
-                    x.CompanyId == dto.CompanyId &&
-                    x.OrgSecProfCd == dto.OrgSecProfCd);
+                    x.CompanyId == dto.CompanyId);
 
                 if (match != null)
                 {

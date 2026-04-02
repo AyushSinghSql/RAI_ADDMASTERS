@@ -225,7 +225,7 @@ public partial class MydatabaseContext : DbContext
 
         // OrgSecGrpSetup PK
         modelBuilder.Entity<OrgSecGrpSetup>()
-            .HasKey(x => new { x.OrgSecGrpCd, x.ModuleCd, x.CompanyId, x.OrgSecProfCd });
+            .HasKey(x => new { x.OrgSecGrpCd, x.ModuleCd, x.CompanyId });
 
         // OrgSecProfile PK
         modelBuilder.Entity<OrgSecProfile>()
