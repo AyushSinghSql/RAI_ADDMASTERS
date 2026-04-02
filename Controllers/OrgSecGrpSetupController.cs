@@ -191,9 +191,8 @@ namespace PlanningAPI.Controllers
             return Ok(new { message = "Record created successfully." });
         }
 
-        // ✅ Bulk Upsert
-        [HttpPost("bulk-upsert")]
-        public async Task<IActionResult> BulkUpsert(List<OrgSecGrpSetupDto> dtos)
+        [HttpPost("bulk-sync")]
+        public async Task<IActionResult> BulkSync(List<OrgSecGrpSetupDto> dtos)
         {
             if (dtos == null || !dtos.Any())
                 return BadRequest("No data provided.");
@@ -201,18 +200,28 @@ namespace PlanningAPI.Controllers
             var grpCodes = dtos.Select(x => x.OrgSecGrpCd).Distinct().ToList();
             var moduleCds = dtos.Select(x => x.ModuleCd).Distinct().ToList();
             var companyIds = dtos.Select(x => x.CompanyId).Distinct().ToList();
-            //var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
 
-            // Fetch existing records in one go
-            var existing = await _context.OrgSecGrpSetups.AsNoTracking()
+            // 🔍 Fetch existing
+            var existing = await _context.OrgSecGrpSetups
                 .Where(x => grpCodes.Contains(x.OrgSecGrpCd)
-                         && moduleCds.Contains(x.ModuleCd)
                          && companyIds.Contains(x.CompanyId))
                 .ToListAsync();
+
+            // 🔑 Create key sets
+            string GetKey(string g, string m, string c) => $"{g}|{m}|{c}";
+
+            var incomingKeys = dtos
+                .Select(d => GetKey(d.OrgSecGrpCd, d.ModuleCd, d.CompanyId))
+                .ToHashSet();
+
+            var existingKeys = existing
+                .Select(e => GetKey(e.OrgSecGrpCd, e.ModuleCd, e.CompanyId))
+                .ToHashSet();
 
             var toInsert = new List<OrgSecGrpSetup>();
             var toUpdate = new List<OrgSecGrpSetup>();
 
+            // 🔁 UPSERT
             foreach (var dto in dtos)
             {
                 var match = existing.FirstOrDefault(x =>
@@ -222,7 +231,7 @@ namespace PlanningAPI.Controllers
 
                 if (match != null)
                 {
-                    // UPDATE
+                    // ✅ UPDATE
                     match.OrgSecProfCd = dto.OrgSecProfCd;
                     match.ModifiedBy = "system";
                     match.TimeStamp = DateTime.UtcNow;
@@ -231,7 +240,7 @@ namespace PlanningAPI.Controllers
                 }
                 else
                 {
-                    // INSERT
+                    // ✅ INSERT
                     toInsert.Add(new OrgSecGrpSetup
                     {
                         OrgSecGrpCd = dto.OrgSecGrpCd,
@@ -244,12 +253,21 @@ namespace PlanningAPI.Controllers
                 }
             }
 
-            // Perform DB operations
+            // 🔴 DELETE (Missing in incoming list)
+            var toDelete = existing
+                .Where(e => !incomingKeys.Contains(
+                    GetKey(e.OrgSecGrpCd, e.ModuleCd, e.CompanyId)))
+                .ToList();
+
+            // 🚀 Apply changes
             if (toInsert.Any())
                 await _context.OrgSecGrpSetups.AddRangeAsync(toInsert);
 
             if (toUpdate.Any())
                 _context.OrgSecGrpSetups.UpdateRange(toUpdate);
+
+            if (toDelete.Any())
+                _context.OrgSecGrpSetups.RemoveRange(toDelete);
 
             await _context.SaveChangesAsync();
 
@@ -257,9 +275,80 @@ namespace PlanningAPI.Controllers
             {
                 Inserted = toInsert.Count,
                 Updated = toUpdate.Count,
+                Deleted = toDelete.Count,
                 Total = dtos.Count
             });
         }
+
+        //// ✅ Bulk Upsert
+        //[HttpPost("bulk-upsert")]
+        //public async Task<IActionResult> BulkUpsert(List<OrgSecGrpSetupDto> dtos)
+        //{
+        //    if (dtos == null || !dtos.Any())
+        //        return BadRequest("No data provided.");
+
+        //    var grpCodes = dtos.Select(x => x.OrgSecGrpCd).Distinct().ToList();
+        //    var moduleCds = dtos.Select(x => x.ModuleCd).Distinct().ToList();
+        //    var companyIds = dtos.Select(x => x.CompanyId).Distinct().ToList();
+        //    //var profileCds = dtos.Select(x => x.OrgSecProfCd).Distinct().ToList();
+
+        //    // Fetch existing records in one go
+        //    var existing = await _context.OrgSecGrpSetups.AsNoTracking()
+        //        .Where(x => grpCodes.Contains(x.OrgSecGrpCd)
+        //                 && moduleCds.Contains(x.ModuleCd)
+        //                 && companyIds.Contains(x.CompanyId))
+        //        .ToListAsync();
+
+        //    var toInsert = new List<OrgSecGrpSetup>();
+        //    var toUpdate = new List<OrgSecGrpSetup>();
+
+        //    foreach (var dto in dtos)
+        //    {
+        //        var match = existing.FirstOrDefault(x =>
+        //            x.OrgSecGrpCd == dto.OrgSecGrpCd &&
+        //            x.ModuleCd == dto.ModuleCd &&
+        //            x.CompanyId == dto.CompanyId);
+
+        //        if (match != null)
+        //        {
+        //            // UPDATE
+        //            match.OrgSecProfCd = dto.OrgSecProfCd;
+        //            match.ModifiedBy = "system";
+        //            match.TimeStamp = DateTime.UtcNow;
+
+        //            toUpdate.Add(match);
+        //        }
+        //        else
+        //        {
+        //            // INSERT
+        //            toInsert.Add(new OrgSecGrpSetup
+        //            {
+        //                OrgSecGrpCd = dto.OrgSecGrpCd,
+        //                ModuleCd = dto.ModuleCd,
+        //                CompanyId = dto.CompanyId,
+        //                OrgSecProfCd = dto.OrgSecProfCd,
+        //                ModifiedBy = "system",
+        //                TimeStamp = DateTime.UtcNow
+        //            });
+        //        }
+        //    }
+
+        //    // Perform DB operations
+        //    if (toInsert.Any())
+        //        await _context.OrgSecGrpSetups.AddRangeAsync(toInsert);
+
+        //    if (toUpdate.Any())
+        //        _context.OrgSecGrpSetups.UpdateRange(toUpdate);
+
+        //    await _context.SaveChangesAsync();
+
+        //    return Ok(new
+        //    {
+        //        Inserted = toInsert.Count,
+        //        Updated = toUpdate.Count,
+        //        Total = dtos.Count
+        //    });
+        //}
         // ✅ UPDATE
         [HttpPut("{grpCd}/{moduleCd}/{companyId}")]
         public async Task<IActionResult> Update(string grpCd, string moduleCd, string companyId, OrgSecGrpSetupDto dto)
