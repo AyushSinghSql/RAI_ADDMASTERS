@@ -150,15 +150,64 @@ public partial class MydatabaseContext : DbContext
     public DbSet<UserGroup> UserGroups { get; set; }
     public DbSet<UserGroupSetup> UserGroupSetups { get; set; }
     public DbSet<UserFavorite> UserFavorites { get; set; }
-
-    //public DbSet<UserOrgMapping> UserOrgMappings { get; set; }
+    public DbSet<AppList> AppLists { get; set; }
+    public DbSet<ModuleRights> ModuleRights { get; set; }
+    public DbSet<UserGroupScreenPermission> UserGroupScreenPermissions { get; set; }
+    public DbSet<FiscalYear> FiscalYears { get; set; }
+    public DbSet<JournalCode> JournalCodes { get; set; }
+    public DbSet<AccountingPeriod> AccountingPeriods { get; set; }
+    public DbSet<JournalStatus> JournalStatuses { get; set; }
+    public DbSet<SubPeriod> SubPeriods { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ModuleRights>()
+        .HasKey(x => new { x.UserGroupId, x.ModuleId, x.CompanyId })
+        .HasName("pk_module_rights");
 
         modelBuilder.Entity<UserFavorite>()
-    .HasIndex(e => new { e.UserId, e.ItemId })
-    .IsUnique();
+        .HasIndex(e => new { e.UserId, e.ItemId })
+        .IsUnique();
 
+
+        // ✅ Composite Key
+        modelBuilder.Entity<SubPeriod>().HasKey(x => new { x.FyCd, x.PeriodNo, x.SubPeriodNo, x.CompanyId });
+
+        // 🔗 FK
+        modelBuilder.Entity<SubPeriod>().HasOne(x => x.AccountingPeriod)
+            .WithMany()
+            .HasForeignKey(x => new { x.FyCd, x.PeriodNo })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FiscalYear>().HasKey(x => new { x.FyCd, x.CompanyId });
+
+        // ✅ Composite Key
+        modelBuilder.Entity<AccountingPeriod>().HasKey(x => new { x.FyCd, x.PeriodNo, x.CompanyId })
+               .HasName("pk_accounting_period");
+
+        // 🔗 FK to FiscalYear
+        modelBuilder.Entity<AccountingPeriod>().HasOne(x => x.FiscalYear)
+            .WithMany()
+            .HasForeignKey(x => x.FyCd)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JournalStatus>().HasKey(x => new
+        {
+            x.JournalCode,
+            x.FyCd,
+            x.PeriodNo,
+            x.CompanyId
+        });
+
+        // ✅ Composite Primary Key
+        modelBuilder.Entity<UserGroupScreenPermission>().HasKey(x => new { x.UserGroupId, x.ScreenCode, x.CompanyId })
+               .HasName("usergroup_screen_permissions_pkey");
+
+        //// 🔗 Foreign Key
+        //modelBuilder.Entity<UserGroupScreenPermission>().HasOne(x => x.UserGroup)
+        //    .WithMany() // or .WithMany(g => g.ScreenPermissions) if you add collection
+        //    .HasForeignKey(x => x.UserGroupId)
+        //    .HasConstraintName("fk_usp_user")
+        //    .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserGroupSetup>()
     .HasKey(x => new { x.UserId, x.UserGroupId, x.CompanyId });

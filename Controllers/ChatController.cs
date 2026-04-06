@@ -24,6 +24,51 @@ namespace PlanningAPI.Controllers
             _configuration = configuration;
         }
 
+    //    [HttpPost(Name = "Chat")]
+    //    public async Task<string> Chat([FromBody] string message)
+    //    {
+    //        var endpoint = new Uri(
+    //            _configuration["AI:MCPServiceUri"]
+    //            ?? throw new InvalidOperationException("MCPServiceUri is not configured"));
+
+    //        var httpTransport = new HttpClientTransport(new HttpClientTransportOptions
+    //        {
+    //            Endpoint = endpoint
+    //        });
+
+    //        var mcpClient = await McpClient.CreateAsync(httpTransport);
+
+    //        var tools = await mcpClient.ListToolsAsync();
+
+    //        var messages = new List<ChatMessage>
+    //{
+    //    new ChatMessage(ChatRole.System,
+    //        "You help users with employee schedules. Use tools when needed."),
+    //    new ChatMessage(ChatRole.User, message)
+    //};
+
+    //        var result = new StringBuilder();
+
+    //        await foreach (var update in _chatClient.GetStreamingResponseAsync(
+    //            messages,
+    //            new ChatOptions
+    //            {
+    //                Tools = [.. tools]
+    //            //    AdditionalProperties =
+    //            //    {
+    //            //["Mcp-Session-Id"] = Guid.NewGuid().ToString()
+    //            //    }
+    //            }))
+    //        {
+    //            if (!string.IsNullOrEmpty(update.Text))
+    //            {
+    //                result.Append(update.Text);
+    //            }
+    //        }
+
+    //        return result.ToString();
+    //    }
+
         [HttpPost(Name = "Chat")]
         public async Task<string> Chat([FromBody] string message)
         {
@@ -42,8 +87,8 @@ namespace PlanningAPI.Controllers
 
             // Set up the chat messages
             var messages = new List<ChatMessage> {
-      new ChatMessage(ChatRole.System, "You are a helpful assistant.")
-    };
+          new ChatMessage(ChatRole.System, "You are a helpful assistant.")
+        };
             messages.Add(new(ChatRole.User, message));
 
             // Get streaming response and collect updates

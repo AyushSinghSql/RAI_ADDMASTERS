@@ -39,11 +39,57 @@
 
     }
 
+[Table("module_rights", Schema = "public")]
+    public class ModuleRights
+    {
+        [Column("sec_obj_id")]
+        [MaxLength(20)]
+        public string UserGroupId { get; set; } = null!;
+
+        [Column("module_id")]
+        [MaxLength(2)]
+        public string ModuleId { get; set; } = null!;
+
+        [Column("company_id")]
+        [MaxLength(10)]
+        public string CompanyId { get; set; } = null!;
+
+        [Column("access_fl")]
+        [MaxLength(1)]
+        [Required]
+        public string AccessFl { get; set; } = null!;
+
+        [Column("modified_by")]
+        [MaxLength(20)]
+        [Required]
+        public string ModifiedBy { get; set; } = null!;
+
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion", TypeName = "numeric(10,0)")]
+        public decimal? Rowversion { get; set; }
+
+        [Column("s_rights_status_cd")]
+        [MaxLength(1)]
+        public string? SRightsStatusCd { get; set; }
+    }
     public class ModuleDto
     {
         public string ModuleCd { get; set; }
         public string CompanyId { get; set; }
         public string Name { get; set; }
         public string Domain { get; set; }
+    }
+
+    public class ModuleRightsDto
+    {
+        public string UserGroupId { get; set; } = null!;
+        public string ModuleCD { get; set; } = null!;
+        public string CompanyId { get; set; } = null!;
+        public string AccessFl { get; set; } = null!;
+        public string ModifiedBy { get; set; } = null!;
+        public decimal? Rowversion { get; set; }
+        public string? SRightsStatusCd { get; set; }
     }
 }

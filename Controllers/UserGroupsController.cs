@@ -38,40 +38,57 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
+        [HttpGet("GetAllPermissionsByUserId")]
+        public async Task<IActionResult> GetAllUserGroups(string CompanyId, int UserId)
+        {
+            var screenPermissions = await _context.UserGroups
+                .Where(x => x.CompanyId == CompanyId
+                         && x.Users.Any(y => y.UserId == UserId))
+                .SelectMany(x => x.ScreenPermissions)
+                .ToListAsync();
+
+            return Ok(screenPermissions);
+        }
+
         [HttpGet("GetAllUserGroups")]
         public async Task<IActionResult> GetAllUserGroups(string CompanyId)
         {
-            var groups = await _context.UserGroups
+            var groups = await _context.UserGroups.Include(x=>x.ScreenPermissions).Include(x => x.Users).Include(x=>x.ModuleRights)
                 .Where(x => x.CompanyId == CompanyId)
                 .ToListAsync();
 
-            var userMappings = await _context.UserGroupSetups
-                .Include(x => x.User)
-                .Where(x => x.CompanyId == CompanyId)
-                .ToListAsync();
+            //var userMappings = await _context.UserGroupSetups
+            //    .Include(x => x.User)
+            //    .Where(x => x.CompanyId == CompanyId)
+            //    .ToListAsync();
 
-            var result = groups.Select(g => new
-            {
-                g.UserGroupId,
-                g.OrgGroupName,
-                g.CompanyId,
-                g.CreatedAt,
+            //var modelMappings = await _context.UserGroupSetups
+            //    .Include(x => x.)
+            //    .Where(x => x.CompanyId == CompanyId)
+            //    .ToListAsync();
 
-                Users = userMappings
-                    .Where(x => x.UserGroupId == g.UserGroupId)
-                    .Select(x => new
-                    {
-                        x.UserId,
-                        x.User.Username,
-                        x.User.FullName,
-                        x.ModuleCd,
-                        x.CompanyId
-                    })
-                    .Distinct()
-                    .ToList()
-            });
+            //var result = groups.Select(g => new
+            //{
+            //    g.UserGroupId,
+            //    g.OrgGroupName,
+            //    g.CompanyId,
+            //    g.CreatedAt,
 
-            return Ok(result);
+            //    Users = userMappings
+            //        .Where(x => x.UserGroupId == g.UserGroupId)
+            //        .Select(x => new
+            //        {
+            //            x.UserId,
+            //            x.User.Username,
+            //            x.User.FullName,
+            //            x.ModuleCd,
+            //            x.CompanyId
+            //        })
+            //        .Distinct()
+            //        .ToList()
+            //});
+
+            return Ok(groups);
         }
 
         // ✅ GET BY ID
@@ -308,6 +325,7 @@ namespace PlanningAPI.Controllers
         }
 
         // ✅ Bulk SYNC
+
         [HttpPost("UserGroupSetup/sync")]
         public async Task<IActionResult> Sync(List<UserGroupSetupDTO> dtos)
         {
@@ -363,6 +381,254 @@ namespace PlanningAPI.Controllers
                 Total = dtos.Count
             });
         }
+
+        // ✅ Bulk SYNC
+        [HttpPost("UserGroupModuleSetup/sync")]
+        public async Task<IActionResult> UserGroupModuleSetup(
+        [FromQuery] string secObjId,
+        [FromQuery] string companyId,
+        List<ModuleRightsDto>? dtos)
+        {
+            // ✅ Validate input
+            if (string.IsNullOrEmpty(secObjId) || string.IsNullOrEmpty(companyId))
+                return BadRequest("secObjId and companyId are required");
+
+            // 📥 Load existing
+            var existing = await _context.ModuleRights
+                .Where(x => x.UserGroupId == secObjId && x.CompanyId == companyId)
+                .ToListAsync();
+
+            // 🔴 CASE 1: Empty list → DELETE ALL
+            if (dtos == null || !dtos.Any())
+            {
+                if (existing.Any())
+                {
+                    _context.ModuleRights.RemoveRange(existing);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new
+                {
+                    Deleted = existing.Count,
+                    Inserted = 0,
+                    Total = 0,
+                    Message = "All module mappings removed"
+                });
+            }
+
+            // 🔑 Prepare keys
+            var incomingKeys = dtos
+                .Select(d => $"{d.UserGroupId}|{d.ModuleCD}|{d.CompanyId}")
+                .ToHashSet();
+
+            var existingKeys = existing
+                .Select(e => $"{e.UserGroupId}|{e.ModuleId}|{e.CompanyId}")
+                .ToHashSet();
+
+            // 🔴 DELETE missing
+            var toDelete = existing
+                .Where(e => !incomingKeys.Contains(
+                    $"{e.UserGroupId}|{e.ModuleId}|{e.CompanyId}"))
+                .ToList();
+
+            // 🟢 INSERT new
+            var toInsert = dtos
+                .Where(d => !existingKeys.Contains(
+                    $"{d.UserGroupId}|{d.ModuleCD}|{d.CompanyId}"))
+                .Select(d => new ModuleRights
+                {
+                    UserGroupId = d.UserGroupId,
+                    ModuleId = d.ModuleCD,
+                    CompanyId = d.CompanyId,
+                    AccessFl = d.AccessFl,
+                    ModifiedBy = d.ModifiedBy,
+                    TimeStamp = DateTime.UtcNow,
+                    Rowversion = d.Rowversion,
+                    SRightsStatusCd = d.SRightsStatusCd
+                })
+                .ToList();
+
+            // 🟡 UPDATE existing (IMPORTANT)
+            var toUpdate = existing
+                .Where(e => incomingKeys.Contains(
+                    $"{e.UserGroupId}|{e.ModuleId}|{e.CompanyId}"))
+                .ToList();
+
+            foreach (var item in toUpdate)
+            {
+                var dto = dtos.First(d =>
+                    d.UserGroupId == item.UserGroupId &&
+                    d.ModuleCD == item.ModuleId &&
+                    d.CompanyId == item.CompanyId);
+
+                item.AccessFl = dto.AccessFl;
+                item.ModifiedBy = dto.ModifiedBy;
+                item.TimeStamp = DateTime.UtcNow;
+                item.Rowversion = dto.Rowversion;
+                item.SRightsStatusCd = dto.SRightsStatusCd;
+            }
+
+            // 💾 Apply changes
+            if (toDelete.Any())
+                _context.ModuleRights.RemoveRange(toDelete);
+
+            if (toInsert.Any())
+                await _context.ModuleRights.AddRangeAsync(toInsert);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Inserted = toInsert.Count,
+                Updated = toUpdate.Count,
+                Deleted = toDelete.Count,
+                Total = dtos.Count
+            });
+        }
+
+
+        //[HttpPost("UserGroupModuleSetup/sync")]
+        //public async Task<IActionResult> UserGroupModuleSetup(List<ModuleRightsDto> dtos)
+        //{
+        //    //if (dtos == null || !dtos.Any())
+        //    //    return BadRequest("No data provided.");
+
+        //    var groupId = dtos.First().UserGroupId;
+        //    var companyId = dtos.First().CompanyId;
+
+        //    var existing = await _context.ModuleRights
+        //        .Where(x => x.UserGroupId == groupId && x.CompanyId == companyId)
+        //        .ToListAsync();
+
+        //    var incomingKeys = dtos.Select(d =>
+        //        $"{d.UserGroupId}|{d.ModuleCD}|{d.CompanyId}")
+        //        .ToHashSet();
+
+        //    var existingKeys = existing.Select(e =>
+        //        $"{e.UserGroupId}|{e.ModuleId}|{e.CompanyId}")
+        //        .ToList();
+
+        //    // 🔴 DELETE missing
+        //    var toDelete = existing
+        //        .Where(e => !incomingKeys.Contains(
+        //            $"{e.UserGroupId}|{e.ModuleId}|{e.CompanyId}"))
+        //        .ToList();
+
+        //    // 🟢 INSERT new
+        //    var toInsert = dtos
+        //        .Where(d => !existingKeys.Contains(
+        //            $"{d.UserGroupId}|{d.ModuleCD}|{d.CompanyId}"))
+        //        .Select(d => new ModuleRights
+        //        {
+        //            UserGroupId = d.UserGroupId,
+        //            ModuleId = d.ModuleCD,
+        //            CompanyId = d.CompanyId,
+        //            AccessFl = d.AccessFl,
+        //            ModifiedBy = d.ModifiedBy,
+        //            TimeStamp = DateTime.UtcNow,
+        //            Rowversion = d.Rowversion,
+        //            SRightsStatusCd = d.SRightsStatusCd
+        //        })
+        //        .ToList();
+
+        //    if (toDelete.Any())
+        //        _context.ModuleRights.RemoveRange(toDelete);
+
+        //    if (toInsert.Any())
+        //        await _context.ModuleRights.AddRangeAsync(toInsert);
+
+        //    await _context.SaveChangesAsync();
+
+        //    return Ok(new
+        //    {
+        //        Inserted = toInsert.Count,
+        //        Deleted = toDelete.Count,
+        //        Total = dtos.Count
+        //    });
+        //}
+
+
+        // ✅ Bulk SYNC
+        [HttpPost("UserGroupScreenSetup/sync")]
+        public async Task<IActionResult> UserGroupScreenSetup(
+            [FromQuery] string userGroupId,
+            [FromQuery] string companyId,
+            List<UserGroupScreenPermissionBulkDto>? dtos)
+        {
+            // 🔥 Validate required params
+            if (string.IsNullOrEmpty(userGroupId) || string.IsNullOrEmpty(companyId))
+                return BadRequest("userGroupId and companyId are required");
+
+            // 📥 Load existing
+            var existing = await _context.UserGroupScreenPermissions
+                .Where(x => x.UserGroupId == userGroupId && x.CompanyId == companyId)
+                .ToListAsync();
+
+            // 🔴 CASE 1: Empty list → DELETE ALL
+            if (dtos == null || !dtos.Any())
+            {
+                if (existing.Any())
+                {
+                    _context.UserGroupScreenPermissions.RemoveRange(existing);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new
+                {
+                    Deleted = existing.Count,
+                    Inserted = 0,
+                    Total = 0,
+                    Message = "All mappings removed"
+                });
+            }
+
+            // 🔑 Prepare keys
+            var incomingKeys = dtos
+                .Select(d => $"{d.UserGroupId}|{d.ScreenCode}|{d.CompanyId}")
+                .ToHashSet();
+
+            var existingKeys = existing
+                .Select(e => $"{e.UserGroupId}|{e.ScreenCode}|{e.CompanyId}")
+                .ToHashSet();
+
+            // 🔴 DELETE missing
+            var toDelete = existing
+                .Where(e => !incomingKeys.Contains(
+                    $"{e.UserGroupId}|{e.ScreenCode}|{e.CompanyId}"))
+                .ToList();
+
+            // 🟢 INSERT new
+            var toInsert = dtos
+                .Where(d => !existingKeys.Contains(
+                    $"{d.UserGroupId}|{d.ScreenCode}|{d.CompanyId}"))
+                .Select(d => new UserGroupScreenPermission
+                {
+                    ScreenCode = d.ScreenCode,
+                    UserGroupId = d.UserGroupId,
+                    CompanyId = d.CompanyId,
+                    CanEdit = d.CanEdit,
+                    CanView = d.CanView,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = d.CreatedBy
+                })
+                .ToList();
+
+            if (toDelete.Any())
+                _context.UserGroupScreenPermissions.RemoveRange(toDelete);
+
+            if (toInsert.Any())
+                await _context.UserGroupScreenPermissions.AddRangeAsync(toInsert);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Inserted = toInsert.Count,
+                Deleted = toDelete.Count,
+                Total = dtos.Count
+            });
+        }
+
         // ✅ Error Handling
         private string GetFriendlyErrorMessage(DbUpdateException ex)
         {

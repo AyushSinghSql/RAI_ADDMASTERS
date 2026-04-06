@@ -98,6 +98,8 @@ namespace PlanningAPI.Controllers
             if (entity == null)
                 return NotFound(new { message = "Profile not found." });
 
+            entity.RightsAppCOde_Flag = dto.RightsAppCOde_Flag;
+            entity.Profile_Org_Flag = dto.Profile_Org_Flag;
             entity.Name = dto.Name;
             entity.ModifiedBy = "system";
             entity.TimeStamp = DateTime.UtcNow;

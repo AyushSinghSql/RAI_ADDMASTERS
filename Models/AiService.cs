@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using WebApi.DTO;
 
@@ -95,9 +96,11 @@ Employees:
 {string.Join("\n", summaryData.Employees.Select(e => $"{e.EmplId}: {e.TotalForecastedHours} hrs, {e.TotalForecastedCost:C}"))}
 ";
 
+            var res = CallOpenAiAsync(prompt);
+
             var requestBody = new
             {
-                model = "gpt-4o-mini",
+                model = "gpt-3.5-turbo",
                 messages = new[]
                 {
                 new { role = "system", content = "You are a project cost analyst." },
@@ -106,8 +109,14 @@ Employees:
             };
 
             var response = await _httpClient.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestBody);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch(Exception ex)
+            {
 
+            }
             var result = await response.Content.ReadFromJsonAsync<dynamic>();
             //var insight = result?["choices"]?[0]?["message"]?["content"]?.ToString();
 
@@ -354,6 +363,70 @@ Instructions:
         }
 
 
+public async Task<string> CallOpenAiAsync(string prompt)
+    {
+        var requestBody = new
+        {
+            model = "gpt-3.5-turbo",
+            messages = new[]
+            {
+            new { role = "system", content = "You are a project cost analyst." },
+            new { role = "user", content = prompt }
+        },
+            //max_tokens = 500 // optional: limit tokens
+        };
+
+        int retryCount = 0;
+        while (true)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _config["OpenAI:ApiKey"]);
+                request.Content = JsonContent.Create(requestBody);
+
+                var response = await _httpClient.SendAsync(request);
+
+                if ((int)response.StatusCode == 429)
+                {
+                    // Rate limit hit
+                    retryCount++;
+                    if (retryCount > 3)
+                        throw new Exception("Too many requests - retry limit exceeded.");
+
+                    // Check Retry-After header, fallback to 2s if missing
+                    var retryAfter = response.Headers.RetryAfter?.Delta?.TotalMilliseconds ?? 2000;
+                    await Task.Delay((int)retryAfter);
+                    continue; // retry
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+
+                // Extract the assistant message
+                var message = doc.RootElement
+                                 .GetProperty("choices")[0]
+                                 .GetProperty("message")
+                                 .GetProperty("content")
+                                 .GetString();
+
+                return message ?? "";
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // network issues or 4xx/5xx errors
+                Console.WriteLine($"HTTP Error: {httpEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+                throw;
+            }
+        }
     }
+}
 
 }

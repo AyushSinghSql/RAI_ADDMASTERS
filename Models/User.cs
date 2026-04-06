@@ -245,6 +245,51 @@ namespace PlanningAPI.Models
 
         public ICollection<UserGroupSetup> Users { get; set; }
         = new List<UserGroupSetup>();
+        public ICollection<ModuleRights>? ModuleRights { get; set; }
+        public ICollection<UserGroupScreenPermission>? ScreenPermissions { get; set; }
+    }
+
+    [Table("usergroup_screen_permissions", Schema = "public")]
+    public class UserGroupScreenPermission
+    {
+        [Column("user_group_id")]
+        [MaxLength(50)]
+        public string UserGroupId { get; set; } = null!;
+
+        [Column("company_id")]
+        [MaxLength(10)]
+        public string CompanyId { get; set; } = null!;
+
+        [Column("created_by")]
+        [MaxLength(50)]
+        public string? CreatedBy { get; set; }
+
+        [Column("screen_code")]
+        [MaxLength(100)]
+        public string ScreenCode { get; set; } = null!;
+
+        [Column("can_view")]
+        public bool? CanView { get; set; }
+
+        [Column("can_edit")]
+        public bool? CanEdit { get; set; }
+
+        [Column("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        //// 🔗 Navigation Property
+        //public UserGroup? UserGroup { get; set; }
+    }
+
+    public class UserGroupScreenPermissionBulkDto
+    {
+        public string UserGroupId { get; set; } = null!;
+        public string ScreenCode { get; set; } = null!;
+        public bool? CanView { get; set; }
+        public bool? CanEdit { get; set; }
+        public string CompanyId { get; set; }
+        public string CreatedBy { get; set; }
+
     }
 
     public class AddUserToGroupDto
@@ -280,7 +325,7 @@ namespace PlanningAPI.Models
         public string CompanyName { get; set; } // 🔥 join field
         public DateTime CreatedAt { get; set; }
 
-        public List<User> Users { get; set; }
+        public List<User>? Users { get; set; }
     }
 
     public class UserGroupSetupDTO
