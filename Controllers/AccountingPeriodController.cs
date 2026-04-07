@@ -157,7 +157,7 @@ namespace PlanningAPI.Controllers
             return Ok("Bulk upsert completed");
         }
 
-        [HttpGet("calendar/{fyCd/{companyId}")]
+        [HttpGet("calendar/{fyCd}/{companyId}")]
         public async Task<IActionResult> GetCalendar(string fyCd, string companyId)
         {
             var data = await _context.AccountingPeriods
@@ -285,6 +285,7 @@ namespace PlanningAPI.Controllers
 
             return Ok($"{journals.Count} journals updated");
         }
+        [NonAction]
         public async Task<bool> IsPeriodOpen(string fyCd, int periodNo)
         {
             return await _context.AccountingPeriods

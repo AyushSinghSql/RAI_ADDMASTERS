@@ -29,15 +29,15 @@ namespace PlanningAPI.Models
 
         public List<LevelDto> Levels { get; set; } = new();
     }
-    [Table("org_levels", Schema = "public")]
-    public class OrgLevel
-    {
-        [Key]
-        [Column("level")]
-        public int Level { get; set; }
+    //[Table("org_levels", Schema = "public")]
+    //public class OrgLevel
+    //{
+    //    [Key]
+    //    [Column("level")]
+    //    public int Level { get; set; }
 
-        [Required]
-        [Column("lenght")] // matches DB spelling
-        public int Lenght { get; set; }
-    }
+    //    [Required]
+    //    [Column("lenght")] // matches DB spelling
+    //    public int Lenght { get; set; }
+    //}
 }

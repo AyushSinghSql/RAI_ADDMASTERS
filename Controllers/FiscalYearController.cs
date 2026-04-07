@@ -43,6 +43,12 @@ namespace PlanningAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(FiscalYearDto dto)
         {
+            if (dto == null)
+                return BadRequest("Invalid data");
+
+            if (string.IsNullOrEmpty(dto.FyCd) || string.IsNullOrEmpty(dto.CompanyId))
+                return BadRequest("FyCd and CompanyId are required");
+
             var exists = await _context.FiscalYears
                 .AnyAsync(x => x.FyCd == dto.FyCd && x.CompanyId == dto.CompanyId);
 
@@ -56,7 +62,8 @@ namespace PlanningAPI.Controllers
                 FyDesc = dto.FyDesc,
                 ModifiedBy = dto.ModifiedBy,
                 TimeStamp = DateTime.UtcNow,
-                CloseActTgtCd = dto.CloseActTgtCd
+                CloseActTgtCd = dto.CloseActTgtCd,
+                CompanyId = dto.CompanyId
             };
 
             _context.FiscalYears.Add(entity);
@@ -230,6 +237,122 @@ namespace PlanningAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Fiscal year locked completely");
+        }
+
+        [HttpPost("control")]
+        public async Task<IActionResult> ControlJournal(JournalControlDto dto)
+        {
+            var now = DateTime.UtcNow;
+
+            // 🔥 1. SUB PERIOD + JOURNAL (Most Specific)
+            if (dto.SubPeriodNo.HasValue && dto.JournalCode != null)
+            {
+                var records = await _context.SubPeriodJournalStatuses
+                    .Where(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.SubPeriodNo == dto.SubPeriodNo &&
+                        x.CompanyId == dto.CompanyId &&
+                        x.JournalCode == dto.JournalCode)
+                    .ToListAsync();
+
+                foreach (var r in records)
+                {
+                    r.IsOpen = dto.Status;
+                    r.ModifiedBy = dto.ModifiedBy;
+                    r.TimeStamp = now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok("Updated: SubPeriod + Journal");
+            }
+
+            // 🔥 2. PERIOD + JOURNAL
+            if (dto.PeriodNo.HasValue && dto.JournalCode != null)
+            {
+                var records = await _context.JournalStatuses
+                    .Where(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.CompanyId == dto.CompanyId &&
+                        x.JournalCode == dto.JournalCode)
+                    .ToListAsync();
+
+                foreach (var r in records)
+                {
+                    r.IsOpen = dto.Status;
+                    r.ModifiedBy = dto.ModifiedBy;
+                    r.TimeStamp = now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok("Updated: Period + Journal");
+            }
+
+            // 🔥 3. SUB PERIOD (ALL JOURNALS)
+            if (dto.SubPeriodNo.HasValue)
+            {
+                var records = await _context.SubPeriodJournalStatuses
+                    .Where(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.SubPeriodNo == dto.SubPeriodNo &&
+                        x.CompanyId == dto.CompanyId)
+                    .ToListAsync();
+
+                foreach (var r in records)
+                {
+                    r.IsOpen = dto.Status;
+                    r.ModifiedBy = dto.ModifiedBy;
+                    r.TimeStamp = now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok("Updated: SubPeriod (All Journals)");
+            }
+
+            // 🔥 4. PERIOD (ALL JOURNALS)
+            if (dto.PeriodNo.HasValue)
+            {
+                var records = await _context.JournalStatuses
+                    .Where(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.CompanyId == dto.CompanyId)
+                    .ToListAsync();
+
+                foreach (var r in records)
+                {
+                    r.IsOpen = dto.Status;
+                    r.ModifiedBy = dto.ModifiedBy;
+                    r.TimeStamp = now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok("Updated: Period (All Journals)");
+            }
+
+            // 🔥 5. FISCAL YEAR (ALL)
+            var fyPeriods = await _context.AccountingPeriods
+                .Where(x =>
+                    x.FyCd == dto.FyCd &&
+                    x.CompanyId == dto.CompanyId)
+                .ToListAsync();
+
+            foreach (var p in fyPeriods)
+            {
+                p.StatusCd = dto.Status;
+                p.ModifiedBy = dto.ModifiedBy;
+                p.TimeStamp = now;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Updated: Fiscal Year");
         }
     }
 }

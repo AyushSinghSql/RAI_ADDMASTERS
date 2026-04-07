@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NPOI.SS.Formula.Functions;
 using PlanningAPI.Models;
-
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -81,7 +81,11 @@ public class Organization
     public ICollection<OrgGroupOrgMapping>? OrgGroupMappings { get; set; }
     = new List<OrgGroupOrgMapping>();
 }
-
+public class AddOrgAccountRequest
+{
+    public string OrgId { get; set; } = null!;
+    public string AcctId { get; set; } = null!;
+}
 public class OrganizationDto
 {
     public string OrgId { get; set; }
@@ -218,6 +222,53 @@ public class OrgSecProfileOrg
     public OrgSecProfile OrgSecProfile { get; set; }
     public Organization Organization { get; set; }
     public Company Company { get; set; }
+}
+
+[Table("org_level", Schema = "public")]
+public class OrgLevel
+{
+    [Column("org_id_top")]
+    [MaxLength(20)]
+    public string OrgIdTop { get; set; } = null!;
+
+    [Column("org_level_key")]
+    public decimal OrgLevelKey { get; set; }
+
+    [Column("level_no")]
+    public int LevelNo { get; set; }
+
+    [Column("id_segment_length")]
+    public int IdSegmentLength { get; set; }
+
+    [Column("org_level_desc")]
+    [MaxLength(30)]
+    public string OrgLevelDesc { get; set; } = null!;
+
+    [Column("modified_by")]
+    [MaxLength(20)]
+    public string ModifiedBy { get; set; } = null!;
+
+    [Column("time_stamp")]
+    public DateTime TimeStamp { get; set; }
+
+    [Column("rowversion")]
+    public decimal? Rowversion { get; set; }
+
+    // 🔗 Navigation
+    public Organization Org { get; set; } = null!;
+}
+public class OrgLevelDto
+{
+    public string OrgIdTop { get; set; } = null!;
+    public decimal OrgLevelKey { get; set; }
+    public int LevelNo { get; set; }
+    public int IdSegmentLength { get; set; }
+    public string OrgLevelDesc { get; set; } = null!;
+    public string ModifiedBy { get; set; } = null!;
+    public decimal? Rowversion { get; set; }
+}
+public class OrgLevelBulkDto : OrgLevelDto
+{
 }
 public class OrgSecGrpSetupDto
 {

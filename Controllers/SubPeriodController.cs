@@ -148,6 +148,7 @@ namespace PlanningAPI.Controllers
 
             return Ok("Bulk upsert completed");
         }
+        [NonAction]
         public async Task<bool> IsSubPeriodOpen(string fyCd, int periodNo, int subPeriodNo)
         {
             return await _context.SubPeriods.AnyAsync(x =>

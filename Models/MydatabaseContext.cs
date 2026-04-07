@@ -6,6 +6,8 @@ using NPOI.SS.Formula.Functions;
 using PlanningAPI.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.Text.Json;
 using WebApi.DTO;
 using YourNamespace.Models;
 
@@ -18,6 +20,15 @@ public partial class MydatabaseContext : DbContext
     {
     }
 
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public MydatabaseContext(
+        DbContextOptions<MydatabaseContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
     public DbSet<Race> Race { get; set; }
     public DbSet<TaxableEntity> TaxableEntites { get; set; }
     public DbSet<VisaType> VisaTypes { get; set; }
@@ -158,6 +169,12 @@ public partial class MydatabaseContext : DbContext
     public DbSet<AccountingPeriod> AccountingPeriods { get; set; }
     public DbSet<JournalStatus> JournalStatuses { get; set; }
     public DbSet<SubPeriod> SubPeriods { get; set; }
+    public DbSet<SubPeriodJournalStatus> SubPeriodJournalStatuses { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<UdefField> UdefFields { get; set; }
+    public DbSet<UdefValue> UdefValues { get; set; }
+    public DbSet<UdefOption> UdefOptions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ModuleRights>()
@@ -168,6 +185,18 @@ public partial class MydatabaseContext : DbContext
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
 
+        modelBuilder.Entity<OrgLevel>(entity =>
+        {
+            entity.HasKey(x => new { x.OrgIdTop, x.OrgLevelKey });
+
+            entity.HasOne(x => x.Org)
+                .WithMany()
+                .HasForeignKey(x => x.OrgIdTop)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        //modelBuilder.Entity<UdefValue>()
+        //.HasIndex(x => new { x.EntityId, x.FieldId, x.CompanyId, x.Value })
+        //.IsUnique();
 
         // ✅ Composite Key
         modelBuilder.Entity<SubPeriod>().HasKey(x => new { x.FyCd, x.PeriodNo, x.SubPeriodNo, x.CompanyId });
@@ -175,7 +204,32 @@ public partial class MydatabaseContext : DbContext
         // 🔗 FK
         modelBuilder.Entity<SubPeriod>().HasOne(x => x.AccountingPeriod)
             .WithMany()
-            .HasForeignKey(x => new { x.FyCd, x.PeriodNo })
+            .HasForeignKey(x => new { x.FyCd, x.PeriodNo, x.CompanyId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ✅ Composite Key
+        modelBuilder.Entity<SubPeriodJournalStatus>().HasKey(x => new
+        {
+            x.JournalCode,
+            x.FyCd,
+            x.PeriodNo,
+            x.SubPeriodNo,
+            x.CompanyId
+        });
+
+        modelBuilder.Entity<SubPeriodJournalStatus>().Property(x => x.TimeStamp)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        // 🔗 FK → SubPeriod
+        modelBuilder.Entity<SubPeriodJournalStatus>().HasOne(x => x.SubPeriod)
+            .WithMany()
+            .HasForeignKey(x => new
+            {
+                x.FyCd,
+                x.PeriodNo,
+                x.SubPeriodNo,
+                x.CompanyId
+            })
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<FiscalYear>().HasKey(x => new { x.FyCd, x.CompanyId });
@@ -187,7 +241,7 @@ public partial class MydatabaseContext : DbContext
         // 🔗 FK to FiscalYear
         modelBuilder.Entity<AccountingPeriod>().HasOne(x => x.FiscalYear)
             .WithMany()
-            .HasForeignKey(x => x.FyCd)
+            .HasForeignKey(x => new { x.FyCd, x.CompanyId })
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<JournalStatus>().HasKey(x => new
@@ -3338,4 +3392,93 @@ public partial class MydatabaseContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var auditEntries = new List<AuditLog>();
+        //var http = _httpContextAccessor.HttpContext;
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.Entity is AuditLog ||
+                entry.State == EntityState.Detached ||
+                entry.State == EntityState.Unchanged)
+                continue;
+
+            var audit = new AuditLog
+            {
+                TableName = entry.Metadata.GetTableName(),
+                Action = entry.State.ToString(),
+                TimeStamp = DateTime.UtcNow,
+                //RequestPath = http?.Request.Path,
+                //HttpMethod = http?.Request.Method
+            };
+
+            var keyValues = new Dictionary<string, object>();
+            var oldValues = new Dictionary<string, object>();
+            var newValues = new Dictionary<string, object>();
+            var changedColumns = new List<string>();
+
+            foreach (var prop in entry.Properties)
+            {
+                var propName = prop.Metadata.Name;
+
+                if (prop.Metadata.IsPrimaryKey())
+                {
+                    keyValues[propName] = prop.CurrentValue!;
+                    continue;
+                }
+
+                // 🔥 Capture CompanyId + ModifiedBy
+                if (propName == "CompanyId")
+                    audit.CompanyId = prop.CurrentValue?.ToString();
+
+                if (propName == "ModifiedBy")
+                    audit.ModifiedBy = prop.CurrentValue?.ToString();
+
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        newValues[propName] = prop.CurrentValue!;
+                        changedColumns.Add(propName);
+                        break;
+
+                    case EntityState.Deleted:
+                        oldValues[propName] = prop.OriginalValue!;
+                        changedColumns.Add(propName);
+                        break;
+
+                    case EntityState.Modified:
+                        if (!Equals(prop.OriginalValue, prop.CurrentValue))
+                        {
+                            oldValues[propName] = prop.OriginalValue!;
+                            newValues[propName] = prop.CurrentValue!;
+                            changedColumns.Add(propName);
+                        }
+                        break;
+                }
+            }
+
+            // 🔥 Skip if nothing changed
+            if (!changedColumns.Any())
+                continue;
+
+            audit.KeyValues = JsonSerializer.Serialize(keyValues);
+            audit.OldValues = oldValues.Any() ? JsonSerializer.Serialize(oldValues) : null;
+            audit.NewValues = newValues.Any() ? JsonSerializer.Serialize(newValues) : null;
+            audit.ChangedColumns = JsonSerializer.Serialize(changedColumns);
+
+            auditEntries.Add(audit);
+        }
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (auditEntries.Any())
+        {
+            AuditLogs.AddRange(auditEntries);
+            await base.SaveChangesAsync(cancellationToken);
+        }
+
+        return result;
+    }
 }

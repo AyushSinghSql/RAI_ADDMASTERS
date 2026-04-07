@@ -32,5 +32,16 @@ namespace PlanningAPI.Controllers
 
             return Ok(new { message = "Valid for posting" });
         }
+
+        [HttpPost("PostingValidateGlobal")]
+        public async Task<IActionResult> Validate(PostingValidationDto dto)
+        {
+            var result = await _service.Validate(dto);
+
+            if (!result.IsAllowed)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
     }
 }

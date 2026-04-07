@@ -187,7 +187,7 @@ public class OrgnizationController : ControllerBase
 
 
         var levelConfigs = await _context.OrgLevels
-            .ToDictionaryAsync(l => l.Level, l => l.Lenght);
+            .ToDictionaryAsync(l => l.LevelNo, l => l.IdSegmentLength);
 
         for (int i = 0; i < segments.Length; i++)
         {
@@ -5833,6 +5833,57 @@ select new
 
         return "An error occurred while saving data.";
     }
+    [HttpPost("AddAccounts")]
+    public async Task<IActionResult> AddOrgAccount([FromBody] AddOrgAccountRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.OrgId) || string.IsNullOrWhiteSpace(request.AcctId))
+            return BadRequest("OrgId and AcctId are required");
+
+        string input = request.AcctId.Trim();
+
+        IQueryable<Account> query = _context.Accounts.AsNoTracking();
+
+        // ✅ Apply filter
+        if (input.Contains("%") || input.Contains("_"))
+            query = query.Where(x => EF.Functions.Like(x.AcctId, input));
+        else
+            query = query.Where(x => x.AcctId.Contains(input));
+
+        var accounts = await query
+            .Select(x => x.AcctId)
+            .ToListAsync();
+
+        if (!accounts.Any())
+            return NotFound("No accounts found matching the criteria.");
+
+        // ✅ Get existing mappings in one query
+        var existingAcctIds = await _context.OrgAccounts
+            .Where(x => x.OrgId == request.OrgId && accounts.Contains(x.AcctId))
+            .Select(x => x.AcctId)
+            .ToListAsync();
+        var existingSet = new HashSet<string>(existingAcctIds);
+
+        // ✅ Filter only new ones
+        var newMappings = accounts
+            .Where(acct => !existingSet.Contains(acct))
+            .Select(acct => new OrgAccount
+            {
+                OrgId = request.OrgId,
+                AcctId = acct,
+                TimeStamp = DateTime.UtcNow
+            })
+            .ToList();
+
+        if (!newMappings.Any())
+            return Conflict("All mappings already exist");
+
+        // ✅ Bulk insert
+        await _context.OrgAccounts.AddRangeAsync(newMappings);
+        await _context.SaveChangesAsync();
+
+        return Ok(newMappings);
+    }
+
     [NonAction]
     private string HandleForeignKeyError(PostgresException pgEx)
     {

@@ -9,6 +9,8 @@ namespace PlanningAPI.Services
         Task<string?> ValidatePostAsync(string journalCode, string fyCd, int periodNo, string companyId);
         Task<string?> ValidateAsync(string fyCd, int periodNo, int subPeriodNo,
                                 string journalCode, string companyId);
+        Task<(bool IsAllowed, string Message)> Validate(PostingValidationDto dto);
+
     }
     public class FinancialControlService : IFinancialControlService
     {
@@ -113,6 +115,90 @@ namespace PlanningAPI.Services
                 return "Journal is closed";
 
             return null; // ✅ All good
+        }
+
+        public async Task<(bool IsAllowed, string Message)> Validate(PostingValidationDto dto)
+        {
+            // 🔥 1. SubPeriod + Journal
+            if (dto.SubPeriodNo.HasValue)
+            {
+                var spJournal = await _context.SubPeriodJournalStatuses
+                    .FirstOrDefaultAsync(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.SubPeriodNo == dto.SubPeriodNo &&
+                        x.CompanyId == dto.CompanyId &&
+                        x.JournalCode == dto.JournalCode);
+
+                if (spJournal != null)
+                {
+                    return spJournal.IsOpen == "Y"
+                        ? (true, "Allowed: SubPeriod Journal Open")
+                        : (false, "Blocked: SubPeriod Journal Closed");
+                }
+            }
+
+            // 🔥 2. Period + Journal
+            var journal = await _context.JournalStatuses
+                .FirstOrDefaultAsync(x =>
+                    x.FyCd == dto.FyCd &&
+                    x.PeriodNo == dto.PeriodNo &&
+                    x.CompanyId == dto.CompanyId &&
+                    x.JournalCode == dto.JournalCode);
+
+            if (journal != null)
+            {
+                return journal.IsOpen == "Y"
+                    ? (true, "Allowed: Period Journal Open")
+                    : (false, "Blocked: Period Journal Closed");
+            }
+
+            // 🔥 3. SubPeriod
+            if (dto.SubPeriodNo.HasValue)
+            {
+                var subPeriod = await _context.SubPeriods
+                    .FirstOrDefaultAsync(x =>
+                        x.FyCd == dto.FyCd &&
+                        x.PeriodNo == dto.PeriodNo &&
+                        x.SubPeriodNo == dto.SubPeriodNo &&
+                        x.CompanyId == dto.CompanyId);
+
+                if (subPeriod != null)
+                {
+                    return subPeriod.StatusCd == "O"
+                        ? (true, "Allowed: SubPeriod Open")
+                        : (false, "Blocked: SubPeriod Closed");
+                }
+            }
+
+            // 🔥 4. Period
+            var period = await _context.AccountingPeriods
+                .FirstOrDefaultAsync(x =>
+                    x.FyCd == dto.FyCd &&
+                    x.PeriodNo == dto.PeriodNo &&
+                    x.CompanyId == dto.CompanyId);
+
+            if (period != null)
+            {
+                return period.StatusCd == "O"
+                    ? (true, "Allowed: Period Open")
+                    : (false, "Blocked: Period Closed");
+            }
+
+            // 🔥 5. Fiscal Year
+            var fy = await _context.FiscalYears
+                .FirstOrDefaultAsync(x =>
+                    x.FyCd == dto.FyCd &&
+                    x.CompanyId == dto.CompanyId);
+
+            if (fy != null)
+            {
+                return fy.StatusCd == "O"
+                    ? (true, "Allowed: FY Open")
+                    : (false, "Blocked: Fiscal Year Closed");
+            }
+
+            return (false, "Invalid configuration");
         }
     }
 }

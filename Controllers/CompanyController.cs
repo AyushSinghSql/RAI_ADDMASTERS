@@ -16,7 +16,17 @@ namespace PlanningAPI.Controllers
         {
             _context = context;
         }
+        [HttpGet("audit")]
+        public async Task<IActionResult> GetAudit(string tableName)
+        {
+            var data = await _context.AuditLogs
+                .Where(x => x.TableName == tableName)
+                .OrderByDescending(x => x.TimeStamp)
+                .Take(100)
+                .ToListAsync();
 
+            return Ok(data);
+        }
         // =========================
         // CREATE
         // =========================
