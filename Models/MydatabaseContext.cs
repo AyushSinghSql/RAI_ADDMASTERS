@@ -38,7 +38,7 @@ public partial class MydatabaseContext : DbContext
     public DbSet<Company> Companies { get; set; }
     public DbSet<AcctType> AcctTypes { get; set; }
     public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
-    public DbSet<AcctGrp> AcctGrps { get; set; }
+    public DbSet<AcctGrpCd> AcctGrps { get; set; }
     public DbSet<ProjVendorEmployeeLabcat> ProjVendorEmployeeLabcats { get; set; }
     public DbSet<ProjEmployeeLabcat> ProjEmployeeLabcats { get; set; }
     public DbSet<pl_EmployeeBurdenCalculated> EmployeeBurdenCalculated { get; set; }
@@ -174,6 +174,7 @@ public partial class MydatabaseContext : DbContext
     public DbSet<UdefField> UdefFields { get; set; }
     public DbSet<UdefValue> UdefValues { get; set; }
     public DbSet<UdefOption> UdefOptions { get; set; }
+    public DbSet<AcctFunctionCode> AcctFunctionCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -231,6 +232,12 @@ public partial class MydatabaseContext : DbContext
                 x.CompanyId
             })
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SubPeriodJournalStatus>()
+                .HasOne(x => x.JournalCodeRef)
+                .WithMany(j => j.SubperiodJournalStatuses)
+                .HasForeignKey(x => x.JournalCode)
+                .HasPrincipalKey(j => j.JournalCodeId);
+
 
         modelBuilder.Entity<FiscalYear>().HasKey(x => new { x.FyCd, x.CompanyId });
 
@@ -251,6 +258,13 @@ public partial class MydatabaseContext : DbContext
             x.PeriodNo,
             x.CompanyId
         });
+
+        // 🔥 Optional explicit FK mapping (recommended)
+        modelBuilder.Entity<JournalStatus>()
+            .HasOne(x => x.JournalCodeRef)
+            .WithMany(j => j.JournalStatuses)
+            .HasForeignKey(x => x.JournalCode)
+            .HasPrincipalKey(j => j.JournalCodeId);
 
         // ✅ Composite Primary Key
         modelBuilder.Entity<UserGroupScreenPermission>().HasKey(x => new { x.UserGroupId, x.ScreenCode, x.CompanyId })
@@ -363,12 +377,10 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<AcctType>()
          .HasKey(x => new { x.AcctTypeCode, x.CompanyId });
 
-        modelBuilder.Entity<AcctGrp>(entity =>
+        modelBuilder.Entity<AcctGrpCd>(entity =>
         {
-            entity.ToTable("acct_grp");
-
             // ✅ Composite Primary Key
-            entity.HasKey(e => new { e.AcctGrpCd, e.CompanyId });
+            entity.HasKey(e => new { e.AcctGrpCode, e.CompanyId });
 
             // ✅ Indexes
             entity.HasIndex(e => e.CompanyId)
@@ -3106,34 +3118,13 @@ public partial class MydatabaseContext : DbContext
 
         modelBuilder.Entity<AccountGroupSetup>(entity =>
         {
-            entity.ToTable("account_group_setup");
 
-            entity.HasKey(e => e.AcctGroupCode); // You may configure composite keys here if needed
+            entity.HasKey(e => new { e.AcctGroupCode, e.AccountId, e.CompanyId }); // You may configure composite keys here if needed
 
-            entity.Property(e => e.AcctGroupCode).HasColumnName("acct_grp_cd").HasMaxLength(50);
-            entity.Property(e => e.AccountId).HasColumnName("acct_id").HasMaxLength(50);
-            entity.Property(e => e.AccountFunctionDescription).HasColumnName("s_acct_func_dc").HasMaxLength(255);
-            entity.Property(e => e.ModifiedBy).HasColumnName("modified_by").HasMaxLength(100);
-            entity.Property(e => e.TimeStamp).HasColumnName("time_stamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.CompanyId).HasColumnName("company_id").HasMaxLength(50);
-            entity.Property(e => e.ProjectAccountAbbreviation).HasColumnName("proj_acct_abbrv_cd").HasMaxLength(50);
-            entity.Property(e => e.ActiveFlag).HasColumnName("active_fl").HasDefaultValue(true);
-            entity.Property(e => e.RevenueMappedAccount).HasColumnName("rev_map_acct").HasMaxLength(50);
-            entity.Property(e => e.SalaryCapMappedAccount).HasColumnName("salcap_map_acct").HasMaxLength(50);
             entity.HasOne(e => e.Account)
                   .WithOne(a => a.AccountGroupSetup)
                   .HasForeignKey<AccountGroupSetup>(e => e.AccountId)
                   .HasConstraintName("fk_accounts")
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            // --------------------------
-            // Foreign Key to AcctType
-            // --------------------------
-            entity.HasOne(e => e.AcctType)
-                  .WithMany(a => a.AccountGroupSetups)
-                  .HasForeignKey(e => new { e.AccountFunctionDescription, e.CompanyId })
-                  .HasPrincipalKey(a => new { a.AcctTypeCode, a.CompanyId })
-                  .HasConstraintName("fk_accountgroup_accttype")
                   .OnDelete(DeleteBehavior.Restrict);
 
         });
@@ -3386,8 +3377,6 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.Rowversion).HasColumnName("rowversion");
             entity.Property(e => e.CompanyId).HasColumnName("company_id");
         });
-
-
         OnModelCreatingPartial(modelBuilder);
     }
 

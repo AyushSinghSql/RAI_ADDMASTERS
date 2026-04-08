@@ -354,5 +354,171 @@ namespace PlanningAPI.Controllers
 
             return Ok("Updated: Fiscal Year");
         }
+
+        [HttpPost("create-full")]
+        public async Task<IActionResult> CreateFull(FiscalYearCreateDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid data");
+
+            if (string.IsNullOrEmpty(dto.FyCd) || string.IsNullOrEmpty(dto.CompanyId))
+                return BadRequest("FyCd and CompanyId are required");
+
+            if(!dto.FyCd.Equals(dto.StartDate.Year.ToString()))
+                return BadRequest("Start date Year is not Matching with fiscal year");
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 🔴 Check FY exists
+                var exists = await _context.FiscalYears
+                    .AnyAsync(x => x.FyCd == dto.FyCd && x.CompanyId == dto.CompanyId);
+
+                if (exists)
+                    return BadRequest("Fiscal Year already exists");
+
+                // ✅ Create Fiscal Year
+                var fy = new FiscalYear
+                {
+                    FyCd = dto.FyCd,
+                    StatusCd = dto.StatusCd,
+                    FyDesc = dto.FyDesc,
+                    ModifiedBy = dto.ModifiedBy,
+                    TimeStamp = DateTime.UtcNow,
+                    CloseActTgtCd = dto.CloseActTgtCd,
+                    CompanyId = dto.CompanyId
+                };
+
+                _context.FiscalYears.Add(fy);
+
+                // 🔥 Generate Periods
+                var periods = new List<AccountingPeriod>();
+                var subPeriods = new List<SubPeriod>();
+
+                var currentDate = dto.StartDate;
+
+                for (int i = 1; i <= dto.TotalPeriods; i++)
+                {
+                    var periodEnd = currentDate.AddMonths(1).AddDays(-1);
+
+                    var period = new AccountingPeriod
+                    {
+                        FyCd = dto.FyCd,
+                        CompanyId = dto.CompanyId,
+                        PeriodNo = i,
+                        StatusCd = "O",
+                        PeriodEndDate = periodEnd,
+                        ModifiedBy = dto.ModifiedBy,
+                        TimeStamp = DateTime.UtcNow,
+                        IsAdjustment = "N",
+                        AdjustmentCode = "N"
+                    };
+
+                    periods.Add(period);
+
+                    // 🔥 Generate SubPeriods
+                    var subStart = currentDate;
+                    var totalDays = periodEnd.DayNumber - currentDate.DayNumber + 1;
+
+                    var baseDays = totalDays / dto.SubPeriodsPerPeriod;
+                    var extraDays = totalDays % dto.SubPeriodsPerPeriod;
+
+                    subStart = currentDate;
+                    for (int j = 0; j < dto.SubPeriodsPerPeriod; j++)
+                    {
+                        //var subEnd = subStart
+                        //    .AddDays(((periodEnd.DayNumber - currentDate.DayNumber) / dto.SubPeriodsPerPeriod) - 1);
+                        var days = baseDays + (j < extraDays ? 1 : 0);
+
+                        var subEnd = subStart.AddDays(days - 1);
+
+                        var sub = new SubPeriod
+                        {
+                            FyCd = dto.FyCd,
+                            CompanyId = dto.CompanyId,
+                            PeriodNo = i,
+                            SubPeriodNo = j+1,
+                            SubPeriodEndDate = subEnd,
+                            StatusCd = "O",
+                            ModifiedBy = dto.ModifiedBy,
+                            TimeStamp = DateTime.UtcNow,
+                            IsAdjustment = "N",
+                            AdjustmentCode = "N"
+                        };
+
+                        subPeriods.Add(sub);
+                        subStart = subEnd.AddDays(1);
+
+                    }
+
+                    currentDate = periodEnd.AddDays(1);
+                }
+
+                await _context.AccountingPeriods.AddRangeAsync(periods);
+                await _context.SubPeriods.AddRangeAsync(subPeriods);
+
+                // 🔥 Get all journal codes
+                var journalCodes = await _context.JournalCodes
+                    .Select(x => x.JournalCodeId)
+                    .ToListAsync();
+
+                var journalStatuses = new List<JournalStatus>();
+                var subJournalStatuses = new List<SubPeriodJournalStatus>();
+
+                foreach (var period in periods)
+                {
+                    foreach (var jnl in journalCodes)
+                    {
+                        journalStatuses.Add(new JournalStatus
+                        {
+                            FyCd = period.FyCd,
+                            PeriodNo = period.PeriodNo,
+                            CompanyId = period.CompanyId,
+                            JournalCode = jnl,
+                            IsOpen = "Y",
+                            ModifiedBy = dto.ModifiedBy,
+                            TimeStamp = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                foreach (var sp in subPeriods)
+                {
+                    foreach (var jnl in journalCodes)
+                    {
+                        subJournalStatuses.Add(new SubPeriodJournalStatus
+                        {
+                            FyCd = sp.FyCd,
+                            PeriodNo = sp.PeriodNo,
+                            SubPeriodNo = sp.SubPeriodNo,
+                            CompanyId = sp.CompanyId,
+                            JournalCode = jnl,
+                            IsOpen = "Y",
+                            ModifiedBy = dto.ModifiedBy,
+                            TimeStamp = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                await _context.JournalStatuses.AddRangeAsync(journalStatuses);
+                await _context.SubPeriodJournalStatuses.AddRangeAsync(subJournalStatuses);
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return Ok(new
+                {
+                    Message = "Fiscal Year Created Successfully",
+                    Periods = periods.Count,
+                    SubPeriods = subPeriods.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

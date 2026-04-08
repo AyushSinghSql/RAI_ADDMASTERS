@@ -26,6 +26,15 @@ namespace PlanningAPI.Controllers
                     x.PeriodNo == periodNo &&
                     x.SubPeriodNo == subPeriodNo &&
                     x.CompanyId == companyId)
+                    .Select(x => new SubPeriodJournalStatusDto
+                    {
+                        JournalCode = x.JournalCode,
+                        FyCd = x.FyCd,
+                        PeriodNo = x.PeriodNo,
+                        SubPeriodNo = x.SubPeriodNo,
+                        IsOpen = x.IsOpen,
+                        JournalDesc = x.JournalCodeRef.JournalDesc
+                    })
                 .ToListAsync();
 
             return Ok(data);

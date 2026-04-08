@@ -35,7 +35,7 @@
         // Navigation Properties
         public TaxableEntity TaxableEntity { get; set; }
         public ICollection<AcctType>? AcctTypes { get; set; }
-        public ICollection<AcctGrp>? AcctGrps { get; set; }
+        public ICollection<AcctGrpCd>? AcctGrps { get; set; }
     }
 
     public class CompanyDto

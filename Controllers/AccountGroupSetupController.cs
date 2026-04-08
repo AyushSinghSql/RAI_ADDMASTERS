@@ -1,8 +1,9 @@
-﻿using PlanningAPI.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Npgsql;
+using PlanningAPI.Models;
 
 namespace PlanningAPI.Controllers
 {
@@ -86,15 +87,15 @@ namespace PlanningAPI.Controllers
         // DELETE
         // =========================
         [HttpDelete("delete")]
-        public async Task<IActionResult> Delete(string acctGroupCode, string accountId)
+        public async Task<IActionResult> Delete(string acctGroupCode, string accountId,string CompanyId)
         {
-            if (string.IsNullOrWhiteSpace(acctGroupCode) || string.IsNullOrWhiteSpace(accountId))
+            if (string.IsNullOrWhiteSpace(acctGroupCode) || string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(CompanyId))
                 return BadRequest(new { message = "Mapping identifiers are required." });
 
             try
             {
                 var existing = await _context.AccountGroupSetups
-                    .FirstOrDefaultAsync(x => x.AcctGroupCode == acctGroupCode && x.AccountId == accountId);
+                    .FirstOrDefaultAsync(x => x.AcctGroupCode == acctGroupCode && x.AccountId == accountId && x.CompanyId == CompanyId);
 
                 if (existing == null)
                     return NotFound(new { message = "Mapping not found." });
@@ -157,7 +158,7 @@ namespace PlanningAPI.Controllers
                     RevenueMappedAccount = x.RevenueMappedAccount,
                     SalaryCapMappedAccount = x.SalaryCapMappedAccount,
                     AccountName = x.Account != null ? x.Account.AcctName : null,
-                    AccountType = x.AcctType != null ? x.AcctType.AcctTypeDescription : null
+                    //AccountType = x.AcctType != null ? x.AcctType.FuncCode : null
                 })
                 .ToListAsync();
 
@@ -174,10 +175,12 @@ namespace PlanningAPI.Controllers
         // GET BY GroupCode
         // =========================
         [HttpGet("get")]
-        public async Task<IActionResult> Get(string acctGroupCode)
+        public async Task<IActionResult> Get(string acctGroupCode, string CompanyId)
         {
+            if (string.IsNullOrWhiteSpace(acctGroupCode) || string.IsNullOrWhiteSpace(CompanyId))
+                return BadRequest(new { message = "Mapping identifiers are required." });
             var data = await _context.AccountGroupSetups
-                .Where(x => x.AcctGroupCode == acctGroupCode).Select(p => p.AccountId).ToListAsync();
+                .Where(x => x.AcctGroupCode == acctGroupCode && x.CompanyId == CompanyId).Select(p => p.AccountId).ToListAsync();
 
             if (data == null)
                 return NotFound(new { message = "Mapping not found." });
@@ -244,8 +247,14 @@ namespace PlanningAPI.Controllers
                     {
                         // Remove existing record if exists
                         var existing = await _context.AccountGroupSetups
-                            .FirstOrDefaultAsync(x => x.AcctGroupCode == model.AcctGroupCode
-                                                   && x.AccountId == model.AccountId);
+                            .AsNoTracking() // 🔥 important for bulk ops
+                            .FirstOrDefaultAsync(x =>
+                                x.AcctGroupCode == model.AcctGroupCode &&
+                                x.AccountId == model.AccountId &&
+                                x.CompanyId == model.CompanyId);
+                        //var existing = await _context.AccountGroupSetups
+                        //    .FirstOrDefaultAsync(x => x.AcctGroupCode == model.AcctGroupCode
+                        //                           && x.AccountId == model.AccountId);
 
                         if (existing != null)
                         {

@@ -49,30 +49,30 @@
         public bool ActiveFlag { get; set; }
     }
 
-    public static class AcctTypeExtensions
-    {
-        public static AcctType ToEntity(this AcctTypeDto dto, string modifiedBy)
-        {
-            return new AcctType
-            {
-                AcctTypeCode = dto.AcctTypeCode,
-                CompanyId = dto.CompanyId,
-                AcctTypeDescription = dto.AcctTypeDescription,
-                ActiveFlag = dto.ActiveFlag,
-                ModifiedBy = modifiedBy,
-                TimeStamp = DateTime.UtcNow
-            };
-        }
+    //public static class AcctTypeExtensions
+    //{
+    //    public static AcctType ToEntity(this AcctTypeDto dto, string modifiedBy)
+    //    {
+    //        return new AcctType
+    //        {
+    //            AcctTypeCode = dto.AcctTypeCode,
+    //            CompanyId = dto.CompanyId,
+    //            AcctTypeDescription = dto.AcctTypeDescription,
+    //            ActiveFlag = dto.ActiveFlag,
+    //            ModifiedBy = modifiedBy,
+    //            TimeStamp = DateTime.UtcNow
+    //        };
+    //    }
 
-        public static AcctTypeDto ToDto(this AcctType entity)
-        {
-            return new AcctTypeDto
-            {
-                AcctTypeCode = entity.AcctTypeCode,
-                CompanyId = entity.CompanyId,
-                AcctTypeDescription = entity.AcctTypeDescription,
-                ActiveFlag = entity.ActiveFlag
-            };
-        }
-    }
+    //    public static AcctTypeDto ToDto(this AcctType entity)
+    //    {
+    //        return new AcctTypeDto
+    //        {
+    //            AcctTypeCode = entity.AcctTypeCode,
+    //            CompanyId = entity.CompanyId,
+    //            AcctTypeDescription = entity.AcctTypeDescription,
+    //            ActiveFlag = entity.ActiveFlag
+    //        };
+    //    }
+    //}
 }

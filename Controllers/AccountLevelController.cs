@@ -162,6 +162,15 @@ namespace PlanningAPI.Controllers
             return NoContent();
         }
 
+        // ✅ GET ALL FUNCTION CODES
+        [HttpGet("GetAllAcctFunctionCode")]
+        public async Task<IActionResult> GetAllAcctFunctionCode()
+        {
+            var data = await _context.AcctFunctionCodes.Select(p=>p.FuncCode).ToListAsync();
+
+            return Ok(data);
+        }
+
         //// GET: api/AcctLevels
         //[HttpGet("GetAllOrgLevels")]
         //public async Task<ActionResult<IEnumerable<OrgLevel>>> GetAllOrgLevels()

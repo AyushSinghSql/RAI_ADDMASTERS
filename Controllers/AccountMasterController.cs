@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using NPOI.SS.Formula.Functions;
 using PlanningAPI.Models;
 using WebApi.Helpers;
 
@@ -12,158 +13,158 @@ namespace PlanningAPI.Controllers
     public class AccountMasterController : ControllerBase
     {
 
-            private readonly MydatabaseContext _context;
-            private Helper _helper => new Helper(_context);
+        private readonly MydatabaseContext _context;
+        private Helper _helper => new Helper(_context);
 
-            public AccountMasterController(MydatabaseContext context)
-            {
-                _context = context;
-            }
+        public AccountMasterController(MydatabaseContext context)
+        {
+            _context = context;
+        }
 
-            // GET: api/AcctMaster
-            [HttpGet]
-            public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
-            {
-                return await _context.Accounts.ToListAsync();
-            }
+        // GET: api/AcctMaster
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
+        {
+            return await _context.Accounts.ToListAsync();
+        }
 
-            [HttpGet("GetAllAccounts")]
-            public async Task<ActionResult<List<AcctMasterDto>>> GetAllAccounts()
-            {
-                var accounts = await _context.Accounts
-                    .Select(p => new AcctMasterDto
-                    {
-                        AcctId = p.AcctId,
-                        AcctName = p.AcctName,
-                        LvlNo = p.LvlNo.GetValueOrDefault()
-                    })
-                    .ToListAsync();
-
-                return Ok(accounts);
-            }
-
-            [HttpGet("startswith/{id}")]
-            public async Task<ActionResult<IEnumerable<Account>>> GetAccountsByPrefix(string id)
-            {
-                var accounts = await _context.Accounts
-                    .Where(a => a.AcctId.StartsWith(id))
-                    .ToListAsync();
-
-                if (!accounts.Any())
+        [HttpGet("GetAllAccounts")]
+        public async Task<ActionResult<List<AcctMasterDto>>> GetAllAccounts()
+        {
+            var accounts = await _context.Accounts
+                .Select(p => new AcctMasterDto
                 {
-                    return NotFound("No matching accounts found");
+                    AcctId = p.AcctId,
+                    AcctName = p.AcctName,
+                    LvlNo = p.LvlNo.GetValueOrDefault()
+                })
+                .ToListAsync();
+
+            return Ok(accounts);
+        }
+
+        [HttpGet("startswith/{AcctId}")]
+        public async Task<ActionResult<IEnumerable<Account>>> GetAccountsByPrefix(string id)
+        {
+            var accounts = await _context.Accounts
+                .Where(a => a.AcctId.StartsWith(id))
+                .ToListAsync();
+
+            if (!accounts.Any())
+            {
+                return NotFound("No matching accounts found");
+            }
+
+            return Ok(accounts);
+        }
+        [HttpGet("SearchAccounts")]
+        public async Task<ActionResult<IEnumerable<Account>>> SearchAccounts(
+        [FromQuery] string? search,
+        [FromQuery] string? startsWith,
+        [FromQuery] string? sortBy = "AcctId",
+        [FromQuery] string? sortOrder = "asc",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            var query = _context.Accounts.AsQueryable();
+
+            // 🔍 Search (by name or ID)
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(a => a.AcctName.Contains(search) || a.AcctId.Contains(search));
+            }
+
+            // 🔎 StartsWith filter
+            if (!string.IsNullOrEmpty(startsWith))
+            {
+                query = query.Where(a => a.AcctId.StartsWith(startsWith));
+            }
+
+            // ↕️ Sorting
+            query = (sortBy.ToLower(), sortOrder.ToLower()) switch
+            {
+                ("acctname", "desc") => query.OrderByDescending(a => a.AcctName),
+                ("acctname", _) => query.OrderBy(a => a.AcctName),
+
+                ("lvlno", "desc") => query.OrderByDescending(a => a.LvlNo),
+                ("lvlno", _) => query.OrderBy(a => a.LvlNo),
+
+                ("acctid", "desc") => query.OrderByDescending(a => a.AcctId),
+                _ => query.OrderBy(a => a.AcctId),
+            };
+
+            // 📄 Pagination
+            var totalRecords = await query.CountAsync();
+
+            var data = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Optional: include metadata
+            return Ok(new
+            {
+                totalRecords,
+                page,
+                pageSize,
+                data
+            });
+        }
+        // GET: api/AcctMaster/{id}
+        [HttpGet("{AcctId}")]
+        public async Task<ActionResult<Account>> GetAcctMaster(string id)
+        {
+            var acct = await _context.Accounts.FindAsync(id);
+
+            if (acct == null)
+            {
+                return NotFound();
+            }
+
+            return acct;
+        }
+
+        // POST: api/AcctMaster
+        //[HttpPost]
+        //public async Task<ActionResult<Account>> CreateAcctMaster(Account acctMaster)
+        //{
+        //    _context.Accounts.Add(acctMaster);
+        //    await _context.SaveChangesAsync();
+
+        //    return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+        //}
+
+        [HttpPost]
+        public async Task<ActionResult<Account>> CreateAcctMaster(Account acctMaster)
+        {
+            var parts = acctMaster.AcctId.Split('.');
+            int level = parts.Length;
+
+            // Validate level matches
+            if (acctMaster.LvlNo != level)
+            {
+                return BadRequest($"Invalid Level. AccountId {acctMaster.AcctId} should have Level {level}");
+            }
+
+            // Check parent
+            if (level > 1)
+            {
+                string parentId = string.Join(".", parts.Take(parts.Length - 1));
+
+                bool parentExists = await _context.Accounts
+                    .AnyAsync(a => a.AcctId == parentId);
+
+                if (!parentExists)
+                {
+                    return BadRequest($"Parent account {parentId} must exist before creating {acctMaster.AcctId}");
                 }
-
-                return Ok(accounts);
-            }
-            [HttpGet("SearchAccounts")]
-            public async Task<ActionResult<IEnumerable<Account>>> SearchAccounts(
-            [FromQuery] string? search,
-            [FromQuery] string? startsWith,
-            [FromQuery] string? sortBy = "AcctId",
-            [FromQuery] string? sortOrder = "asc",
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
-            {
-                var query = _context.Accounts.AsQueryable();
-
-                // 🔍 Search (by name or ID)
-                if (!string.IsNullOrEmpty(search))
-                {
-                    query = query.Where(a => a.AcctName.Contains(search) || a.AcctId.Contains(search));
-                }
-
-                // 🔎 StartsWith filter
-                if (!string.IsNullOrEmpty(startsWith))
-                {
-                    query = query.Where(a => a.AcctId.StartsWith(startsWith));
-                }
-
-                // ↕️ Sorting
-                query = (sortBy.ToLower(), sortOrder.ToLower()) switch
-                {
-                    ("acctname", "desc") => query.OrderByDescending(a => a.AcctName),
-                    ("acctname", _) => query.OrderBy(a => a.AcctName),
-
-                    ("lvlno", "desc") => query.OrderByDescending(a => a.LvlNo),
-                    ("lvlno", _) => query.OrderBy(a => a.LvlNo),
-
-                    ("acctid", "desc") => query.OrderByDescending(a => a.AcctId),
-                    _ => query.OrderBy(a => a.AcctId),
-                };
-
-                // 📄 Pagination
-                var totalRecords = await query.CountAsync();
-
-                var data = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
-
-                // Optional: include metadata
-                return Ok(new
-                {
-                    totalRecords,
-                    page,
-                    pageSize,
-                    data
-                });
-            }
-            // GET: api/AcctMaster/{id}
-            [HttpGet("{id}")]
-            public async Task<ActionResult<Account>> GetAcctMaster(string id)
-            {
-                var acct = await _context.Accounts.FindAsync(id);
-
-                if (acct == null)
-                {
-                    return NotFound();
-                }
-
-                return acct;
             }
 
-            // POST: api/AcctMaster
-            //[HttpPost]
-            //public async Task<ActionResult<Account>> CreateAcctMaster(Account acctMaster)
-            //{
-            //    _context.Accounts.Add(acctMaster);
-            //    await _context.SaveChangesAsync();
+            _context.Accounts.Add(acctMaster);
+            await _context.SaveChangesAsync();
 
-            //    return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
-            //}
-
-            [HttpPost]
-            public async Task<ActionResult<Account>> CreateAcctMaster(Account acctMaster)
-            {
-                var parts = acctMaster.AcctId.Split('.');
-                int level = parts.Length;
-
-                // Validate level matches
-                if (acctMaster.LvlNo != level)
-                {
-                    return BadRequest($"Invalid Level. AccountId {acctMaster.AcctId} should have Level {level}");
-                }
-
-                // Check parent
-                if (level > 1)
-                {
-                    string parentId = string.Join(".", parts.Take(parts.Length - 1));
-
-                    bool parentExists = await _context.Accounts
-                        .AnyAsync(a => a.AcctId == parentId);
-
-                    if (!parentExists)
-                    {
-                        return BadRequest($"Parent account {parentId} must exist before creating {acctMaster.AcctId}");
-                    }
-                }
-
-                _context.Accounts.Add(acctMaster);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
-            }
+            return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+        }
 
         [HttpPost("CreateAcctMasterV1")]
         public async Task<ActionResult<Account>> CreateAcctMasterV1(Account acctMaster)
@@ -373,55 +374,102 @@ namespace PlanningAPI.Controllers
         //}
 
         // PUT: api/AcctMaster/{id}
-        [HttpPut("{id}")]
-            public async Task<IActionResult> UpdateAcctMaster(string id, Account acctMaster)
+        [HttpPut("{AcctId}")]
+        public async Task<IActionResult> UpdateAcctMaster(string id, Account acctMaster)
+        {
+            if (id != acctMaster.AcctId)
             {
-                if (id != acctMaster.AcctId)
-                {
-                    return BadRequest();
-                }
-
-                _context.Entry(acctMaster).State = EntityState.Modified;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AcctMasterExists(id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-                return NoContent();
+                return BadRequest();
             }
 
-            // DELETE: api/AcctMaster/{id}
-            [HttpDelete("{id}")]
-            public async Task<IActionResult> DeleteAcctMaster(string id)
+            _context.Entry(acctMaster).State = EntityState.Modified;
+
+            try
             {
-                var acct = await _context.Accounts.FindAsync(id);
-                if (acct == null)
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AcctMasterExists(id))
                 {
                     return NotFound();
                 }
+                else
+                {
+                    throw;
+                }
+            }
 
-                _context.Accounts.Remove(acct);
+            return NoContent();
+        }
+
+        // DELETE: api/AcctMaster/{id}
+        [HttpDelete("{AcctId}")]
+        public async Task<IActionResult> DeleteAcctMaster(string AcctId)
+        {
+
+            if (string.IsNullOrWhiteSpace(AcctId))
+                return BadRequest("Invalid Account Id");
+
+            var Acct = await _context.Accounts
+                .FirstOrDefaultAsync(x => x.AcctId == AcctId);
+
+            if (Acct == null)
+                return NotFound("Account not found");
+            var hasChildren = await _context.Accounts
+                 .AnyAsync(x => x.AcctId.StartsWith(Acct.AcctId) && x.AcctId != Acct.AcctId);
+
+            // 🔥 1. CHECK DEPENDENCIES
+
+            var hasAccounts = await _context.OrgAccounts
+                .AnyAsync(x => x.AcctId == AcctId);
+
+            //var hasProjectPlans = await _context.PlProjectPlans
+            //    .AnyAsync(x => x.id == id);
+
+            if (hasChildren || hasAccounts)
+            {
+                return Conflict(new
+                {
+                    message = "Cannot delete Account. It is being used in other records.",
+                    dependencies = new
+                    {
+                        hasChildren,
+                        hasAccounts
+                    }
+                });
+            }
+
+            // 🔥 2. OPTIONAL: PREVENT ROOT DELETE
+            if (AcctId == "ROOT") // adjust as per your system
+            {
+                return BadRequest("Root Account cannot be deleted");
+            }
+
+            // 🔥 3. OPTIONAL: SOFT DELETE (Recommended)
+            // If you have ActiveFlag column
+            if (Acct.ActiveFlag == "Y")
+            {
+                Acct.ActiveFlag = "N";
+                Acct.Timestamp = DateTime.UtcNow;
+
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                return Ok("Account deactivated instead of deleted");
             }
 
-            private bool AcctMasterExists(string id)
-            {
-                return _context.Accounts.Any(e => e.AcctId == id);
-            }
+            // 🔥 4. HARD DELETE (if safe)
+            _context.Accounts.Remove(Acct);
+            await _context.SaveChangesAsync();
+
+            return Ok("Account deleted successfully");
+
+        }
+
+        private bool AcctMasterExists(string id)
+        {
+            return _context.Accounts.Any(e => e.AcctId == id);
+        }
 
         [NonAction]
         public string GetFriendlyErrorMessage(DbUpdateException ex)

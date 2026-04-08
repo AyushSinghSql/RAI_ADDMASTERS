@@ -4,32 +4,34 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace PlanningAPI.Models
 {
-    [Table("acct_grp")]
-    public class AcctGrp
+
+    [Table("acct_grp_cd", Schema = "public")]
+    public class AcctGrpCd
     {
         [Column("acct_grp_cd")]
         [MaxLength(3)]
-        public string AcctGrpCd { get; set; }
+        public string AcctGrpCode { get; set; } = null!;
 
         [Column("company_id")]
         [MaxLength(10)]
-        public string CompanyId { get; set; }
+        public string CompanyId { get; set; } = null!;
 
         [Column("acct_grp_desc")]
         [MaxLength(30)]
-        public string AcctGrpDesc { get; set; }
+        public string AcctGrpDesc { get; set; } = null!;
 
         [Column("modified_by")]
         [MaxLength(20)]
-        public string ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; } = null!;
 
         [Column("time_stamp")]
         public DateTime TimeStamp { get; set; }
 
         [Column("rowversion")]
-        public decimal? RowVersion { get; set; }
+        public decimal? Rowversion { get; set; }
 
-        //// 🔗 Navigation (optional)
-        //public Company? Company { get; set; }
+        [Column("active_fl")]
+        [MaxLength(1)]
+        public string ActiveFl { get; set; } = "Y";
     }
 }

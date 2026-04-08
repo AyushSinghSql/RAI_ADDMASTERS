@@ -186,7 +186,7 @@ public class OrgnizationController : ControllerBase
             return BadRequest($"LvlNo should be {levelCount} for OrgId {org.OrgId}");
 
 
-        var levelConfigs = await _context.OrgLevels
+        var levelConfigs = await _context.OrgLevels.Where(p=>p.OrgIdTop == segments[0])
             .ToDictionaryAsync(l => l.LevelNo, l => l.IdSegmentLength);
 
         for (int i = 0; i < segments.Length; i++)
@@ -5803,11 +5803,62 @@ select new
     [HttpDelete("DeleteOrganization/{orgId}")]
     public async Task<IActionResult> DeleteOrganization(string orgId)
     {
-        var org = await _context.Organizations.FindAsync(orgId);
+        if (string.IsNullOrWhiteSpace(orgId))
+            return BadRequest("Invalid Organization Id");
+
+        var org = await _context.Organizations
+            .FirstOrDefaultAsync(x => x.OrgId == orgId);
 
         if (org == null)
             return NotFound("Organization not found");
 
+        var hasChildren = await _context.Organizations
+             .AnyAsync(x => x.OrgId.StartsWith(org.OrgId) && x.OrgId != org.OrgId);
+
+        // 🔥 1. CHECK DEPENDENCIES
+
+        var hasAccounts = await _context.OrgAccounts
+            .AnyAsync(x => x.OrgId == orgId);
+
+        var hasProjects = await _context.PlProjects
+            .AnyAsync(x => x.OrgId == orgId);
+
+        //var hasProjectPlans = await _context.PlProjectPlans
+        //    .AnyAsync(x => x.OrgId == orgId);
+
+        if (hasChildren || hasAccounts || hasProjects)
+        {
+            return Conflict(new
+            {
+                message = "Cannot delete organization. It is being used in other records.",
+                dependencies = new
+                {
+                    hasChildren,
+                    hasAccounts,
+                    hasProjects
+                }
+            });
+        }
+
+        // 🔥 2. OPTIONAL: PREVENT ROOT DELETE
+        if (orgId == "ROOT") // adjust as per your system
+        {
+            return BadRequest("Root organization cannot be deleted");
+        }
+
+        // 🔥 3. OPTIONAL: SOFT DELETE (Recommended)
+        // If you have ActiveFlag column
+        if (org.ActiveFl == "Y")
+        {
+            org.ActiveFl = "N";
+            org.TimeStamp = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Organization deactivated instead of deleted");
+        }
+
+        // 🔥 4. HARD DELETE (if safe)
         _context.Organizations.Remove(org);
         await _context.SaveChangesAsync();
 

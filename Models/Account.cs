@@ -149,6 +149,14 @@ public class Account
     [JsonIgnore]
     public virtual AccountGroupSetup? AccountGroupSetup { get; set; }
 }
+
+[Table("acct_function_code", Schema = "public")]
+public class AcctFunctionCode
+{
+    [Key] // optional if table has PK, else remove
+    [Column("func_code")]
+    public string FuncCode { get; set; } = null!;
+}
 public class AcctMasterDto
 {
     public string AcctId { get; set; }

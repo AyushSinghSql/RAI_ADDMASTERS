@@ -17,6 +17,17 @@ namespace PlanningAPI.Controllers
         }
 
         // ✅ GET
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var data = await _context.SubPeriods
+                .OrderBy(x => x.SubPeriodNo)
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
+        // ✅ GET
         [HttpGet("{fyCd}/{periodNo}")]
         public async Task<IActionResult> Get(string fyCd, int periodNo)
         {

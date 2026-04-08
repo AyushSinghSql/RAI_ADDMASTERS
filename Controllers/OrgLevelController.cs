@@ -25,6 +25,10 @@ namespace PlanningAPI.Controllers
                 .ThenBy(x => x.LevelNo)
                 .ToListAsync();
 
+
+
+            //    return result;
+
             return Ok(data);
         }
 
@@ -37,7 +41,21 @@ namespace PlanningAPI.Controllers
                 .OrderBy(x => x.LevelNo)
                 .ToListAsync();
 
-            return Ok(data);
+            var result = await (
+                from lvl in _context.OrgLevels
+                join org in _context.Organizations
+                    on lvl.LevelNo equals org.LvlNo into OrgGroup
+                where lvl.OrgIdTop.StartsWith(orgIdTop)
+                select new LevelDto
+                {
+                    Level = lvl.LevelNo,
+                    Lenght = lvl.IdSegmentLength,
+                    Count = OrgGroup.Count(),
+                    Description = lvl.OrgLevelDesc
+                }
+            ).OrderBy(x => x.Level).ToListAsync();
+
+            return Ok(result);
         }
 
         // ✅ CREATE

@@ -63,7 +63,7 @@ namespace PlanningAPI.Models
 
         [Column("period_end_date")]
         [Required]
-        public DateTime PeriodEndDate { get; set; }
+        public DateOnly PeriodEndDate { get; set; }
 
         [Column("modified_by")]
         [MaxLength(20)]
@@ -84,7 +84,7 @@ namespace PlanningAPI.Models
         public string AdjustmentCode { get; set; } = null!;
 
         [Column("adjustment_end_date")]
-        public DateTime? AdjustmentEndDate { get; set; }
+        public DateOnly? AdjustmentEndDate { get; set; }
 
         [Column("rowversion", TypeName = "numeric(10,0)")]
         public decimal? Rowversion { get; set; }
@@ -112,7 +112,7 @@ namespace PlanningAPI.Models
         public int SubPeriodNo { get; set; }
 
         [Column("sub_period_end_date")]
-        public DateTime SubPeriodEndDate { get; set; }
+        public DateOnly SubPeriodEndDate { get; set; }
 
         [Column("status_cd")]
         [MaxLength(1)]
@@ -141,6 +141,7 @@ namespace PlanningAPI.Models
 
         // 🔗 Navigation
         public AccountingPeriod? AccountingPeriod { get; set; }
+
     }
 
     [Table("sub_period_journal_status", Schema = "public")]
@@ -177,9 +178,13 @@ namespace PlanningAPI.Models
 
         [Column("rowversion", TypeName = "numeric(10,0)")]
         public decimal? Rowversion { get; set; }
-
+        [NotMapped]
+        public string? JournalDesc { get; set; } = null!;
         // 🔗 Navigation
         public SubPeriod? SubPeriod { get; set; }
+
+        [ForeignKey(nameof(JournalCode))]
+        public virtual JournalCode? JournalCodeRef { get; set; }
     }
     public class FiscalYearDto
     {
@@ -195,12 +200,12 @@ namespace PlanningAPI.Models
         public string FyCd { get; set; } = null!;
         public int PeriodNo { get; set; }
         public string StatusCd { get; set; } = null!;
-        public DateTime PeriodEndDate { get; set; }
+        public DateOnly PeriodEndDate { get; set; }
         public string ModifiedBy { get; set; } = null!;
         public string CompanyId { get; set; } = null!;
         public string IsAdjustment { get; set; } = null!;
         public string AdjustmentCode { get; set; } = null!;
-        public DateTime? AdjustmentEndDate { get; set; }
+        public DateOnly? AdjustmentEndDate { get; set; }
     }
 
     public class SubPeriodDto
@@ -208,7 +213,7 @@ namespace PlanningAPI.Models
         public string FyCd { get; set; } = null!;
         public int PeriodNo { get; set; }
         public int SubPeriodNo { get; set; }
-        public DateTime SubPeriodEndDate { get; set; }
+        public DateOnly SubPeriodEndDate { get; set; }
         public string StatusCd { get; set; } = null!;
         public string ModifiedBy { get; set; } = null!;
         public string IsAdjustment { get; set; } = null!;
@@ -223,6 +228,8 @@ namespace PlanningAPI.Models
         public int SubPeriodNo { get; set; }
         public string IsOpen { get; set; } = null!;
         public string ModifiedBy { get; set; } = null!;
+        public string JournalDesc { get; set; } = null!;
+
     }
     public class SubPeriodJournalStatusBulkDto
     {
@@ -261,5 +268,21 @@ namespace PlanningAPI.Models
         public int? SubPeriodNo { get; set; }
         public string JournalCode { get; set; } = null!;
         public string CompanyId { get; set; } = null!;
+    }
+
+    public class FiscalYearCreateDto
+    {
+        public string FyCd { get; set; } = null!;
+        public string CompanyId { get; set; } = null!;
+        public string StatusCd { get; set; } = "O";
+        public string FyDesc { get; set; } = null!;
+        public string ModifiedBy { get; set; } = null!;
+        public string? CloseActTgtCd { get; set; }
+
+        // 🔥 New
+        public int TotalPeriods { get; set; } = 12;
+        public int SubPeriodsPerPeriod { get; set; } = 1;
+
+        public DateOnly StartDate { get; set; }
     }
 }

@@ -148,6 +148,20 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
+        [HttpGet("GetTaxableEntity")]
+        public async Task<IActionResult> GetTaxableEntity(string companyId)
+        {
+            var data = await _context.TaxableEntites
+                .Where(x => x.CompanyId == companyId)
+                .Select(x => x.ToDto())
+                .ToListAsync();
+
+            if (data == null)
+                return NotFound(new { message = "Company not found." });
+
+            return Ok(data);
+        }
+
         // =========================
         // SEARCH
         // =========================

@@ -10,25 +10,29 @@
         [Key]
         [Column("journal_code")]
         [MaxLength(3)]
-        public string JournalCodeId { get; set; } = null!;
+        public string? JournalCodeId { get; set; } = null!;
 
         [Column("journal_desc")]
         [MaxLength(50)]
-        public string JournalDesc { get; set; } = null!;
+        public string? JournalDesc { get; set; } = null!;
 
         [Column("is_active")]
         [MaxLength(1)]
-        public string IsActive { get; set; } = "Y";
+        public string? IsActive { get; set; } = "Y";
 
         [Column("modified_by")]
         [MaxLength(20)]
-        public string ModifiedBy { get; set; } = null!;
+        public string? ModifiedBy { get; set; } = null!;
 
         [Column("time_stamp")]
-        public DateTime TimeStamp { get; set; }
+        public DateTime? TimeStamp { get; set; }
 
         [Column("rowversion", TypeName = "numeric(10,0)")]
         public decimal? Rowversion { get; set; }
+
+        public virtual ICollection<JournalStatus>? JournalStatuses { get; set; } = new List<JournalStatus>();
+        public virtual ICollection<SubPeriodJournalStatus>? SubperiodJournalStatuses { get; set; } = new List<SubPeriodJournalStatus>();
+
     }
 
     [Table("journal_status", Schema = "public")]
@@ -57,6 +61,12 @@
 
         [Column("rowversion")]
         public decimal? Rowversion { get; set; }
+        [NotMapped]
+        public string? JournalDesc { get; set; } = null!;
+
+        // 🔥 Navigation to JournalCode
+        [ForeignKey(nameof(JournalCode))]
+        public virtual JournalCode? JournalCodeRef { get; set; }
     }
 
     public class JournalCodeDto
@@ -75,5 +85,7 @@
         public string CompanyId { get; set; } = null!;
         public string IsOpen { get; set; } = null!;
         public string ModifiedBy { get; set; } = null!;
+        public string JournalDesc { get; set; } = null!;
+
     }
 }

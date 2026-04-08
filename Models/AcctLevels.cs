@@ -18,7 +18,7 @@ namespace PlanningAPI.Models
     {
         public int Level { get; set; }
         public int Lenght { get; set; }
-
+        public string ? Description { get; set; } // 🔥 New field
         public int Count { get; set; } // 🔥 New field
 
     }

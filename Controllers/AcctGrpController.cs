@@ -21,7 +21,7 @@ namespace PlanningAPI.Controllers
         // ✅ CREATE
         // =========================
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] AcctGrp model)
+        public async Task<IActionResult> Create([FromBody] AcctGrpCd model)
         {
             if (model == null)
                 return BadRequest(new { message = "Invalid data." });
@@ -29,7 +29,7 @@ namespace PlanningAPI.Controllers
             try
             {
                 var exists = await _context.AcctGrps.AnyAsync(x =>
-                    x.AcctGrpCd == model.AcctGrpCd);
+                    x.AcctGrpCode == model.AcctGrpCode);
 
                 if (exists)
                 {
@@ -54,7 +54,7 @@ namespace PlanningAPI.Controllers
         // ✅ UPDATE
         // =========================
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] AcctGrp model)
+        public async Task<IActionResult> Update([FromBody] AcctGrpCd model)
         {
             if (model == null)
                 return BadRequest(new { message = "Invalid data." });
@@ -62,7 +62,7 @@ namespace PlanningAPI.Controllers
             try
             {
                 var existing = await _context.AcctGrps.FirstOrDefaultAsync(x =>
-                    x.AcctGrpCd == model.AcctGrpCd);
+                    x.AcctGrpCode == model.AcctGrpCode);
 
                 if (existing == null)
                     return NotFound(new { message = "Account Group not found." });
@@ -94,7 +94,7 @@ namespace PlanningAPI.Controllers
             try
             {
                 var existing = await _context.AcctGrps.FirstOrDefaultAsync(x =>
-                    x.AcctGrpCd == acctGrpCd);
+                    x.AcctGrpCode == acctGrpCd);
 
                 if (existing == null)
                     return NotFound(new { message = "Account Group not found." });
@@ -120,7 +120,7 @@ namespace PlanningAPI.Controllers
         public async Task<IActionResult> GetAll()
         {
             var data = await _context.AcctGrps
-                .OrderBy(x => x.AcctGrpCd)
+                .OrderBy(x => x.AcctGrpCode)
                 .ToListAsync();
 
             return Ok(new { data });
@@ -132,9 +132,9 @@ namespace PlanningAPI.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> Get(string acctGrpCd, string companyId)
         {
-            var data = await _context.AcctGrps.FirstOrDefaultAsync(x =>
-                x.AcctGrpCd == acctGrpCd &&
-                x.CompanyId == companyId);
+            var data = await _context.AcctGrps.FirstOrDefaultAsync((System.Linq.Expressions.Expression<Func<AcctGrpCd, bool>>)(x =>
+                x.AcctGrpCode == acctGrpCd &&
+                x.CompanyId == companyId));
 
             if (data == null)
                 return NotFound(new { message = "Account Group not found." });
@@ -154,7 +154,7 @@ namespace PlanningAPI.Controllers
             var query = _context.AcctGrps.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(acctGrpCd))
-                query = query.Where(x => x.AcctGrpCd.Contains(acctGrpCd));
+                query = query.Where(x => x.AcctGrpCode.Contains(acctGrpCd));
 
             if (!string.IsNullOrWhiteSpace(acctGrpDesc))
                 query = query.Where(x => x.AcctGrpDesc.Contains(acctGrpDesc));
@@ -186,7 +186,7 @@ namespace PlanningAPI.Controllers
 
             // Filters
             if (!string.IsNullOrWhiteSpace(acctGrpCd))
-                query = query.Where(x => x.AcctGrpCd.Contains(acctGrpCd));
+                query = query.Where(x => x.AcctGrpCode.Contains(acctGrpCd));
 
             if (!string.IsNullOrWhiteSpace(acctGrpDesc))
                 query = query.Where(x => x.AcctGrpDesc.Contains(acctGrpDesc));
@@ -197,7 +197,7 @@ namespace PlanningAPI.Controllers
             var totalCount = await query.CountAsync();
 
             var data = await query
-                .OrderBy(x => x.AcctGrpCd)
+                .OrderBy(x => x.AcctGrpCode)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
