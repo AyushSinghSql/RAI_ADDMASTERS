@@ -29,13 +29,13 @@ namespace PlanningAPI.Controllers
 
             try
             {
-                var exists = await _context.AccountGroupSetups
+                var exists = await _context.AccountGroupSetup
                     .AnyAsync(x => x.AcctGroupCode == model.AcctGroupCode && x.AccountId == model.AccountId);
 
                 if (exists)
                     return BadRequest(new { message = "Mapping already exists." });
 
-                _context.AccountGroupSetups.Add(model);
+                _context.AccountGroupSetup.Add(model);
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Mapping saved successfully." });
@@ -57,7 +57,7 @@ namespace PlanningAPI.Controllers
 
             try
             {
-                var existing = await _context.AccountGroupSetups
+                var existing = await _context.AccountGroupSetup
                     .FirstOrDefaultAsync(x => x.AcctGroupCode == model.AcctGroupCode && x.AccountId == model.AccountId);
 
                 if (existing == null)
@@ -94,13 +94,13 @@ namespace PlanningAPI.Controllers
 
             try
             {
-                var existing = await _context.AccountGroupSetups
+                var existing = await _context.AccountGroupSetup
                     .FirstOrDefaultAsync(x => x.AcctGroupCode == acctGroupCode && x.AccountId == accountId && x.CompanyId == CompanyId);
 
                 if (existing == null)
                     return NotFound(new { message = "Mapping not found." });
 
-                _context.AccountGroupSetups.Remove(existing);
+                _context.AccountGroupSetup.Remove(existing);
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Mapping deleted successfully." });
@@ -138,8 +138,8 @@ namespace PlanningAPI.Controllers
         [HttpGet("getall")]
         public async Task<IActionResult> GetAll(int pageNumber = 1, int pageSize = 10)
         {
-            var query = _context.AccountGroupSetups
-                .Include(x => x.Account) // join with account table
+            var query = _context.AccountGroupSetup
+                //.Include(x => x.Account) // join with account table
                 .AsQueryable();
 
             var totalCount = await query.CountAsync();
@@ -157,7 +157,7 @@ namespace PlanningAPI.Controllers
                     ActiveFlag = x.ActiveFlag,
                     RevenueMappedAccount = x.RevenueMappedAccount,
                     SalaryCapMappedAccount = x.SalaryCapMappedAccount,
-                    AccountName = x.Account != null ? x.Account.AcctName : null,
+                    //AccountName = x.Account != null ? x.Account.AcctName : null,
                     //AccountType = x.AcctType != null ? x.AcctType.FuncCode : null
                 })
                 .ToListAsync();
@@ -179,7 +179,7 @@ namespace PlanningAPI.Controllers
         {
             if (string.IsNullOrWhiteSpace(acctGroupCode) || string.IsNullOrWhiteSpace(CompanyId))
                 return BadRequest(new { message = "Mapping identifiers are required." });
-            var data = await _context.AccountGroupSetups
+            var data = await _context.AccountGroupSetup
                 .Where(x => x.AcctGroupCode == acctGroupCode && x.CompanyId == CompanyId).Select(p => p.AccountId).ToListAsync();
 
             if (data == null)
@@ -199,7 +199,7 @@ namespace PlanningAPI.Controllers
             int pageNumber = 1,
             int pageSize = 10)
         {
-            var query = _context.AccountGroupSetups.AsQueryable();
+            var query = _context.AccountGroupSetup.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(acctGroupCode))
                 query = query.Where(x => x.AcctGroupCode.Contains(acctGroupCode));
@@ -246,23 +246,24 @@ namespace PlanningAPI.Controllers
                     try
                     {
                         // Remove existing record if exists
-                        var existing = await _context.AccountGroupSetups
+                        var existing = await _context.AccountGroupSetup
                             .AsNoTracking() // 🔥 important for bulk ops
                             .FirstOrDefaultAsync(x =>
                                 x.AcctGroupCode == model.AcctGroupCode &&
                                 x.AccountId == model.AccountId &&
                                 x.CompanyId == model.CompanyId);
+
                         //var existing = await _context.AccountGroupSetups
                         //    .FirstOrDefaultAsync(x => x.AcctGroupCode == model.AcctGroupCode
                         //                           && x.AccountId == model.AccountId);
 
                         if (existing != null)
                         {
-                            _context.AccountGroupSetups.Remove(existing);
+                            _context.AccountGroupSetup.Remove(existing);
                         }
 
                         // Add the new record
-                        _context.AccountGroupSetups.Add(model);
+                        _context.AccountGroupSetup.Add(model);
 
                         result.Add(new
                         {

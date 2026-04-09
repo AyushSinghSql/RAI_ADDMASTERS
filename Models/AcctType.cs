@@ -36,14 +36,14 @@
         [ForeignKey("CompanyId")]
         public Company? Company { get; set; }
 
-        [JsonIgnore]
-        public virtual ICollection<AccountGroupSetup>? AccountGroupSetups { get; set; }
+        //[JsonIgnore]
+        //public virtual ICollection<AccountGroupSetup>? AccountGroupSetups { get; set; }
 
     }
 
     public class AcctTypeDto
     {
-        public string AcctTypeCode { get; set; }
+        //public string AcctTypeCode { get; set; }
         public string CompanyId { get; set; }
         public string AcctTypeDescription { get; set; }
         public bool ActiveFlag { get; set; }

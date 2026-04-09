@@ -37,7 +37,7 @@ public partial class MydatabaseContext : DbContext
     public DbSet<AcctLevel> AcctLevels { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<AcctType> AcctTypes { get; set; }
-    public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
+    //public DbSet<AccountGroupSetup> AccountGroupSetups { get; set; }
     public DbSet<AcctGrpCd> AcctGrps { get; set; }
     public DbSet<ProjVendorEmployeeLabcat> ProjVendorEmployeeLabcats { get; set; }
     public DbSet<ProjEmployeeLabcat> ProjEmployeeLabcats { get; set; }
@@ -3118,8 +3118,7 @@ public partial class MydatabaseContext : DbContext
 
         modelBuilder.Entity<AccountGroupSetup>(entity =>
         {
-
-            entity.HasKey(e => new { e.AcctGroupCode, e.AccountId, e.CompanyId }); // You may configure composite keys here if needed
+            entity.HasKey(e => new { e.AcctGroupCode, e.AccountId, e.CompanyId });
 
             entity.HasOne(e => e.Account)
                   .WithOne(a => a.AccountGroupSetup)
@@ -3127,8 +3126,14 @@ public partial class MydatabaseContext : DbContext
                   .HasConstraintName("fk_accounts")
                   .OnDelete(DeleteBehavior.Restrict);
 
+            // 🔥 FIXED RELATIONSHIP
+            entity.HasOne(e => e.AcctType)
+                  .WithMany()
+                  .HasForeignKey(e => e.AccountFunctionDescription)
+                  .HasPrincipalKey(a => a.FuncCode)
+                  .HasConstraintName("fk_acct_func_cd")
+                  .OnDelete(DeleteBehavior.Restrict);
         });
-
         modelBuilder.Entity<PlCeilHrCat>(entity =>
         {
             entity.ToTable("pl_ceil_hr_cat");

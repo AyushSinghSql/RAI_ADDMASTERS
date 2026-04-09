@@ -39,7 +39,7 @@ public class AccountGroupSetup
     [JsonIgnore]
     public virtual Account? Account { get; set; }
 
-    // optional navigation
+    //optional navigation
     [ForeignKey(nameof(AccountFunctionDescription))]
     public virtual AcctFunctionCode? AcctType { get; set; }
 }
