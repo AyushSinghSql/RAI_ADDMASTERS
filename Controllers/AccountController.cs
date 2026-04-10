@@ -177,5 +177,259 @@ namespace PlanningAPI.Controllers
 
             return Ok();
         }
+
+        [HttpPost("SyncOrgAccounts")]
+        public async Task<IActionResult> SyncOrgAccounts([FromBody] List<OrgAccount> accounts)
+        {
+            // ✅ Validate request
+            if (accounts == null || !accounts.Any())
+                return BadRequest("Accounts list cannot be empty.");
+
+            var invalidRecords = accounts
+                .Where(x => string.IsNullOrWhiteSpace(x.OrgId) || string.IsNullOrWhiteSpace(x.AcctId))
+                .ToList();
+
+            if (invalidRecords.Any())
+                return BadRequest("Some records have missing OrgId or AcctId.");
+
+            // ✅ Remove duplicates (composite key)
+            accounts = accounts
+                .GroupBy(x => new { x.OrgId, x.AcctId })
+                .Select(g => g.First())
+                .ToList();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var utcNow = DateTime.UtcNow;
+
+                // ✅ Build key set (FAST lookup)
+                var keySet = accounts
+                    .Select(x => $"{x.OrgId}|{x.AcctId}")
+                    .ToHashSet();
+
+                var orgIds = accounts
+                    .Select(x => x.OrgId)
+                    .Distinct()
+                    .ToList();
+
+                // ✅ Fetch only relevant existing data
+                var existing = await _context.OrgAccounts
+                    .Where(x => orgIds.Contains(x.OrgId))
+                    .ToListAsync();
+
+                // ✅ Dictionary for fast matching
+                var existingDict = existing.ToDictionary(
+                    x => $"{x.OrgId}|{x.AcctId}",
+                    x => x
+                );
+
+                int insertCount = 0;
+                int updateCount = 0;
+
+                // ========================
+                // ✅ INSERT + UPDATE
+                // ========================
+                foreach (var acc in accounts)
+                {
+                    var key = $"{acc.OrgId}|{acc.AcctId}";
+
+                    if (existingDict.TryGetValue(key, out var dbEntity))
+                    {
+                        // 🔄 UPDATE
+                        dbEntity.AccType = acc.AccType;
+                        dbEntity.ActiveFl = acc.ActiveFl;
+                        dbEntity.FyCdFr = acc.FyCdFr;
+                        dbEntity.PdNoFr = acc.PdNoFr;
+                        dbEntity.FyCdTo = acc.FyCdTo;
+                        dbEntity.PdNoTo = acc.PdNoTo;
+                        dbEntity.RqApprProcCd = acc.RqApprProcCd;
+                        dbEntity.ModifiedBy = acc.ModifiedBy;
+                        dbEntity.TimeStamp = utcNow;
+
+                        updateCount++;
+                    }
+                    else
+                    {
+                        // ➕ INSERT
+                        acc.TimeStamp = utcNow;
+                        await _context.OrgAccounts.AddAsync(acc);
+
+                        insertCount++;
+                    }
+                }
+
+                // ========================
+                // ❌ DELETE (only within scope)
+                // ========================
+                var toDelete = existing
+                    .Where(x => !keySet.Contains($"{x.OrgId}|{x.AcctId}"))
+                    .ToList();
+
+                if (toDelete.Any())
+                    _context.OrgAccounts.RemoveRange(toDelete);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    message = "Org-Account mappings synced successfully",
+                    inserted = insertCount,
+                    updated = updateCount,
+                    deleted = toDelete.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Error syncing accounts: {ex.Message}");
+            }
+        }
+
+        [HttpPost("UpsertOrgAccounts")]
+        public async Task<IActionResult> UpsertOrgAccounts([FromBody] List<OrgAccount> accounts)
+        {
+            if (accounts == null || !accounts.Any())
+                return BadRequest("Accounts list cannot be empty.");
+
+            var invalidRecords = accounts
+                .Where(x => string.IsNullOrWhiteSpace(x.OrgId) || string.IsNullOrWhiteSpace(x.AcctId))
+                .ToList();
+
+            if (invalidRecords.Any())
+                return BadRequest("Some records have missing OrgId or AcctId.");
+
+            // ✅ Remove duplicates
+            accounts = accounts
+                .GroupBy(x => new { x.OrgId, x.AcctId })
+                .Select(g => g.First())
+                .ToList();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var utcNow = DateTime.UtcNow;
+
+                var orgIds = accounts
+                    .Select(x => x.OrgId)
+                    .Distinct()
+                    .ToList();
+
+                // ✅ Fetch only relevant records
+                var existing = await _context.OrgAccounts
+                    .Where(x => orgIds.Contains(x.OrgId))
+                    .ToListAsync();
+
+                var existingDict = existing.ToDictionary(
+                    x => $"{x.OrgId}|{x.AcctId}",
+                    x => x
+                );
+
+                int insertCount = 0;
+                int updateCount = 0;
+
+                foreach (var acc in accounts)
+                {
+                    var key = $"{acc.OrgId}|{acc.AcctId}";
+
+                    if (existingDict.TryGetValue(key, out var dbEntity))
+                    {
+                        // 🔄 UPDATE
+                        dbEntity.AccType = acc.AccType;
+                        dbEntity.ActiveFl = acc.ActiveFl;
+                        dbEntity.FyCdFr = acc.FyCdFr;
+                        dbEntity.PdNoFr = acc.PdNoFr;
+                        dbEntity.FyCdTo = acc.FyCdTo;
+                        dbEntity.PdNoTo = acc.PdNoTo;
+                        dbEntity.RqApprProcCd = acc.RqApprProcCd;
+                        dbEntity.ModifiedBy = acc.ModifiedBy;
+                        dbEntity.TimeStamp = utcNow;
+
+                        updateCount++;
+                    }
+                    else
+                    {
+                        // ➕ INSERT
+                        acc.TimeStamp = utcNow;
+                        await _context.OrgAccounts.AddAsync(acc);
+
+                        insertCount++;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    message = "Upsert completed successfully",
+                    inserted = insertCount,
+                    updated = updateCount
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Error in upsert: {ex.Message}");
+            }
+        }
+
+        [HttpPost("DeleteOrgAccounts")]
+        public async Task<IActionResult> DeleteOrgAccounts([FromBody] List<OrgAccount> accounts)
+        {
+            if (accounts == null || !accounts.Any())
+                return BadRequest("Accounts list cannot be empty.");
+
+            var invalidRecords = accounts
+                .Where(x => string.IsNullOrWhiteSpace(x.OrgId) || string.IsNullOrWhiteSpace(x.AcctId))
+                .ToList();
+
+            if (invalidRecords.Any())
+                return BadRequest("Some records have missing OrgId or AcctId.");
+
+            // ✅ Remove duplicates
+            var keys = accounts
+                .GroupBy(x => new { x.OrgId, x.AcctId })
+                .Select(g => g.Key)
+                .ToList();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var orgIds = keys.Select(x => x.OrgId).Distinct().ToList();
+
+                // ✅ Fetch only relevant records
+                var existing = await _context.OrgAccounts
+                    .Where(x => orgIds.Contains(x.OrgId))
+                    .ToListAsync();
+
+                var toDelete = existing
+                    .Where(x => keys.Any(k => k.OrgId == x.OrgId && k.AcctId == x.AcctId))
+                    .ToList();
+
+                if (!toDelete.Any())
+                    return Ok(new { message = "No matching records found to delete.", deleted = 0 });
+
+                _context.OrgAccounts.RemoveRange(toDelete);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    message = "Records deleted successfully",
+                    deleted = toDelete.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Error deleting records: {ex.Message}");
+            }
+        }
     }
 }

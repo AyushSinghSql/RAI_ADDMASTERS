@@ -283,7 +283,8 @@ namespace PlanningAPI.Controllers
                 return BadRequest(new { message });
             }
 
-            return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
+            return Ok("Account Created Successfully");
+            //return CreatedAtAction(nameof(GetAcctMaster), new { id = acctMaster.AcctId }, acctMaster);
         }
 
 
@@ -375,9 +376,9 @@ namespace PlanningAPI.Controllers
 
         // PUT: api/AcctMaster/{id}
         [HttpPut("{AcctId}")]
-        public async Task<IActionResult> UpdateAcctMaster(string id, Account acctMaster)
+        public async Task<IActionResult> UpdateAcctMaster(string AcctId, Account acctMaster)
         {
-            if (id != acctMaster.AcctId)
+            if (AcctId != acctMaster.AcctId)
             {
                 return BadRequest();
             }
@@ -390,7 +391,7 @@ namespace PlanningAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AcctMasterExists(id))
+                if (!AcctMasterExists(AcctId))
                 {
                     return NotFound();
                 }

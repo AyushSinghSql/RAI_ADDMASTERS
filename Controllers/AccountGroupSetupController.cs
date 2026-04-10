@@ -157,8 +157,7 @@ namespace PlanningAPI.Controllers
                     ActiveFlag = x.ActiveFlag,
                     RevenueMappedAccount = x.RevenueMappedAccount,
                     SalaryCapMappedAccount = x.SalaryCapMappedAccount,
-                    //AccountName = x.Account != null ? x.Account.AcctName : null,
-                    //AccountType = x.AcctType != null ? x.AcctType.FuncCode : null
+                    AccountName = x.Account != null ? x.Account.AcctName : null
                 })
                 .ToListAsync();
 

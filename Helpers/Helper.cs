@@ -1484,7 +1484,7 @@ namespace WebApi.Helpers
                     .ToList();
 
             sql = $@"
-                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendId,
+                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendorId,
                             NULL::varchar AS ""OrgId"",
                             NULL::varchar AS ""OrgName"",
                             NULL::varchar AS ""AcctId"",
@@ -2025,7 +2025,7 @@ namespace WebApi.Helpers
                     .ToList();
 
             sql = $@"
-                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendId,
+                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendorId,
                             NULL::varchar AS ""OrgId"",
                             NULL::varchar AS ""OrgName"",
                             NULL::varchar AS ""AcctId"",
@@ -2524,7 +2524,7 @@ namespace WebApi.Helpers
                     .ToList();
 
             sql = $@"
-                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendId,
+                        SELECT ve.vend_empl_id as EmpId, ve.vend_empl_name as EmployeeName, ve.df_bill_lab_cat_cd as Plc, ve.vend_id as VendorId,
                             NULL::varchar AS ""OrgId"",
                             NULL::varchar AS ""OrgName"",
                             NULL::varchar AS ""AcctId"",

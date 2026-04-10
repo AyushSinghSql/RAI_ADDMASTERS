@@ -113,7 +113,36 @@ public class OrgnizationController : ControllerBase
         var totalRecords = await query.CountAsync();
 
         // 📄 Pagination
-        var organizations = await query
+        var organizations = await query.Select(x => new OrganizationDto
+        {
+            OrgId = x.OrgId,
+            OrgName = x.OrgName,
+            LvlNo = x.LvlNo,
+
+            OrgTopFl = x.OrgTopFl,
+            TaxbleEntityId = x.TaxbleEntityId,
+            TaxbleEntityName = x.Company.TaxableEntity.TaxableName,
+
+            ActiveFl = x.ActiveFl,
+            FyCdFr = x.FyCdFr,
+            PdNoFr = x.PdNoFr,
+            FyCdTo = x.FyCdTo,
+            PdNoTo = x.PdNoTo,
+            IcrAcctIdFr = x.IcrAcctIdFr,
+            IcrAcctIdTo = x.IcrAcctIdTo,
+            IcrRef1IdFr = x.IcrRef1IdFr,
+            IcrRef1IdTo = x.IcrRef1IdTo,
+            IcrRef2IdFr = x.IcrRef2IdFr,
+            IcrRef2IdTo = x.IcrRef2IdTo,
+            TcOrgFl = x.TcOrgFl,
+            IcTrckngLvlNo = x.IcTrckngLvlNo,
+            OrgLvlsNo = x.OrgLvlsNo,
+
+            OrgAbbrvCd = x.OrgAbbrvCd,
+            ModifiedBy = x.ModifiedBy,
+            TimeStamp = x.TimeStamp,
+            CompanyId = x.CompanyId
+        })
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

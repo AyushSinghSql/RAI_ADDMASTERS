@@ -74,10 +74,13 @@ public class Organization
     [Column("sft_fl")] public string? SftFl { get; set; }
     [Column("mes_fl")] public string? MesFl { get; set; }
     [Column("tm_org_fl")] public string? TmOrgFl { get; set; }
+
+    //optional navigation
+    [ForeignKey(nameof(CompanyId))]
+    public virtual Company? Company { get; set; }
     public virtual ICollection<PlEmployee>? PlEmployees { get; set; } = new List<PlEmployee>();
 
     public virtual ICollection<PlProject>? PlProjects { get; set; } = new List<PlProject>();
-
     public ICollection<OrgGroupOrgMapping>? OrgGroupMappings { get; set; }
     = new List<OrgGroupOrgMapping>();
 }
@@ -86,12 +89,46 @@ public class AddOrgAccountRequest
     public string OrgId { get; set; } = null!;
     public string AcctId { get; set; } = null!;
 }
+
 public class OrganizationDto
 {
-    public string OrgId { get; set; }
-    public string OrgName { get; set; }
+    public string OrgId { get; set; } = null!;
+    public string OrgName { get; set; } = null!;
     public int LvlNo { get; set; }
+
+    // 🔥 Business Fields
+    public string? OrgTopFl { get; set; }
+    public string? TaxbleEntityId { get; set; }
+    public string? TaxbleEntityName { get; set; }
+    public string? ActiveFl { get; set; }
+
+    public string? FyCdFr { get; set; }
+    public int? PdNoFr { get; set; }
+    public string? FyCdTo { get; set; }
+    public int? PdNoTo { get; set; }
+
+    public string? IcrAcctIdFr { get; set; }
+    public string? IcrRef1IdFr { get; set; }
+    public string? IcrRef2IdFr { get; set; }
+    public string? IcrAcctIdTo { get; set; }
+    public string? IcrRef1IdTo { get; set; }
+    public string? IcrRef2IdTo { get; set; }
+    public string? TcOrgFl { get; set; }
+    public int? IcTrckngLvlNo { get; set; }
+    public int? OrgLvlsNo { get; set; }
+
+    public string? OrgAbbrvCd { get; set; }
+
+    public string? ModifiedBy { get; set; }
+    public DateTime? TimeStamp { get; set; }
+    public string? CompanyId { get; set; }
 }
+//public class OrganizationDto
+//{
+//    public string OrgId { get; set; }
+//    public string OrgName { get; set; }
+//    public int LvlNo { get; set; }
+//}
 [Table("org_groups")]
 public class OrgGroup
 {

@@ -36,6 +36,7 @@
         public TaxableEntity TaxableEntity { get; set; }
         public ICollection<AcctType>? AcctTypes { get; set; }
         public ICollection<AcctGrpCd>? AcctGrps { get; set; }
+        public ICollection<Organization>? Orgs { get; set; }
     }
 
     public class CompanyDto

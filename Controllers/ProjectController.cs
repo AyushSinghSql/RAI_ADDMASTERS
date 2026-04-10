@@ -1244,7 +1244,7 @@ public class ProjectController : ControllerBase
     .FromSqlRaw(@"SELECT 
                 ve.vend_empl_id AS EmpId, 
                 ve.vend_empl_name AS EmployeeName, 
-                ve.vend_id AS VendId,
+                ve.vend_id AS VendorId,
                 NULL::varchar AS ""OrgId"",
                 NULL::varchar AS ""OrgName"",
                 NULL::varchar AS ""AcctId"",
@@ -1276,7 +1276,7 @@ public class ProjectController : ControllerBase
                         .FromSqlRaw(@"SELECT 
                             ve.vend_empl_id AS EmpId, 
                             ve.vend_empl_name AS EmployeeName, 
-                            ve.vend_id AS VendId,
+                            ve.vend_id AS VendorId,
                             NULL::varchar AS ""OrgId"",
                             NULL::varchar AS ""OrgName"",
                             NULL::varchar AS ""AcctId"",

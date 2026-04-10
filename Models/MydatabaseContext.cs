@@ -176,6 +176,12 @@ public partial class MydatabaseContext : DbContext
     public DbSet<UdefOption> UdefOptions { get; set; }
     public DbSet<AcctFunctionCode> AcctFunctionCodes { get; set; }
 
+    public DbSet<Vendor1099Detail> Vendor1099Details { get; set; }
+    public DbSet<VendorAddress> VendorAddresses { get; set; }
+    public DbSet<VendorAddressContact> VendorAddressContacts { get; set; }
+
+    public DbSet<Vendor> Vendors { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ModuleRights>()
@@ -185,6 +191,82 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
+
+        modelBuilder.Entity<Vendor>(entity =>
+        {
+            entity.HasKey(e => new { e.VendId, e.CompanyId });
+
+            entity.HasIndex(e => e.CompanyId);
+            entity.HasIndex(e => e.VendName);
+            entity.HasIndex(e => e.Ap1099TaxId);
+
+            entity.Property(e => e.VendId).HasMaxLength(12);
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.Property(e => e.TimeStamp).HasColumnType("timestamp");
+        });
+
+        // ✅ Vendor1099 PK
+        modelBuilder.Entity<Vendor1099Detail>()
+            .HasKey(v => new
+            {
+                v.TaxableEntityId,
+                v.CalendarYear,
+                v.Form1099TypeCode,
+                v.PayVendorId,
+                v.CompanyId
+            });
+
+        // ✅ VendorAddress PK
+        modelBuilder.Entity<VendorAddress>()
+            .HasKey(v => new { v.VendorId, v.AddrCode, v.CompanyId });
+
+        modelBuilder.Entity<VendorAddress>()
+            .HasOne(x => x.Vendor)
+            .WithMany(v => v.Addresses)
+            .HasForeignKey(x => new { x.VendorId, x.CompanyId })   // FK
+            .HasPrincipalKey(v => new { v.VendId, v.CompanyId });  // PK
+
+        // ✅ VendorAddressContact PK
+        modelBuilder.Entity<VendorAddressContact>()
+            .HasKey(v => new
+            {
+                v.VendId,
+                v.AddrCode,
+                v.VendorAddressContactKey
+            });
+
+        // ✅ Relationships
+
+        //modelBuilder.Entity<VendorAddress>()
+        //    .HasOne(v => v.Vendor)
+        //    .WithMany(v => v.Addresses)
+        //    .HasForeignKey(v => v.VendorId)
+        //    .OnDelete(DeleteBehavior.Cascade);
+
+        //modelBuilder.Entity<VendorAddress>()
+        //    .HasOne(a => a.Vendor)
+        //    .WithMany(v => v.Addresses)
+        //    .HasForeignKey(a => new { a.Vendor, a.CompanyId }) // ✅ MUST MATCH PK
+        //    .HasPrincipalKey(v => new { v.VendId, v.CompanyId }); // optional but clear
+
+        modelBuilder.Entity<VendorAddressContact>()
+            .HasOne(v => v.VendorAddress)
+            .WithMany(a => a.Contacts)
+            .HasForeignKey(v => new { v.VendId, v.AddrCode, v.CompanyId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        //modelBuilder.Entity<Vendor1099Detail>()
+        //    .HasOne(v => v.Vendor)
+        //    .WithMany(v => v.Vendor1099Details)
+        //    .HasForeignKey(v => v.PayVendorId)
+        //    .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Vendor1099Detail>()
+            .HasOne(v => v.Vendor)
+            .WithMany(v => v.Vendor1099Details)
+            .HasForeignKey(v => new { v.PayVendorId, v.CompanyId }) // ✅ MUST MATCH
+            .HasPrincipalKey(v => new { v.VendId, v.CompanyId });
 
         modelBuilder.Entity<OrgLevel>(entity =>
         {
@@ -1369,47 +1451,8 @@ public partial class MydatabaseContext : DbContext
 
         modelBuilder.Entity<VendorEmployee>(entity =>
         {
-            entity.ToTable("vendor_employee");
-
             // Composite Primary Key
-            entity.HasKey(e => new { e.VendEmplId, e.VendId });
-
-            // Column Mappings
-            entity.Property(e => e.CompanyId).HasColumnName("company_id");
-            entity.Property(e => e.DfGenlLabCatCd).HasColumnName("df_genl_lab_cat_cd");
-            entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
-            entity.Property(e => e.Rowversion).HasColumnName("rowversion");
-            entity.Property(e => e.TimeStamp).HasColumnName("time_stamp");
-            entity.Property(e => e.VendEmplId).HasColumnName("vend_empl_id");
-            entity.Property(e => e.VendEmplName).HasColumnName("vend_empl_name");
-            entity.Property(e => e.VendId).HasColumnName("vend_id");
-            entity.Property(e => e.DfBillLabCatCd).HasColumnName("df_bill_lab_cat_cd");
-            entity.Property(e => e.LastName).HasColumnName("last_name");
-            entity.Property(e => e.FirstName).HasColumnName("first_name");
-            entity.Property(e => e.MidName).HasColumnName("mid_name");
-            entity.Property(e => e.VendEmplStatus).HasColumnName("vend_empl_status");
-            entity.Property(e => e.SubctrId).HasColumnName("subctr_id");
-            entity.Property(e => e.TeEmplId).HasColumnName("te_empl_id");
-            entity.Property(e => e.VendEmplAprvrId).HasColumnName("vend_empl_aprvr_id");
-            entity.Property(e => e.VendEmplAprvlDt).HasColumnName("vend_empl_aprvl_dt");
-            entity.Property(e => e.VendEmplAprvlCd).HasColumnName("vend_empl_aprvl_cd");
-            entity.Property(e => e.IntEmail).HasColumnName("int_email");
-            entity.Property(e => e.ExtEmail).HasColumnName("ext_email");
-            entity.Property(e => e.IntPhone).HasColumnName("int_phone");
-            entity.Property(e => e.ExtPhone).HasColumnName("ext_phone");
-            entity.Property(e => e.CellPhone).HasColumnName("cell_phone");
-            entity.Property(e => e.Cont1Name).HasColumnName("cont_1_name");
-            entity.Property(e => e.Cont1Rel).HasColumnName("cont_1_rel");
-            entity.Property(e => e.Cont1Phone1).HasColumnName("cont_1_phone_1");
-            entity.Property(e => e.Cont1Phone2).HasColumnName("cont_1_phone_2");
-            entity.Property(e => e.Cont1Phone3).HasColumnName("cont_1_phone_3");
-            entity.Property(e => e.Cont2Name).HasColumnName("cont_2_name");
-            entity.Property(e => e.Cont2Rel).HasColumnName("cont_2_rel");
-            entity.Property(e => e.Cont2Phone1).HasColumnName("cont_2_phone_1");
-            entity.Property(e => e.Cont2Phone2).HasColumnName("cont_2_phone_2");
-            entity.Property(e => e.Cont2Phone3).HasColumnName("cont_2_phone_3");
-            entity.Property(e => e.UsCitizenFl).HasColumnName("us_citizen_fl");
-            entity.Property(e => e.ItarStatus).HasColumnName("itar_status");
+            entity.HasKey(e => new { e.VendEmplId, e.VendId, e.CompanyId });
         });
 
         modelBuilder.Entity<EmployeeDTOs>().HasNoKey().ToView(null);
@@ -2575,13 +2618,6 @@ public partial class MydatabaseContext : DbContext
 
             entity.HasKey(e => new { e.OrgId, e.AcctId });
 
-            entity.Property(e => e.OrgId).HasColumnName("org_id");
-            entity.Property(e => e.AcctId).HasColumnName("acct_id");
-            entity.Property(e => e.AccType).HasColumnName("acc_type");
-            entity.Property(e => e.ActiveFl).HasColumnName("active_fl");
-            entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
-            entity.Property(e => e.TimeStamp).HasColumnName("time_stamp");
-
             // Foreign key to Account
             entity.HasOne(e => e.Account)
                   .WithMany() // or .WithMany(a => a.SomeTables) if you have a navigation collection
@@ -2943,10 +2979,6 @@ public partial class MydatabaseContext : DbContext
             entity.ToTable("organization");
 
             entity.HasKey(e => e.OrgId);
-            //modelBuilder.Entity<Organization>()
-            //    .HasOne(p=>p.OrgId)
-            //    .WithMany(p=>p.PlProjects)
-            //    .HasForeignKey(p => p.OrgId);
             //entity.Property(e => e.OrgId).HasColumnName("org_id").HasMaxLength(30);
             //entity.Property(e => e.OrgName).HasColumnName("org_name").HasMaxLength(100).IsRequired();
             //entity.Property(e => e.LvlNo).HasColumnName("lvl_no");
@@ -3387,92 +3419,92 @@ public partial class MydatabaseContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var auditEntries = new List<AuditLog>();
-        //var http = _httpContextAccessor.HttpContext;
+    //public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    //{
+    //    var auditEntries = new List<AuditLog>();
+    //    //var http = _httpContextAccessor.HttpContext;
 
-        foreach (var entry in ChangeTracker.Entries())
-        {
-            if (entry.Entity is AuditLog ||
-                entry.State == EntityState.Detached ||
-                entry.State == EntityState.Unchanged)
-                continue;
+    //    foreach (var entry in ChangeTracker.Entries())
+    //    {
+    //        if (entry.Entity is AuditLog ||
+    //            entry.State == EntityState.Detached ||
+    //            entry.State == EntityState.Unchanged)
+    //            continue;
 
-            var audit = new AuditLog
-            {
-                TableName = entry.Metadata.GetTableName(),
-                Action = entry.State.ToString(),
-                TimeStamp = DateTime.UtcNow,
-                //RequestPath = http?.Request.Path,
-                //HttpMethod = http?.Request.Method
-            };
+    //        var audit = new AuditLog
+    //        {
+    //            TableName = entry.Metadata.GetTableName(),
+    //            Action = entry.State.ToString(),
+    //            TimeStamp = DateTime.UtcNow,
+    //            //RequestPath = http?.Request.Path,
+    //            //HttpMethod = http?.Request.Method
+    //        };
 
-            var keyValues = new Dictionary<string, object>();
-            var oldValues = new Dictionary<string, object>();
-            var newValues = new Dictionary<string, object>();
-            var changedColumns = new List<string>();
+    //        var keyValues = new Dictionary<string, object>();
+    //        var oldValues = new Dictionary<string, object>();
+    //        var newValues = new Dictionary<string, object>();
+    //        var changedColumns = new List<string>();
 
-            foreach (var prop in entry.Properties)
-            {
-                var propName = prop.Metadata.Name;
+    //        foreach (var prop in entry.Properties)
+    //        {
+    //            var propName = prop.Metadata.Name;
 
-                if (prop.Metadata.IsPrimaryKey())
-                {
-                    keyValues[propName] = prop.CurrentValue!;
-                    continue;
-                }
+    //            if (prop.Metadata.IsPrimaryKey())
+    //            {
+    //                keyValues[propName] = prop.CurrentValue!;
+    //                continue;
+    //            }
 
-                // 🔥 Capture CompanyId + ModifiedBy
-                if (propName == "CompanyId")
-                    audit.CompanyId = prop.CurrentValue?.ToString();
+    //            // 🔥 Capture CompanyId + ModifiedBy
+    //            if (propName == "CompanyId")
+    //                audit.CompanyId = prop.CurrentValue?.ToString();
 
-                if (propName == "ModifiedBy")
-                    audit.ModifiedBy = prop.CurrentValue?.ToString();
+    //            if (propName == "ModifiedBy")
+    //                audit.ModifiedBy = prop.CurrentValue?.ToString();
 
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        newValues[propName] = prop.CurrentValue!;
-                        changedColumns.Add(propName);
-                        break;
+    //            switch (entry.State)
+    //            {
+    //                case EntityState.Added:
+    //                    newValues[propName] = prop.CurrentValue!;
+    //                    changedColumns.Add(propName);
+    //                    break;
 
-                    case EntityState.Deleted:
-                        oldValues[propName] = prop.OriginalValue!;
-                        changedColumns.Add(propName);
-                        break;
+    //                case EntityState.Deleted:
+    //                    oldValues[propName] = prop.OriginalValue!;
+    //                    changedColumns.Add(propName);
+    //                    break;
 
-                    case EntityState.Modified:
-                        if (!Equals(prop.OriginalValue, prop.CurrentValue))
-                        {
-                            oldValues[propName] = prop.OriginalValue!;
-                            newValues[propName] = prop.CurrentValue!;
-                            changedColumns.Add(propName);
-                        }
-                        break;
-                }
-            }
+    //                case EntityState.Modified:
+    //                    if (!Equals(prop.OriginalValue, prop.CurrentValue))
+    //                    {
+    //                        oldValues[propName] = prop.OriginalValue!;
+    //                        newValues[propName] = prop.CurrentValue!;
+    //                        changedColumns.Add(propName);
+    //                    }
+    //                    break;
+    //            }
+    //        }
 
-            // 🔥 Skip if nothing changed
-            if (!changedColumns.Any())
-                continue;
+    //        // 🔥 Skip if nothing changed
+    //        if (!changedColumns.Any())
+    //            continue;
 
-            audit.KeyValues = JsonSerializer.Serialize(keyValues);
-            audit.OldValues = oldValues.Any() ? JsonSerializer.Serialize(oldValues) : null;
-            audit.NewValues = newValues.Any() ? JsonSerializer.Serialize(newValues) : null;
-            audit.ChangedColumns = JsonSerializer.Serialize(changedColumns);
+    //        audit.KeyValues = JsonSerializer.Serialize(keyValues);
+    //        audit.OldValues = oldValues.Any() ? JsonSerializer.Serialize(oldValues) : null;
+    //        audit.NewValues = newValues.Any() ? JsonSerializer.Serialize(newValues) : null;
+    //        audit.ChangedColumns = JsonSerializer.Serialize(changedColumns);
 
-            auditEntries.Add(audit);
-        }
+    //        auditEntries.Add(audit);
+    //    }
 
-        var result = await base.SaveChangesAsync(cancellationToken);
+    //    var result = await base.SaveChangesAsync(cancellationToken);
 
-        if (auditEntries.Any())
-        {
-            AuditLogs.AddRange(auditEntries);
-            await base.SaveChangesAsync(cancellationToken);
-        }
+    //    if (auditEntries.Any())
+    //    {
+    //        AuditLogs.AddRange(auditEntries);
+    //        await base.SaveChangesAsync(cancellationToken);
+    //    }
 
-        return result;
-    }
+    //    return result;
+    //}
 }
