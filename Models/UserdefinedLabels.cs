@@ -99,6 +99,10 @@ namespace PlanningAPI.Models
         [Column("value")]
         public string? Value { get; set; }
 
+        [Column("gen_id")]
+        [MaxLength(50)]
+        public string? GenId { get; set; }
+
         [Required]
         [Column("company_id")]
         [MaxLength(10)]
@@ -119,6 +123,7 @@ namespace PlanningAPI.Models
     public class UdefSaveDto
     {
         public int? FieldId { get; set; }
+        public string? GenId { get; set; }
         public string? FieldName { get; set; }
         public string? DataType { get; set; }
         public bool IsMultiSelect { get; set; }

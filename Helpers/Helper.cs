@@ -917,7 +917,7 @@ namespace WebApi.Helpers
 
             try
             {
-                if (projId.ToUpper().Contains("FRNGE") || projId.ToUpper().Contains("MS") || projId.ToUpper().Contains("MANDH") || projId.ToUpper().Contains("OVRHD") || projId.ToUpper().Contains("GANDA") || projId.ToUpper().Contains("HRPAY") || projId.ToUpper().Contains("GRANT") || projId.ToUpper().Contains("HRPAY") || projId.ToUpper().Contains("SMEHP") || projId.ToUpper().Contains("FACIT"))
+                if (projId.ToUpper().Contains("OH001") || projId.ToUpper().Contains("FRNGE") || projId.ToUpper().Contains("MS") || projId.ToUpper().Contains("MANDH") || projId.ToUpper().Contains("OVRHD") || projId.ToUpper().Contains("GANDA") || projId.ToUpper().Contains("HRPAY") || projId.ToUpper().Contains("GRANT") || projId.ToUpper().Contains("HRPAY") || projId.ToUpper().Contains("SMEHP") || projId.ToUpper().Contains("FACIT"))
                 {
                     return new StatusResponse
                     {
@@ -968,11 +968,13 @@ namespace WebApi.Helpers
                     }
                     else
                     {
+                        response.IsSuccess = true;
                         response.Message = "Revenue is configured at Level  '" + revenueLevels.Min() + "' .The budget must be created at the same or a lower project level.";
                     }
                 }
                 else
                 {
+                    response.IsSuccess = true;
                     response.Message = "No revenue definition found for the project.";
                 }
             }

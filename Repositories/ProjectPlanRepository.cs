@@ -1500,6 +1500,17 @@ string type)
         string revenueFormula = string.Empty;
         try
         {
+            var configValue = _context.PlConfigValues
+            .Where(r => r.Name.ToLower() == "closing_period")
+            .Select(r => r.Value)
+            .FirstOrDefault();
+
+            if (DateTime.TryParse(configValue, out var parsedDate))
+            {
+                newPlan.ClosedPeriod = DateOnly.FromDateTime(parsedDate);
+            }
+       
+
             newPlan.CreatedAt = DateTime.Now;
             newPlan.ClosedPeriod = DateOnly.FromDateTime(DateTime.Parse(_context.PlConfigValues.FirstOrDefault(r => r.Name.ToLower() == "closing_period").Value));
             newPlan.Source = Convert.ToString(newPlan.Source);

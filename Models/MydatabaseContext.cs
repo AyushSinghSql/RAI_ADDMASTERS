@@ -179,8 +179,24 @@ public partial class MydatabaseContext : DbContext
     public DbSet<Vendor1099Detail> Vendor1099Details { get; set; }
     public DbSet<VendorAddress> VendorAddresses { get; set; }
     public DbSet<VendorAddressContact> VendorAddressContacts { get; set; }
-
+    public DbSet<Reorganization> Reorganizations { get; set; }
+    public DbSet<ReorganizationLevel> ReorganizationLevels { get; set; }
+    public DbSet<ReorganizationOrgMap> ReorganizationOrgMaps { get; set; }
+    public DbSet<OrgAcctRefStruc> OrgAcctRefStrucs { get; set; }
+    public DbSet<RefStruc> RefStrucs { get; set; }
     public DbSet<Vendor> Vendors { get; set; }
+    public DbSet<VendorTerm> VendorTerms { get; set; }
+    public DbSet<VendorTermSchedule> VendorTermSchedules { get; set; }
+    public DbSet<VendAction> VendActions { get; set; }
+    public DbSet<VendorApprover> VendorApprovers { get; set; }
+    public DbSet<VendorCeiling> VendorCeilings { get; set; }
+    public DbSet<VendorCheckHistory> VendorCheckHistorys { get; set; }
+    public DbSet<VendorCheckHistory> VendorCheckHistories { get; set; }
+    public DbSet<VendorCheckVoucherDetail> VendorCheckVoucherDetails { get; set; }
+    public DbSet<VendorCisInformation> VendorCisInformations { get; set; }
+
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -191,6 +207,159 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
+
+        modelBuilder.Entity<VendorCisInformation>(entity =>
+        {
+            entity.HasKey(e => new { e.VendId, e.CisCode });
+
+            entity.Property(e => e.CisCode).HasMaxLength(6);
+            entity.Property(e => e.CisType).HasMaxLength(6);
+
+            entity.Property(e => e.CountryCode).HasMaxLength(8);
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany()
+                  .HasForeignKey(e => e.VendId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<VendorCheckVoucherDetail>(entity =>
+        {
+            entity.HasKey(e => new { e.CheckNumber, e.VoucherKey });
+
+            entity.Property(e => e.TransactionToEurRateFlag).HasMaxLength(1);
+            entity.Property(e => e.FunctionalToEurRateFlag).HasMaxLength(1);
+
+            entity.Property(e => e.RateGroupId).HasMaxLength(6);
+
+            // FK → vendor_check_history
+            entity.HasOne(e => e.CheckHistory)
+                  .WithMany()
+                  .HasForeignKey(e => e.CheckNumber)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // FK → vendors
+            entity.HasOne(e => e.Vendor)
+                  .WithMany()
+                  .HasForeignKey(e => e.VoucherVendorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<VendorCheckHistory>(entity =>
+        {
+            entity.HasKey(e => new { e.CheckNumber, e.PayVendorId });
+
+            entity.Property(e => e.SourceCode).HasMaxLength(1);
+            entity.Property(e => e.StatusCode).HasMaxLength(1);
+
+            entity.Property(e => e.JournalCode).HasMaxLength(3);
+            entity.Property(e => e.BankReconcileStatusCode).HasMaxLength(3);
+
+            entity.Property(e => e.PaymentCurrencyCode).HasMaxLength(3);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany()
+                  .HasForeignKey(e => e.PayVendorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<VendorCeiling>(entity =>
+        {
+            entity.HasKey(e => new
+            {
+                e.ProjectId,
+                e.BillingLaborCategoryCode,
+                e.VendId
+            });
+
+            entity.Property(e => e.ProjectId).HasMaxLength(30);
+            entity.Property(e => e.BillingLaborCategoryCode).HasMaxLength(6);
+            entity.Property(e => e.VendId).HasMaxLength(12);
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany() // or .WithMany(v => v.VendorCeilings)
+                  .HasForeignKey(e => e.VendId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<VendorApprover>(entity =>
+        {
+            entity.HasKey(e => new { e.VendId, e.ApproverUserId });
+
+            entity.Property(e => e.VendId).HasMaxLength(12);
+            entity.Property(e => e.ApproverUserId).HasMaxLength(20);
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany() // or .WithMany(v => v.Approvers)
+                  .HasForeignKey(e => e.VendId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VendAction>(entity =>
+        {
+            entity.HasKey(e => new { e.VendId, e.ActionKey });
+
+            entity.Property(e => e.VendorAddressContactFlag).HasMaxLength(1);
+            entity.Property(e => e.VendorEmployeeFlag).HasMaxLength(1);
+            entity.Property(e => e.VendorLaborInfoFlag).HasMaxLength(1);
+
+            entity.Property(e => e.PortalActionCode).HasMaxLength(5);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany() // or .WithMany(v => v.VendActions)
+                  .HasForeignKey(e => e.VendId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VendorTerm>(entity =>
+        {
+            entity.HasKey(e => e.TermsDc);
+
+            entity.Property(e => e.STermsBasisCd).HasMaxLength(1);
+            entity.Property(e => e.SDueDateCd).HasMaxLength(1);
+
+            entity.HasMany(e => e.Schedules)
+                  .WithOne(e => e.VendorTerm)
+                  .HasForeignKey(e => e.TermsDc)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VendorTermSchedule>(entity =>
+        {
+            entity.HasKey(e => new { e.TermsDc, e.VendTermsSchKey });
+
+            entity.Property(e => e.SCurNextMthCd).HasMaxLength(1);
+        });
+
+        modelBuilder.Entity<RefStruc>(entity =>
+        {
+            entity.HasKey(e => new { e.RefStrucId, e.CompanyId });
+
+            entity.Property(e => e.RefStrucTopFl).HasMaxLength(1);
+            entity.Property(e => e.RefDataEntryFl).HasMaxLength(1);
+            entity.Property(e => e.SRefEntryCd).HasMaxLength(1);
+
+            entity.HasMany(e => e.OrgAcctRefStrucs)
+                  .WithOne(e => e.RefStruc)
+                  .HasForeignKey(e => new { e.RefStrucId, e.CompanyId })
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OrgAcctRefStruc>(entity =>
+        {
+            entity.HasKey(e => new
+            {
+                e.OrgId,
+                e.AcctId,
+                e.RefStrucId,
+                e.CompanyId
+            });
+        });
+
+        modelBuilder.Entity<ReorganizationOrgMap>()
+       .HasKey(x => new { x.ReorgId, x.OrgId, x.CompanyId });
 
         modelBuilder.Entity<Vendor>(entity =>
         {
@@ -2454,16 +2623,16 @@ public partial class MydatabaseContext : DbContext
         {
             entity.HasKey(e => e.LaborCategoryCode).HasName("PLC_CODES_pkey");
 
-            entity.ToTable("PLC_CODES");
+            entity.ToTable("plc_codes");
 
             entity.Property(e => e.LaborCategoryCode)
                 .HasMaxLength(10)
-                .HasColumnName("PLC_CODE");
-            entity.Property(e => e.Active).HasColumnName("ACTIVE");
+                .HasColumnName("plc_code");
+            entity.Property(e => e.Active).HasColumnName("active");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnName("CREATED_AT");
-            entity.Property(e => e.Description).HasColumnName("DESCRIPTION");
+                .HasColumnName("created_at");
+            entity.Property(e => e.Description).HasColumnName("description");
         });
 
         modelBuilder.Entity<BurdenTemplate>(entity =>

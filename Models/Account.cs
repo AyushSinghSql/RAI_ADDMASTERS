@@ -206,27 +206,27 @@ public class ChartOfAccount
     [Required]
     [Column("account_name")]
     [MaxLength(200)]
-    public string AccountName { get; set; } = null!;
+    public string? AccountName { get; set; } = null!;
 
     [Required]
     [Column("cost_type")]
     [MaxLength(50)]
-    public string CostType { get; set; } = null!;
+    public string? CostType { get; set; } = null!;
 
     [Required]
     [Column("account_type")]
     [MaxLength(100)]
-    public string AccountType { get; set; } = null!;
+    public string? AccountType { get; set; } = null!;
 
     [Column("budget_sheet")]
     [MaxLength(50)]
     public string? BudgetSheet { get; set; }
 
     [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     [Column("updated_at")]
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 
 //public class LaborProjectAccount

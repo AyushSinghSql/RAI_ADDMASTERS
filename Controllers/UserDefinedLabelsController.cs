@@ -36,8 +36,11 @@ namespace PlanningAPI.Controllers
             var result = fields.Select(f => new
             {
                 f.Id,
+                GenId = values
+                    .Where(v => v.FieldId == f.Id)
+                    .Select(v => v.GenId).FirstOrDefault(),
                 f.FieldName,
-                f.DataType,
+                f.DataType, 
                 f.IsMultiSelect,
                 f.IsRequired,
                 Options = f.Options.Select(o => new { o.Value, o.Label }),
@@ -490,6 +493,7 @@ namespace PlanningAPI.Controllers
                         .Where(v => !existingSet.Contains(v))
                         .Select(v => new UdefValue
                         {
+                            GenId = input.GenId,
                             EntityId = entityId,
                             FieldId = field.Id,
                             Value = v,
@@ -528,6 +532,7 @@ namespace PlanningAPI.Controllers
                     {
                         await _context.UdefValues.AddAsync(new UdefValue
                         {
+                            GenId = input.GenId,
                             EntityId = entityId,
                             FieldId = field.Id,
                             Value = value,

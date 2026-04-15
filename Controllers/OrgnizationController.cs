@@ -222,11 +222,18 @@ public class OrgnizationController : ControllerBase
         {
             int currentLevel = i + 1;
 
-            if (!levelConfigs.ContainsKey(currentLevel))
-                return BadRequest($"Level configuration missing for Level {currentLevel}");
+            if (levelConfigs.Count() == 0 && levelCount == 1)
+            {
 
-            if (segments[i].Length != levelConfigs[currentLevel])
-                return BadRequest($"Invalid length at Level {currentLevel} it should be {levelConfigs[currentLevel]}");
+            }
+            else
+            {
+                if (!levelConfigs.ContainsKey(currentLevel))
+                    return BadRequest($"Level configuration missing for Level {currentLevel}");
+
+                if (segments[i].Length != levelConfigs[currentLevel])
+                    return BadRequest($"Invalid length at Level {currentLevel} it should be {levelConfigs[currentLevel]}");
+            }
         }
 
         // ✅ Hierarchy validation: check parent levels exist
