@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PlanningAPI.Models;
 using PlanningAPI.Services;
 
@@ -45,6 +46,24 @@ namespace PlanningAPI.Controllers
               pageSize,
               sortBy, sortOrder);
 
+
+            return Ok(result);
+        }
+
+        [HttpGet("GetAllVendors")]
+        public async Task<IActionResult> GetAllVendors(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? sortBy = "vend_id",
+            [FromQuery] string? sortOrder = "asc",
+            [FromQuery] string? search = null) // ✅ NEW
+        {
+            var result = await _service.GetALLVendorsAsync(
+                page,
+                pageSize,
+                sortBy,
+                sortOrder,
+                search); // ✅ pass it
 
             return Ok(result);
         }

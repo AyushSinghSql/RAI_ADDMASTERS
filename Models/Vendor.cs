@@ -139,6 +139,8 @@
         // Navigation
         public ICollection<VendorAddress> Addresses { get; set; }
         public ICollection<Vendor1099Detail> Vendor1099Details { get; set; }
+        public ICollection<VendorCisInformation> VendorCisInformations { get; set; }
+        
     }
 
 
@@ -713,7 +715,7 @@
         public DateTime? ModifiedTs { get; set; }
 
         [Column("voucher_vendor_id")]
-        public string? VoucherVendorId { get; set; }
+        public string VoucherVendorId { get; set; }
 
         [Column("transaction_paid_amount")]
         public decimal? TransactionPaidAmount { get; set; }
@@ -863,7 +865,7 @@
         public string? CountryCode { get; set; }
 
         [Column("company_id")]
-        public string? CompanyId { get; set; }
+        public string CompanyId { get; set; }
 
         [Column("modified_by")]
         public string? ModifiedBy { get; set; }
@@ -900,4 +902,128 @@
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 20;
     }
+
+    [Table("vendor_cis_history")]
+    public class VendorCisHistory
+    {
+        [Column("cis_voucher_no")]
+        public string CisVoucherNo { get; set; }
+
+        [Column("cis_voucher_type")]
+        public string CisVoucherType { get; set; }
+
+        [Column("taxable_entity_id")]
+        public string? TaxableEntityId { get; set; }
+
+        [Column("pay_vendor_id")]
+        public string? PayVendorId { get; set; }
+
+        [Column("tax_period_start_date")]
+        public DateTime? TaxPeriodStartDate { get; set; }
+
+        [Column("tax_period_end_date")]
+        public DateTime? TaxPeriodEndDate { get; set; }
+
+        [Column("spoiled_flag")]
+        public string? SpoiledFlag { get; set; }
+
+        [Column("cis_payment_amount")]
+        public decimal? CisPaymentAmount { get; set; }
+
+        [Column("cis_withheld_amount")]
+        public decimal? CisWithheldAmount { get; set; }
+
+        [Column("company_id")]
+        public string? CompanyId { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("modified_ts")]
+        public DateTime? ModifiedTs { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+
+        // Navigation
+        public Vendor? Vendor { get; set; }
+    }
+
+    public class VendorCisHistoryDto
+    {
+        public string CisVoucherNo { get; set; }
+        public string CisVoucherType { get; set; }
+
+        public string? PayVendorId { get; set; }
+        public string? TaxableEntityId { get; set; }
+
+        public decimal? CisPaymentAmount { get; set; }
+        public decimal? CisWithheldAmount { get; set; }
+
+        public DateTime? TaxPeriodStartDate { get; set; }
+        public DateTime? TaxPeriodEndDate { get; set; }
+
+        public string? SpoiledFlag { get; set; }
+        public string? ModifiedBy { get; set; }
+    }
+    public class VendorCisHistoryQuery
+    {
+        public string? VendorId { get; set; }
+        public string? CompanyId { get; set; }
+        public string? VoucherType { get; set; }
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+    [Table("vendor_vat_info")]
+    public class VendorVatInfo
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("tax_id")]
+        public string? TaxId { get; set; }
+
+        [Column("tax_location_cd")]
+        public string? TaxLocationCd { get; set; }
+
+        [Column("default_tax_id_fl")]
+        public string? DefaultTaxIdFl { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+
+        // Navigation
+        public Vendor? Vendor { get; set; }
+    }
+
+    public class VendorVatInfoDto
+    {
+        public string VendId { get; set; }
+        public string CompanyId { get; set; }
+        public string? TaxId { get; set; }
+        public string? TaxLocationCd { get; set; }
+        public string? DefaultTaxIdFl { get; set; }
+
+        public string? ModifiedBy { get; set; }
+    }
+    public class VendorVatQuery
+    {
+        public string? VendId { get; set; }
+        public string? CompanyId { get; set; }
+        public string? TaxId { get; set; }
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+
 }

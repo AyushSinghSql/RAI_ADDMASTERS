@@ -224,5 +224,61 @@ namespace PlanningAPI.Services
                 Data = result
             };
         }
+
+        public async Task<object> GetALLVendorsAsync(
+    int page,
+    int pageSize,
+    string? sortBy,
+    string? sortOrder,
+    string? search)
+        {
+            var query = _context.Vendors.AsQueryable();
+
+            // ✅ SEARCH
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+
+                query = query.Where(v =>
+                    v.VendId.ToLower().Contains(search) ||
+                    v.VendName.ToLower().Contains(search)
+                );
+            }
+
+            // ✅ SORTING
+            query = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
+            {
+                ("vend_id", "desc") => query.OrderByDescending(x => x.VendId),
+                ("vend_id", _) => query.OrderBy(x => x.VendId),
+
+                ("vend_name", "desc") => query.OrderByDescending(x => x.VendName),
+                ("vend_name", _) => query.OrderBy(x => x.VendName),
+
+                _ => query.OrderBy(x => x.VendId)
+            };
+
+            // ✅ PAGINATION
+            var totalRecords = await query.CountAsync();
+
+            var data = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(v => new
+                {
+                    v.VendId,
+                    v.VendName,
+                    v.VendApprvlCd,
+                    v.VendGrpCd
+                })
+                .ToListAsync();
+
+            return new
+            {
+                TotalRecords = totalRecords,
+                Page = page,
+                PageSize = pageSize,
+                Data = data
+            };
+        }
     }
 }

@@ -190,11 +190,13 @@ public partial class MydatabaseContext : DbContext
     public DbSet<VendAction> VendActions { get; set; }
     public DbSet<VendorApprover> VendorApprovers { get; set; }
     public DbSet<VendorCeiling> VendorCeilings { get; set; }
-    public DbSet<VendorCheckHistory> VendorCheckHistorys { get; set; }
     public DbSet<VendorCheckHistory> VendorCheckHistories { get; set; }
     public DbSet<VendorCheckVoucherDetail> VendorCheckVoucherDetails { get; set; }
     public DbSet<VendorCisInformation> VendorCisInformations { get; set; }
+    public DbSet<VendorCisHistory> VendorCisHistories { get; set; }
+    public DbSet<VendorVatInfo> VendorVatInfos { get; set; }
 
+    
 
 
 
@@ -208,6 +210,37 @@ public partial class MydatabaseContext : DbContext
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
 
+        modelBuilder.Entity<VendorVatInfo>(entity =>
+        {
+            entity.HasKey(e => new { e.VendId, e.CompanyId });
+
+            entity.Property(e => e.TaxId).HasMaxLength(20);
+            entity.Property(e => e.TaxLocationCd).HasMaxLength(8);
+            entity.Property(e => e.DefaultTaxIdFl).HasMaxLength(1);
+
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany()
+                  .HasForeignKey(e => new { e.VendId, e.CompanyId })
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VendorCisHistory>(entity =>
+        {
+            entity.HasKey(e => new { e.CisVoucherNo, e.CisVoucherType });
+
+            entity.Property(e => e.CisVoucherType).HasMaxLength(6);
+            entity.Property(e => e.SpoiledFlag).HasMaxLength(1);
+
+            entity.Property(e => e.CompanyId).HasMaxLength(10);
+
+            entity.HasOne(e => e.Vendor)
+                  .WithMany()
+                  .HasForeignKey(e => new { e.PayVendorId, e.CompanyId })
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<VendorCisInformation>(entity =>
         {
             entity.HasKey(e => new { e.VendId, e.CisCode });
@@ -218,15 +251,20 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.CountryCode).HasMaxLength(8);
             entity.Property(e => e.CompanyId).HasMaxLength(10);
 
-            entity.HasOne(e => e.Vendor)
-                  .WithMany()
-                  .HasForeignKey(e => e.VendId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<VendorCisInformation>()
+                .HasOne(x => x.Vendor)
+                .WithMany(v => v.VendorCisInformations)
+                .HasForeignKey(x => new { x.VendId, x.CompanyId });
+
+            //entity.HasOne(e => e.Vendor)
+            //      .WithMany()
+            //      .HasForeignKey(e => e.VendId)
+            //      .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<VendorCheckVoucherDetail>(entity =>
         {
-            entity.HasKey(e => new { e.CheckNumber, e.VoucherKey });
+            entity.HasKey(e => new { e.CheckNumber, e.VoucherKey, e.CashOrgId, e.CashAccountId, e.CheckDate });
 
             entity.Property(e => e.TransactionToEurRateFlag).HasMaxLength(1);
             entity.Property(e => e.FunctionalToEurRateFlag).HasMaxLength(1);
@@ -234,16 +272,16 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.RateGroupId).HasMaxLength(6);
 
             // FK → vendor_check_history
-            entity.HasOne(e => e.CheckHistory)
-                  .WithMany()
-                  .HasForeignKey(e => e.CheckNumber)
-                  .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<VendorCheckVoucherDetail>()
+            //    .HasOne(x => x.CheckHistory)
+            //    .WithMany(h => h.VoucherDetails)
+            //    .HasForeignKey(x => new { x.CheckNumber, x.PayVendorId });
 
             // FK → vendors
-            entity.HasOne(e => e.Vendor)
-                  .WithMany()
-                  .HasForeignKey(e => e.VoucherVendorId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasOne(e => e.Vendor)
+            //      .WithMany()
+            //      .HasForeignKey(e => e.VoucherVendorId)
+            //      .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<VendorCheckHistory>(entity =>
@@ -258,10 +296,10 @@ public partial class MydatabaseContext : DbContext
 
             entity.Property(e => e.PaymentCurrencyCode).HasMaxLength(3);
 
-            entity.HasOne(e => e.Vendor)
-                  .WithMany()
-                  .HasForeignKey(e => e.PayVendorId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasOne(e => e.Vendor)
+            //      .WithMany()
+            //      .HasForeignKey(e => e.PayVendorId)
+            //      .OnDelete(DeleteBehavior.Restrict);
         });
         modelBuilder.Entity<VendorCeiling>(entity =>
         {
@@ -279,7 +317,7 @@ public partial class MydatabaseContext : DbContext
 
             entity.HasOne(e => e.Vendor)
                   .WithMany() // or .WithMany(v => v.VendorCeilings)
-                  .HasForeignKey(e => e.VendId)
+                  .HasForeignKey(e => new { e.VendId, e.CompanyId })
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -293,7 +331,7 @@ public partial class MydatabaseContext : DbContext
 
             entity.HasOne(e => e.Vendor)
                   .WithMany() // or .WithMany(v => v.Approvers)
-                  .HasForeignKey(e => e.VendId)
+                  .HasForeignKey(e => new { e.VendId, e.CompanyId })
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -307,10 +345,10 @@ public partial class MydatabaseContext : DbContext
 
             entity.Property(e => e.PortalActionCode).HasMaxLength(5);
 
-            entity.HasOne(e => e.Vendor)
-                  .WithMany() // or .WithMany(v => v.VendActions)
-                  .HasForeignKey(e => e.VendId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            //entity.HasOne(e => e.Vendor)
+            //      .WithMany() // or .WithMany(v => v.VendActions)
+            //      .HasForeignKey(e => e.VendId)
+            //      .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<VendorTerm>(entity =>
@@ -364,6 +402,7 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<Vendor>(entity =>
         {
             entity.HasKey(e => new { e.VendId, e.CompanyId });
+            entity.HasAlternateKey(v => v.VendId);
 
             entity.HasIndex(e => e.CompanyId);
             entity.HasIndex(e => e.VendName);

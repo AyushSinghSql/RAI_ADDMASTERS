@@ -14,11 +14,11 @@ namespace PlanningAPI.Models
         [Required]
         [Column("reorg_name")]
         [MaxLength(200)]
-        public string ReorgName { get; set; }
+        public string? ReorgName { get; set; }
 
         [Column("reorg_top_fl")]
         [MaxLength(1)]
-        public string ReorgTopFl { get; set; }
+        public string? ReorgTopFl { get; set; }
 
         [Column("lvl_no")]
         public int? LvlNo { get; set; }
@@ -26,30 +26,30 @@ namespace PlanningAPI.Models
         [Column("reorg_lvls_no")]
         public int? ReorgLvlsNo { get; set; }
 
-        [Column("l1_reorg_name")] public string L1ReorgName { get; set; }
-        [Column("l2_reorg_name")] public string L2ReorgName { get; set; }
-        [Column("l3_reorg_name")] public string L3ReorgName { get; set; }
-        [Column("l4_reorg_name")] public string L4ReorgName { get; set; }
-        [Column("l5_reorg_name")] public string L5ReorgName { get; set; }
-        [Column("l6_reorg_name")] public string L6ReorgName { get; set; }
-        [Column("l7_reorg_name")] public string L7ReorgName { get; set; }
-        [Column("l8_reorg_name")] public string L8ReorgName { get; set; }
-        [Column("l9_reorg_name")] public string L9ReorgName { get; set; }
+        [Column("l1_reorg_name")] public string? L1ReorgName { get; set; }
+        [Column("l2_reorg_name")] public string? L2ReorgName { get; set; }
+        [Column("l3_reorg_name")] public string? L3ReorgName { get; set; }
+        [Column("l4_reorg_name")] public string? L4ReorgName { get; set; }
+        [Column("l5_reorg_name")] public string? L5ReorgName { get; set; }
+        [Column("l6_reorg_name")] public string? L6ReorgName { get; set; }
+        [Column("l7_reorg_name")] public string? L7ReorgName { get; set; }
+        [Column("l8_reorg_name")] public string? L8ReorgName { get; set; }
+        [Column("l9_reorg_name")] public string? L9ReorgName { get; set; }
 
-        [Column("l1_reorg_seg_id")] public string L1ReorgSegId { get; set; }
-        [Column("l2_reorg_seg_id")] public string L2ReorgSegId { get; set; }
-        [Column("l3_reorg_seg_id")] public string L3ReorgSegId { get; set; }
-        [Column("l4_reorg_seg_id")] public string L4ReorgSegId { get; set; }
-        [Column("l5_reorg_seg_id")] public string L5ReorgSegId { get; set; }
-        [Column("l6_reorg_seg_id")] public string L6ReorgSegId { get; set; }
-        [Column("l7_reorg_seg_id")] public string L7ReorgSegId { get; set; }
-        [Column("l8_reorg_seg_id")] public string L8ReorgSegId { get; set; }
-        [Column("l9_reorg_seg_id")] public string L9ReorgSegId { get; set; }
-        [Column("l10_reorg_seg_id")] public string L10ReorgSegId { get; set; }
+        [Column("l1_reorg_seg_id")] public string? L1ReorgSegId { get; set; }
+        [Column("l2_reorg_seg_id")] public string? L2ReorgSegId { get; set; }
+        [Column("l3_reorg_seg_id")] public string? L3ReorgSegId { get; set; }
+        [Column("l4_reorg_seg_id")] public string? L4ReorgSegId { get; set; }
+        [Column("l5_reorg_seg_id")] public string? L5ReorgSegId { get; set; }
+        [Column("l6_reorg_seg_id")] public string? L6ReorgSegId { get; set; }
+        [Column("l7_reorg_seg_id")] public string? L7ReorgSegId { get; set; }
+        [Column("l8_reorg_seg_id")] public string? L8ReorgSegId { get; set; }
+        [Column("l9_reorg_seg_id")] public string? L9ReorgSegId { get; set; }
+        [Column("l10_reorg_seg_id")] public string? L10ReorgSegId { get; set; }
 
         [Column("modified_by")]
         [MaxLength(50)]
-        public string ModifiedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         [Column("time_stamp")]
         public DateTime? TimeStamp { get; set; }
@@ -57,14 +57,14 @@ namespace PlanningAPI.Models
         [Required]
         [Column("company_id")]
         [MaxLength(30)]
-        public string CompanyId { get; set; }
+        public string? CompanyId { get; set; }
 
         [Column("row_version")]
-        public long RowVersion { get; set; }
+        public long? RowVersion { get; set; }
 
         // Navigation
-        public ICollection<ReorganizationLevel> Levels { get; set; }
-        public ICollection<ReorganizationOrgMap> OrgMaps { get; set; }
+        public ICollection<ReorganizationLevel>? Levels { get; set; }
+        public ICollection<ReorganizationOrgMap>? OrgMaps { get; set; }
     }
 
     [Table("reorganization_levels")]
@@ -104,7 +104,7 @@ namespace PlanningAPI.Models
         public string CompanyId { get; set; }
 
         [Column("row_version")]
-        public long RowVersion { get; set; }
+        public long? RowVersion { get; set; }
 
         // Navigation
         [ForeignKey("ReorgIdTop")]
@@ -156,6 +156,10 @@ namespace PlanningAPI.Models
         public string ReorgId { get; set; }
         public string ReorgName { get; set; }
         public string CompanyId { get; set; }
+        public string ReorgTopFl { get; set; }
+        public int? LvlNo { get; set; }
+
+
     }
 
     public class ReorganizationLevelDto

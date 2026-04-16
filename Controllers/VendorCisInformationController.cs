@@ -17,7 +17,7 @@ namespace PlanningAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(VendorCisInformationDto dto)
+        public async Task<IActionResult> Create(VendorCisInformation dto)
         {
             if (dto == null)
                 return BadRequest();
@@ -28,23 +28,23 @@ namespace PlanningAPI.Controllers
             if (exists)
                 return Conflict("Already exists");
 
-            var entity = new VendorCisInformation
-            {
-                VendId = dto.VendId,
-                CisCode = dto.CisCode,
-                CisType = dto.CisType,
-                CertificateRegistrationNo = dto.CertificateRegistrationNo,
-                StartDate = dto.StartDate,
-                ExpiryDate = dto.ExpiryDate,
-                CompanyId = dto.CompanyId,
-                ModifiedBy = dto.ModifiedBy,
-                ModifiedTs = DateTime.UtcNow
-            };
+            //var entity = new VendorCisInformation
+            //{
+            //    VendId = dto.VendId,
+            //    CisCode = dto.CisCode,
+            //    CisType = dto.CisType,
+            //    CertificateRegistrationNo = dto.CertificateRegistrationNo,
+            //    StartDate = dto.StartDate,
+            //    ExpiryDate = dto.ExpiryDate,
+            //    CompanyId = dto.CompanyId,
+            //    ModifiedBy = dto.ModifiedBy,
+            //    ModifiedTs = DateTime.UtcNow
+            //};
 
-            _context.VendorCisInformations.Add(entity);
+            _context.VendorCisInformations.Add(dto);
             await _context.SaveChangesAsync();
 
-            return Ok(entity);
+            return Ok(dto);
         }
 
         [HttpGet]
@@ -57,22 +57,22 @@ namespace PlanningAPI.Controllers
             return Ok(data);
         }
 
-        [HttpGet("{vendId}/{cisCode}")]
-        public async Task<IActionResult> Get(string vendId, string cisCode)
+        [HttpGet("{vendId}")]
+        public async Task<IActionResult> Get(string vendId)
         {
             var entity = await _context.VendorCisInformations
-                .FindAsync(vendId, cisCode);
+                .FirstOrDefaultAsync(x => x.VendId == vendId);
 
             if (entity == null)
                 return NotFound();
 
             return Ok(entity);
         }
-        [HttpPut("{vendId}/{cisCode}")]
-        public async Task<IActionResult> Update(string vendId, string cisCode, VendorCisInformationDto dto)
+        [HttpPut("{vendId}")]
+        public async Task<IActionResult> Update(string vendId, VendorCisInformationDto dto)
         {
             var entity = await _context.VendorCisInformations
-                .FindAsync(vendId, cisCode);
+                .FirstOrDefaultAsync(x => x.VendId == vendId);
 
             if (entity == null)
                 return NotFound();
@@ -89,11 +89,11 @@ namespace PlanningAPI.Controllers
 
             return Ok(entity);
         }
-        [HttpDelete("{vendId}/{cisCode}")]
-        public async Task<IActionResult> Delete(string vendId, string cisCode)
+        [HttpDelete("{vendId}")]
+        public async Task<IActionResult> Delete(string vendId)
         {
             var entity = await _context.VendorCisInformations
-                .FindAsync(vendId, cisCode);
+                .FirstOrDefaultAsync(x => x.VendId == vendId);
 
             if (entity == null)
                 return NotFound();
