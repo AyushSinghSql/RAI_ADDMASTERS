@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningAPI.Models;
+using System.Text;
 
 namespace PlanningAPI.Services
 {
@@ -226,59 +227,75 @@ namespace PlanningAPI.Services
         }
 
         public async Task<object> GetALLVendorsAsync(
-    int page,
-    int pageSize,
-    string? sortBy,
-    string? sortOrder,
-    string? search)
-        {
-            var query = _context.Vendors.AsQueryable();
-
-            // ✅ SEARCH
-            if (!string.IsNullOrWhiteSpace(search))
+        int page,
+        int pageSize,
+        string? sortBy,
+        string? sortOrder,
+        string? search)
             {
-                search = search.ToLower();
+                var query = _context.Vendors.AsQueryable();
 
-                query = query.Where(v =>
-                    v.VendId.ToLower().Contains(search) ||
-                    v.VendName.ToLower().Contains(search)
-                );
+                // ✅ SEARCH
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    search = search.ToLower();
+
+                    query = query.Where(v =>
+                        v.VendId.ToLower().Contains(search) ||
+                        v.VendName.ToLower().Contains(search)
+                    );
+                }
+
+                // ✅ SORTING
+                query = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
+                {
+                    ("vend_id", "desc") => query.OrderByDescending(x => x.VendId),
+                    ("vend_id", _) => query.OrderBy(x => x.VendId),
+
+                    ("vend_name", "desc") => query.OrderByDescending(x => x.VendName),
+                    ("vend_name", _) => query.OrderBy(x => x.VendName),
+
+                    _ => query.OrderBy(x => x.VendId)
+                };
+
+                // ✅ PAGINATION
+                var totalRecords = await query.CountAsync();
+
+                var data = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(v => new
+                    {
+                        v.VendId,
+                        v.VendName,
+                        v.VendApprvlCd,
+                        v.VendGrpCd
+                    })
+                    .ToListAsync();
+
+                return new
+                {
+                    TotalRecords = totalRecords,
+                    Page = page,
+                    PageSize = pageSize,
+                    Data = data
+                };
             }
 
-            // ✅ SORTING
-            query = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
+        public async Task BulkUpdateVendorApprovalRaw(List<VendorApprovalUpdateDto> dtos)
+        {
+            var sql = new StringBuilder();
+
+            foreach (var dto in dtos)
             {
-                ("vend_id", "desc") => query.OrderByDescending(x => x.VendId),
-                ("vend_id", _) => query.OrderBy(x => x.VendId),
+                sql.AppendLine($@"
+                UPDATE vendors
+                SET vend_apprvl_cd = '{dto.VendApprvlCd}'
+                WHERE vend_id = '{dto.VendId}'
+                  AND company_id = '{dto.CompanyId}';");
+            }
 
-                ("vend_name", "desc") => query.OrderByDescending(x => x.VendName),
-                ("vend_name", _) => query.OrderBy(x => x.VendName),
-
-                _ => query.OrderBy(x => x.VendId)
-            };
-
-            // ✅ PAGINATION
-            var totalRecords = await query.CountAsync();
-
-            var data = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(v => new
-                {
-                    v.VendId,
-                    v.VendName,
-                    v.VendApprvlCd,
-                    v.VendGrpCd
-                })
-                .ToListAsync();
-
-            return new
-            {
-                TotalRecords = totalRecords,
-                Page = page,
-                PageSize = pageSize,
-                Data = data
-            };
+            await _context.Database.ExecuteSqlRawAsync(sql.ToString());
         }
     }
 }

@@ -84,4 +84,56 @@ namespace PlanningAPI.Models
 
         public string ModifiedBy { get; set; }
     }
+    [Table("ref_struc_levels")]
+    public class RefStrucLevel
+    {
+        [Column("ref_struc_id_top")]
+        public string RefStrucIdTop { get; set; }
+
+        [Column("ref_struc_lvl_key")]
+        public decimal RefStrucLvlKey { get; set; }
+
+        [Column("lvl_no")]
+        public decimal LvlNo { get; set; }
+
+        [Column("id_seg_len_no")]
+        public decimal? IdSegLenNo { get; set; }
+
+        [Column("ref_struc_lvl_desc")]
+        public string? RefStrucLvlDesc { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+
+        // 🔗 Navigation (optional if you have parent table)
+        public RefStruc? RefStruc { get; set; }
+    }
+
+    public class CreateRefStrucLevelDto
+    {
+        public string RefStrucIdTop { get; set; }
+        public string CompanyId { get; set; }
+
+        public decimal LvlNo { get; set; }
+        public decimal? IdSegLenNo { get; set; }
+        public string? Description { get; set; }
+
+        public string ModifiedBy { get; set; }
+    }
+    public class UpdateRefStrucLevelDto
+    {
+        public decimal NewLvlNo { get; set; }
+        public decimal? IdSegLenNo { get; set; }
+        public string? Description { get; set; }
+        public string ModifiedBy { get; set; }
+    }
 }

@@ -67,5 +67,12 @@ namespace PlanningAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("BulkUpdateVendorApproval")]
+        public async Task<IActionResult> BulkUpdateVendorApproval(List<VendorApprovalUpdateDto> dtos)
+        {
+            await _service.BulkUpdateVendorApprovalRaw(dtos);
+            return Ok("Successfully updated vendor approvals.");
+        }
     }
 }

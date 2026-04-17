@@ -394,6 +394,16 @@
         public int? DayOfMthDueNo { get; set; }
         public string? ModifiedBy { get; set; }
     }
+    public class VendorTermsUpdateDto
+    {
+        public string TermsDc { get; set; }
+
+        public string TermsDesc { get; set; }   // example
+        public int? NoOfDays { get; set; }
+
+        public List<VendorTermScheduleDto> Schedules { get; set; }
+    }
+
     public class VendorTermWithSchedulesDto
     {
         public VendorTermDto Term { get; set; }
@@ -1026,4 +1036,706 @@
         public int PageSize { get; set; } = 20;
     }
 
+    public class VendorApprovalUpdateDto
+    {
+        public string VendId { get; set; }
+        public string CompanyId { get; set; }   // if applicable
+        public string VendApprvlCd { get; set; }
+    }
+
+    [Table("vendor_expense_accounts")]
+    public class VendorExpenseAccount
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("vend_exp_ln_key")]
+        public decimal VendExpLnKey { get; set; }
+
+        [Column("ln_no")]
+        public decimal? LnNo { get; set; }
+
+        [Column("acct_id")]
+        public string? AcctId { get; set; }
+
+        [Column("org_id")]
+        public string? OrgId { get; set; }
+
+        [Column("proj_id")]
+        public string? ProjId { get; set; }
+
+        [Column("ref1_id")]
+        public string? Ref1Id { get; set; }
+
+        [Column("ref2_id")]
+        public string? Ref2Id { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("modified_ts")]
+        public DateTime? ModifiedTs { get; set; }
+
+        [Column("company_id")]
+        public string? CompanyId { get; set; }
+
+        [Column("pct_of_total_rt")]
+        public decimal? PctOfTotalRt { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+
+        // 🔗 Navigation
+        public Vendor? Vendor { get; set; }
+    }
+
+    public class VendorExpenseAccountDto
+    {
+        public string VendId { get; set; }
+        public decimal VendExpLnKey { get; set; }
+        public decimal? LnNo { get; set; }
+        public string? AcctId { get; set; }
+        public string? OrgId { get; set; }
+        public string? ProjId { get; set; }
+        public decimal? PctOfTotalRt { get; set; }
+        public string? CompanyId { get; set; }
+        public string? ModifiedBy { get; set; }
+    }
+
+    [Table("vendor_industry_class_sizes")]
+    public class VendorIndustryClassSize
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("ind_class_cd")]
+        public string IndClassCd { get; set; }
+
+        [Column("small_business_code")]
+        public string? SmallBusinessCode { get; set; } // Y/N (length = 1)
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("modified_ts")]
+        public DateTime? ModifiedTs { get; set; }
+
+        [Column("company_id")]
+        public string? CompanyId { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+
+        // 🔗 Navigation
+        public Vendor? Vendor { get; set; }
+    }
+
+    public class VendorIndustryClassSizeDto
+    {
+        public string VendId { get; set; }
+        public string IndClassCd { get; set; }
+        public string? SmallBusinessCode { get; set; } // Y/N
+        public string? CompanyId { get; set; }
+        public string? ModifiedBy { get; set; }
+    }
+    [Table("vend_naics")]
+    public class VendorNaics
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("opp_naics_code")]
+        public string OppNaicsCode { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("opp_naics_description")]
+        public string? OppNaicsDescription { get; set; }
+
+        [Column("prime_naic_flag")]
+        public string? PrimeNaicFlag { get; set; } // Y/N
+
+        [Column("naics_small_business_flag")]
+        public string? NaicsSmallBusinessFlag { get; set; } // Y/N
+
+        [Column("naics_cert_agency")]
+        public string? NaicsCertAgency { get; set; }
+
+        [Column("naics_notes")]
+        public string? NaicsNotes { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+
+        [Column("effective_date")]
+        public DateOnly? EffectiveDate { get; set; }
+
+        [Column("opp_naics_key")]
+        public decimal? OppNaicsKey { get; set; }
+
+        [Column("naics_large_business_flag")]
+        public string? NaicsLargeBusinessFlag { get; set; } // Y/N
+
+        // 🔗 Navigation
+        public Vendor? Vendor { get; set; }
+    }
+    public class VendorNaicsDto
+    {
+        public string VendId { get; set; }
+        public string OppNaicsCode { get; set; }
+        public string CompanyId { get; set; }
+
+        public string? OppNaicsDescription { get; set; }
+        public string? PrimeNaicFlag { get; set; }
+        public string? NaicsSmallBusinessFlag { get; set; }
+        public string? NaicsLargeBusinessFlag { get; set; }
+
+        public string? NaicsCertAgency { get; set; }
+        public string? NaicsNotes { get; set; }
+
+        public DateOnly? EffectiveDate { get; set; }
+        public string? ModifiedBy { get; set; }
+    }
+
+    [Table("vend_nda")]
+    public class VendorNda
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("nda_key")]
+        public decimal NdaKey { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("nda_date_received")]
+        public DateOnly? NdaDateReceived { get; set; }
+
+        [Column("nda_detail")]
+        public string? NdaDetail { get; set; }
+
+        [Column("nda_expiry_date")]
+        public DateOnly? NdaExpiryDate { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly? TimeStamp { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+
+        [Column("file_location")]
+        public string? FileLocation { get; set; }
+
+        [Column("file_name")]
+        public string? FileName { get; set; }
+
+        // 🔗 Navigation
+        public Vendor? Vendor { get; set; }
+    }
+
+    public class VendorNdaDto
+    {
+        public string VendId { get; set; }
+        public decimal NdaKey { get; set; }
+        public string CompanyId { get; set; }
+
+        public DateOnly? NdaDateReceived { get; set; }
+        public DateOnly? NdaExpiryDate { get; set; }
+
+        public string? NdaDetail { get; set; }
+
+        public string? FileLocation { get; set; }
+        public string? FileName { get; set; }
+
+        public string? ModifiedBy { get; set; }
+    }
+    public class VendorComplianceDto
+    {
+        public string VendId { get; set; }
+
+        public bool HasActiveNda { get; set; }
+        public bool HasVat { get; set; }
+        public bool HasCis { get; set; }
+        public bool Has1099 { get; set; }
+
+        public int ComplianceScore { get; set; } // %
+    }
+
+    [Table("vendor_settings")]
+    public class VendorSettings
+    {
+        [Key]
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("vend_auto_assg_fl")]
+        public string? VendAutoAssgFl { get; set; }
+
+        [Column("last_vend_id")]
+        public string? LastVendId { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("allow_pay_vend_fl")]
+        public string? AllowPayVendFl { get; set; }
+
+        [Column("df_cash_accts_key")]
+        public decimal? DfCashAcctsKey { get; set; }
+
+        [Column("dflt_ap_accts_key")]
+        public decimal? DfltApAcctsKey { get; set; }
+
+        [Column("s_subctr_pay_cd")]
+        public string? SSubctrPayCd { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+
+        [Column("empl_vend_edit_fl")]
+        public string? EmplVendEditFl { get; set; }
+
+        [Column("empl_id_fl")]
+        public string? EmplIdFl { get; set; }
+
+        [Column("empl_vendid_prfx")]
+        public string? EmplVendIdPrfx { get; set; }
+
+        [Column("empl_vendid_sfx")]
+        public string? EmplVendIdSfx { get; set; }
+
+        [Column("empl_mname_cd")]
+        public string? EmplMnameCd { get; set; }
+
+        [Column("empl_name_order_cd")]
+        public string? EmplNameOrderCd { get; set; }
+
+        [Column("empl_vend_eft_fl")]
+        public string? EmplVendEftFl { get; set; }
+
+        [Column("empl_vend_name_ext")]
+        public string? EmplVendNameExt { get; set; }
+
+        [Column("empl_vend_terms_cd")]
+        public string? EmplVendTermsCd { get; set; }
+
+        [Column("empl_vend_addr_cd")]
+        public string? EmplVendAddrCd { get; set; }
+
+        [Column("empl_vend_ord_cd")]
+        public string? EmplVendOrdCd { get; set; }
+
+        [Column("use_subcid_fl")]
+        public string? UseSubcidFl { get; set; }
+
+        [Column("vendemplid_auto_fl")]
+        public string? VendemplidAutoFl { get; set; }
+
+        [Column("last_vend_empl_id")]
+        public string? LastVendEmplId { get; set; }
+
+        [Column("tc_work_sched_cd")]
+        public string? TcWorkSchedCd { get; set; }
+
+        [Column("empl_class_cd")]
+        public string? EmplClassCd { get; set; }
+
+        [Column("tc_ts_sched_cd")]
+        public string? TcTsSchedCd { get; set; }
+
+        [Column("ve_exp_class_cd")]
+        public string? VeExpClassCd { get; set; }
+
+        [Column("detl_job_cd")]
+        public string? DetlJobCd { get; set; }
+
+        [Column("gwiq_all_accts_fl")]
+        public string? GwiqAllAcctsFl { get; set; }
+
+        [Column("tenant_id")]
+        public string? TenantId { get; set; }
+
+        [Column("admin_email")]
+        public string? AdminEmail { get; set; }
+
+        [Column("mgr_empl_id")]
+        public string? MgrEmplId { get; set; }
+    }
+
+    public class VendorSettingsDto
+    {
+        public string CompanyId { get; set; }
+
+        public string? VendAutoAssgFl { get; set; }
+        public string? LastVendId { get; set; }
+
+        public string? AllowPayVendFl { get; set; }
+
+        public decimal? DfCashAcctsKey { get; set; }
+        public decimal? DfltApAcctsKey { get; set; }
+
+        public string? AdminEmail { get; set; }
+        public string? ModifiedBy { get; set; }
+    }
+
+    [Table("vendor_certifications")]
+    public class VendorCertification
+    {
+        [Column("cert_cd")]
+        public string CertCd { get; set; }
+
+        [Column("cert_seq_no")]
+        public decimal CertSeqNo { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("cert_start_date")]
+        public DateOnly CertStartDate { get; set; }
+
+        [Column("cert_status_cd")]
+        public string? CertStatusCd { get; set; }
+
+        [Column("cert_level_cd")]
+        public string? CertLevelCd { get; set; }
+
+        [Column("cert_end_date")]
+        public DateOnly? CertEndDate { get; set; }
+
+        [Column("cert_url")]
+        public string? CertUrl { get; set; }
+
+        [Column("cert_notes")]
+        public string? CertNotes { get; set; }
+
+        [Column("addr_dc")]
+        public string? AddrDc { get; set; }
+
+        [Column("vend_id")]
+        public string? VendId { get; set; }
+
+        [Column("vend_prospect_id")]
+        public string? VendProspectId { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+    }
+
+    [Table("vendor_employee_labor_info")]
+    public class VendorEmployeeLaborInfo
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("effect_start_dt")]
+        public DateOnly EffectStartDt { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("effect_end_dt")]
+        public DateOnly? EffectEndDt { get; set; }
+
+        [Column("df_genl_lab_cat_cd")]
+        public string? DfGenlLabCatCd { get; set; }
+
+        [Column("df_bill_lab_cat_cd")]
+        public string? DfBillLabCatCd { get; set; }
+
+        [Column("dflt_invc_rt_amt")]
+        public decimal? DfltInvcRtAmt { get; set; }
+
+        [Column("detl_job_cd")]
+        public string? DetlJobCd { get; set; }
+
+        [Column("mgr_empl_id")]
+        public string? MgrEmplId { get; set; }
+
+        [Column("lab_loc_cd")]
+        public string? LabLocCd { get; set; }
+
+        [Column("tc_work_sched_cd")]
+        public string? TcWorkSchedCd { get; set; }
+
+        [Column("tc_ts_sched_cd")]
+        public string? TcTsSchedCd { get; set; }
+
+        [Column("empl_class_cd")]
+        public string? EmplClassCd { get; set; }
+
+        [Column("ve_exp_class_cd")]
+        public string? VeExpClassCd { get; set; }
+
+        [Column("city_name")]
+        public string? CityName { get; set; }
+
+        [Column("county_name")]
+        public string? CountyName { get; set; }
+
+        [Column("mail_state_dc")]
+        public string? MailStateDc { get; set; }
+
+        [Column("postal_cd")]
+        public string? PostalCd { get; set; }
+
+        [Column("country_cd")]
+        public string? CountryCd { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+
+        [Column("dflt_pay_type")]
+        public string? DfltPayType { get; set; }
+
+        [Column("sp_created")]
+        public string SpCreated { get; set; } = "N";
+    }
+
+    [Table("vendor_employee_labor_trn_rate")]
+    public class VendorEmployeeLaborTrnRate
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("effect_start_dt")]
+        public DateOnly EffectStartDt { get; set; }
+
+        [Column("trn_crncy_cd")]
+        public string TrnCrncyCd { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("df_trn_invc_rt_amt")]
+        public decimal? DfTrnInvcRtAmt { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+    }
+
+    [Table("vendor_employee_skills")]
+    public class VendorEmployeeSkill
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("skill_id")]
+        public string SkillId { get; set; }
+
+        [Column("skill_lvl_cd")]
+        public string? SkillLvlCd { get; set; }
+
+        [Column("skill_yr_no")]
+        public decimal? SkillYrNo { get; set; }
+
+        [Column("complete_dt")]
+        public DateOnly? CompleteDt { get; set; }
+
+        [Column("last_renew_dt")]
+        public DateOnly? LastRenewDt { get; set; }
+
+        [Column("expiry_dt")]
+        public DateOnly? ExpiryDt { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+    }
+    [Table("vendor_employee_trainings")]
+    public class VendorEmployeeTraining
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("train_id")]
+        public string TrainId { get; set; }
+
+        [Column("train_srce_id")]
+        public string? TrainSrceId { get; set; }
+
+        [Column("start_dt")]
+        public DateOnly? StartDt { get; set; }
+
+        [Column("end_dt")]
+        public DateOnly? EndDt { get; set; }
+
+        [Column("train_yr_no")]
+        public decimal? TrainYrNo { get; set; }
+
+        [Column("s_int_ext_cd")]
+        public string SIntExtCd { get; set; } // I / E
+
+        [Column("last_renew_dt")]
+        public DateOnly? LastRenewDt { get; set; }
+
+        [Column("expiry_dt")]
+        public DateOnly? ExpiryDt { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+
+        [Column("train_ceu_cred")]
+        public decimal? TrainCeuCred { get; set; }
+    }
+    [Table("subc_property")]
+    public class SubcProperty
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("prop_id")]
+        public string PropId { get; set; }
+
+        [Column("prop_qty")]
+        public decimal? PropQty { get; set; }
+
+        [Column("s_prop_own_cd")]
+        public string PropOwnCode { get; set; }
+
+        [Column("asset_id")]
+        public string? AssetId { get; set; }
+
+        [Column("item_no")]
+        public decimal? ItemNo { get; set; }
+
+        [Column("issue_dt")]
+        public DateOnly? IssueDate { get; set; }
+
+        [Column("return_dt")]
+        public DateOnly? ReturnDate { get; set; }
+
+        [Column("whse_name")]
+        public string? WhseName { get; set; }
+
+        [Column("control_id")]
+        public string? ControlId { get; set; }
+
+        [Column("other_s")]
+        public string? OtherS { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+    }
+
+    [Table("vendor_security_clearances")]
+    public class VendorSecurityClearance
+    {
+        [Column("vend_empl_id")]
+        public string VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("sec_clr_cd")]
+        public string SecClrCode { get; set; }
+
+        [Column("agency_name")]
+        public string? AgencyName { get; set; }
+
+        [Column("request_dt")]
+        public DateOnly? RequestDate { get; set; }
+
+        [Column("effective_dt")]
+        public DateOnly? EffectiveDate { get; set; }
+
+        [Column("expiry_dt")]
+        public DateOnly? ExpiryDate { get; set; }
+
+        [Column("reinvestigate_dt")]
+        public DateOnly? ReinvestigateDate { get; set; }
+
+        [Column("investigate_by")]
+        public string? InvestigateBy { get; set; }
+
+        [Column("investigate_type")]
+        public string? InvestigateType { get; set; }
+
+        [Column("investigate_dt")]
+        public DateOnly? InvestigateDate { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateOnly TimeStamp { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+    }
 }

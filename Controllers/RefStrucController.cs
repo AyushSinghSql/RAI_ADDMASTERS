@@ -351,5 +351,219 @@ namespace PlanningAPI.Controllers
                 data
             });
         }
+
+
+        [HttpPost("add-level")]
+        public async Task<IActionResult> AddLevel(CreateRefStrucLevelDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid request");
+
+            // 🔹 Fetch existing levels for structure
+            var levels = await _context.RefStrucLevels
+                .Where(x => x.RefStrucIdTop == dto.RefStrucIdTop &&
+                            x.CompanyId == dto.CompanyId)
+                .OrderBy(x => x.LvlNo)
+                .ToListAsync();
+
+            var utcNow = DateTime.UtcNow;
+
+            // 🔴 CASE 1: First level
+            if (!levels.Any())
+            {
+                if (dto.LvlNo != 1)
+                    return BadRequest("First level must be 1");
+
+                var entity = new RefStrucLevel
+                {
+                    RefStrucIdTop = dto.RefStrucIdTop,
+                    CompanyId = dto.CompanyId,
+                    RefStrucLvlKey = await GenerateNextLevelKey(dto), // helper
+                    LvlNo = dto.LvlNo,
+                    IdSegLenNo = dto.IdSegLenNo,
+                    RefStrucLvlDesc = dto.Description,
+                    ModifiedBy = dto.ModifiedBy,
+                    TimeStamp = utcNow
+                };
+
+                _context.RefStrucLevels.Add(entity);
+                await _context.SaveChangesAsync();
+
+                return Ok(entity);
+            }
+
+            // 🔹 Get max level
+            var maxLevel = levels.Max(x => x.LvlNo);
+
+            // 🔴 Validate sequence
+            if (dto.LvlNo != maxLevel + 1)
+            {
+                return BadRequest($"Next level must be {maxLevel + 1}");
+            }
+
+            // 🔴 Prevent duplicate (extra safety)
+            if (levels.Any(x => x.LvlNo == dto.LvlNo))
+            {
+                return BadRequest($"Level {dto.LvlNo} already exists");
+            }
+
+            // ✅ Insert
+            var newEntity = new RefStrucLevel
+            {
+                RefStrucIdTop = dto.RefStrucIdTop,
+                CompanyId = dto.CompanyId,
+                RefStrucLvlKey = await GenerateNextLevelKey(dto),
+                LvlNo = dto.LvlNo,
+                IdSegLenNo = dto.IdSegLenNo,
+                RefStrucLvlDesc = dto.Description,
+                ModifiedBy = dto.ModifiedBy,
+                TimeStamp = utcNow
+            };
+
+            _context.RefStrucLevels.Add(newEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok(newEntity);
+        }
+
+        [NonAction]
+        private async Task<decimal> GenerateNextLevelKey(CreateRefStrucLevelDto dto)
+        {
+            var maxKey = await _context.RefStrucLevels
+                .Where(x => x.RefStrucIdTop == dto.RefStrucIdTop &&
+                            x.CompanyId == dto.CompanyId)
+                .MaxAsync(x => (decimal?)x.RefStrucLvlKey) ?? 0;
+
+            return maxKey + 1;
+        }
+
+        [HttpGet("GetAllLevels/{refStrucId}/{companyId}")]
+        public async Task<IActionResult> GetAllLevels(string refStrucId, string companyId)
+        {
+            var data = await _context.RefStrucLevels
+                .Where(x => x.RefStrucIdTop == refStrucId &&
+                            x.CompanyId == companyId)
+                .OrderBy(x => x.LvlNo)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
+        [HttpPut("UpdateLevel/{refStrucId}/{companyId}/{lvlKey}")]
+        public async Task<IActionResult> UpdateLevel(
+    string refStrucId,
+    string companyId,
+    decimal lvlKey,
+    UpdateRefStrucLevelDto dto)
+        {
+            var levels = await _context.RefStrucLevels
+                .Where(x => x.RefStrucIdTop == refStrucId &&
+                            x.CompanyId == companyId)
+                .OrderBy(x => x.LvlNo)
+                .ToListAsync();
+
+            var entity = levels.FirstOrDefault(x => x.RefStrucLvlKey == lvlKey);
+
+            if (entity == null)
+                return NotFound("Level not found");
+
+            var maxLevel = levels.Count;
+
+            if (dto.NewLvlNo < 1 || dto.NewLvlNo > maxLevel)
+                return BadRequest($"Level must be between 1 and {maxLevel}");
+
+            var oldLvlNo = entity.LvlNo;
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 🔁 REORDER LOGIC
+                if (dto.NewLvlNo != oldLvlNo)
+                {
+                    if (dto.NewLvlNo > oldLvlNo)
+                    {
+                        // Move down → shift up others
+                        foreach (var lvl in levels
+                            .Where(x => x.LvlNo > oldLvlNo && x.LvlNo <= dto.NewLvlNo))
+                        {
+                            lvl.LvlNo--;
+                        }
+                    }
+                    else
+                    {
+                        // Move up → shift down others
+                        foreach (var lvl in levels
+                            .Where(x => x.LvlNo >= dto.NewLvlNo && x.LvlNo < oldLvlNo))
+                        {
+                            lvl.LvlNo++;
+                        }
+                    }
+
+                    entity.LvlNo = dto.NewLvlNo;
+                }
+
+                // ✏️ Update fields
+                entity.IdSegLenNo = dto.IdSegLenNo;
+                entity.RefStrucLvlDesc = dto.Description;
+                entity.ModifiedBy = dto.ModifiedBy;
+                entity.TimeStamp = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return Ok(entity);
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete("DeleteLevel/{refStrucId}/{companyId}/{lvlKey}")]
+        public async Task<IActionResult> DeleteLevel(
+    string refStrucId,
+    string companyId,
+    decimal lvlKey)
+        {
+            var levels = await _context.RefStrucLevels
+                .Where(x => x.RefStrucIdTop == refStrucId &&
+                            x.CompanyId == companyId)
+                .OrderBy(x => x.LvlNo)
+                .ToListAsync();
+
+            var entity = levels.FirstOrDefault(x => x.RefStrucLvlKey == lvlKey);
+
+            if (entity == null)
+                return NotFound("Level not found");
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var deletedLvlNo = entity.LvlNo;
+
+                // ❌ Delete
+                _context.RefStrucLevels.Remove(entity);
+
+                // 🔁 Re-sequence remaining
+                foreach (var lvl in levels.Where(x => x.LvlNo > deletedLvlNo))
+                {
+                    lvl.LvlNo--;
+                }
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return Ok(new { message = "Deleted and re-sequenced successfully" });
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

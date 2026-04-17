@@ -195,10 +195,24 @@ public partial class MydatabaseContext : DbContext
     public DbSet<VendorCisInformation> VendorCisInformations { get; set; }
     public DbSet<VendorCisHistory> VendorCisHistories { get; set; }
     public DbSet<VendorVatInfo> VendorVatInfos { get; set; }
+    public DbSet<RefStrucLevel> RefStrucLevels { get; set; }
+    public DbSet<VendorExpenseAccount> VendorExpenseAccounts { get; set; }
+    public DbSet<VendorIndustryClassSize> VendorIndustryClassSizes { get; set; }
+    public DbSet<VendorNaics> VendorNaics { get; set; }
+    public DbSet<VendorNda> VendorNdas { get; set; }
+    public DbSet<VendorSettings> VendorSettings { get; set; }
+    public DbSet<VendorCertification> VendorCertifications { get; set; }
+    public DbSet<VendorEmployeeLaborInfo> VendorEmployeeLaborInfos { get; set; }
+    public DbSet<VendorEmployeeLaborTrnRate> VendorEmployeeLaborTrnRates { get; set; }
+    public DbSet<VendorEmployeeSkill> VendorEmployeeSkills { get; set; }
+    public DbSet<VendorEmployeeTraining> VendorEmployeeTrainings { get; set; }
+    public DbSet<SubcProperty> SubcProperties { get; set; }
+    public DbSet<VendorSecurityClearance> VendorSecurityClearances { get; set; }
 
-    
+    public DbSet<VendorCertificationSetup> VendorCertificationSetups { get; set; }
+    public DbSet<CertificationLevel> CertificationLevels { get; set; }
 
-
+    public DbSet<CertificationStatus> CertificationStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -209,6 +223,225 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
+
+        modelBuilder.Entity<CertificationStatus>()
+    .HasKey(x => new { x.CertStatusCd, x.CertCd });
+
+        modelBuilder.Entity<CertificationStatus>()
+            .HasOne(x => x.Certification)
+            .WithMany()
+            .HasForeignKey(x => x.CertCd);
+
+        modelBuilder.Entity<CertificationLevel>()
+       .HasKey(x => new { x.CertLevelCd, x.CertCd });
+
+        modelBuilder.Entity<CertificationLevel>()
+            .HasOne(x => x.Certification)
+            .WithMany()
+            .HasForeignKey(x => x.CertCd);
+
+        modelBuilder.Entity<VendorCertificationSetup>(entity =>
+        {
+            entity.HasKey(x => x.CertCode);
+        });
+
+        modelBuilder.Entity<VendorSecurityClearance>(entity =>
+        {
+            entity.HasKey(x => new
+            {
+                x.VendEmplId,
+                x.VendId,
+                x.SecClrCode,
+                x.CompanyId
+            });
+
+            entity.Property(x => x.SecClrCode)
+                  .HasMaxLength(6)
+                  .IsRequired();
+
+            entity.Property(x => x.ModifiedBy)
+                  .HasMaxLength(20)
+                  .IsRequired();
+        });
+
+        modelBuilder.Entity<SubcProperty>(entity =>
+        {
+            entity.HasKey(x => new
+            {
+                x.VendEmplId,
+                x.VendId,
+                x.PropId,
+                x.CompanyId
+            });
+
+            entity.Property(x => x.PropOwnCode)
+                  .HasMaxLength(1)
+                  .IsRequired();
+
+            entity.Property(x => x.ModifiedBy)
+                  .HasMaxLength(20)
+                  .IsRequired();
+        });
+
+        modelBuilder.Entity<VendorEmployeeTraining>(entity =>
+        {
+            entity.ToTable("vendor_employee_trainings");
+
+            entity.HasKey(e => new
+            {
+                e.VendEmplId,
+                e.VendId,
+                e.TrainId,
+                e.CompanyId
+            });
+        });
+
+        modelBuilder.Entity<VendorEmployeeSkill>(entity =>
+        {
+            entity.ToTable("vendor_employee_skills");
+
+            entity.HasKey(e => new
+            {
+                e.VendEmplId,
+                e.VendId,
+                e.SkillId,
+                e.CompanyId
+            });
+        });
+
+        modelBuilder.Entity<VendorEmployeeLaborTrnRate>(entity =>
+        {
+            entity.ToTable("vendor_employee_labor_trn_rate");
+
+            entity.HasKey(e => new
+            {
+                e.VendEmplId,
+                e.VendId,
+                e.EffectStartDt,
+                e.TrnCrncyCd,
+                e.CompanyId
+            });
+        });
+
+        modelBuilder.Entity<VendorEmployeeLaborInfo>(entity =>
+        {
+            entity.ToTable("vendor_employee_labor_info");
+
+            entity.HasKey(e => new
+            {
+                e.VendEmplId,
+                e.VendId,
+                e.EffectStartDt,
+                e.CompanyId
+            });
+        });
+
+        modelBuilder.Entity<VendorCertification>(entity =>
+        {
+            entity.ToTable("vendor_certifications");
+
+            entity.HasKey(e => new
+            {
+                e.CertCd,
+                e.CertSeqNo,
+                e.CompanyId,
+                e.CertStartDate
+            });
+        });
+
+        modelBuilder.Entity<VendorSettings>(entity =>
+        {
+            entity.ToTable("vendor_settings");
+
+            entity.HasKey(e => e.CompanyId);
+        });
+
+        modelBuilder.Entity<VendorNda>(entity =>
+        {
+            entity.ToTable("vend_nda");
+
+            // ✅ Composite PK
+            entity.HasKey(e => new { e.VendId, e.NdaKey, e.CompanyId });
+
+            // 🔗 FK
+            //entity.HasOne(e => e.Vendor)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.VendId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VendorNaics>(entity =>
+        {
+            entity.ToTable("vend_naics");
+
+            // ✅ Composite PK
+            entity.HasKey(e => new { e.VendId, e.OppNaicsCode, e.CompanyId });
+
+            // 🔗 FK
+            //entity.HasOne(e => e.Vendor)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.VendId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<VendorExpenseAccount>(entity =>
+        {
+            entity.ToTable("vendor_expense_accounts");
+
+            // ✅ Composite PK
+            entity.HasKey(e => new { e.VendId, e.VendExpLnKey });
+
+            entity.Property(e => e.VendId)
+                .HasMaxLength(12)
+                .IsRequired();
+
+            // 🔗 FK
+            //entity.HasOne(e => e.Vendor)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.VendId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Index
+            entity.HasIndex(e => e.ProjId)
+                .HasDatabaseName("idx_vendor_exp_acct_proj");
+        });
+
+        modelBuilder.Entity<VendorIndustryClassSize>(entity =>
+        {
+            entity.ToTable("vendor_industry_class_sizes");
+
+            // ✅ Composite PK
+            entity.HasKey(e => new { e.VendId, e.IndClassCd });
+
+            // ✅ Index
+            entity.HasIndex(e => e.IndClassCd)
+                .HasDatabaseName("idx_vendor_industry_class");
+        });
+
+        modelBuilder.Entity<RefStrucLevel>(entity =>
+        {
+            entity.ToTable("ref_struc_levels");
+
+            // ✅ Composite Primary Key
+            entity.HasKey(e => new
+            {
+                e.RefStrucIdTop,
+                e.RefStrucLvlKey,
+                e.CompanyId
+            });
+
+            // ✅ Indexes (matching DB)
+            entity.HasIndex(e => e.RefStrucIdTop)
+                .HasDatabaseName("idx_ref_struc_levels_top");
+
+            entity.HasIndex(e => e.CompanyId)
+                .HasDatabaseName("idx_ref_struc_levels_company");
+
+            // 🔗 Optional FK (only if RefStruc exists)
+            entity.HasOne(e => e.RefStruc)
+                .WithMany()
+                .HasForeignKey(e => new { e.RefStrucIdTop, e.CompanyId })
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<VendorVatInfo>(entity =>
         {
