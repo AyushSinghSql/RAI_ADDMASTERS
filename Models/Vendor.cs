@@ -137,9 +137,9 @@
         [Column("cl_lgbtq_fl")] public string? ClLgbtqFl { get; set; }
 
         // Navigation
-        public ICollection<VendorAddress> Addresses { get; set; }
-        public ICollection<Vendor1099Detail> Vendor1099Details { get; set; }
-        public ICollection<VendorCisInformation> VendorCisInformations { get; set; }
+        public ICollection<VendorAddress>? Addresses { get; set; }
+        public ICollection<Vendor1099Detail>? Vendor1099Details { get; set; }
+        public ICollection<VendorCisInformation>? VendorCisInformations { get; set; }
         
     }
 
@@ -1085,8 +1085,8 @@
         [Column("row_version")]
         public decimal? RowVersion { get; set; }
 
-        // 🔗 Navigation
-        public Vendor? Vendor { get; set; }
+        //// 🔗 Navigation
+        //public Vendor? Vendor { get; set; }
     }
 
     public class VendorExpenseAccountDto
@@ -1737,5 +1737,160 @@
 
         [Column("row_version")]
         public decimal? RowVersion { get; set; }
+    }
+
+    [Table("vendor_credit_cards")]
+    public class VendorCreditCard
+    {
+        [Column("vend_id")]
+        public string VendId { get; set; }
+
+        [Column("company_id")]
+        public string CompanyId { get; set; }
+
+        [Column("credit_card_number")]
+        public string CreditCardNumber { get; set; }
+
+        [Column("credit_card_type")]
+        public string CreditCardType { get; set; }
+
+        [Column("credit_card_expiry_date")]
+        public DateTime? CreditCardExpiryDate { get; set; }
+
+        [Column("credit_card_limit_amount")]
+        public decimal? CreditCardLimitAmount { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("modified_ts")]
+        public DateTime ModifiedTs { get; set; }
+
+        [Column("row_version")]
+        public decimal? RowVersion { get; set; }
+    }
+
+    public class VendorCreditCardCreateDto
+    {
+        public string VendId { get; set; }
+        public string CompanyId { get; set; }
+
+        public string CreditCardNumber { get; set; }
+        public string CreditCardType { get; set; }
+        public DateTime? CreditCardExpiryDate { get; set; }
+        public decimal? CreditCardLimitAmount { get; set; }
+    }
+
+    public class VendorCreditCardUpdateDto
+    {
+        public string CreditCardNumber { get; set; }
+        public string CreditCardType { get; set; }
+        public DateTime? CreditCardExpiryDate { get; set; }
+        public decimal? CreditCardLimitAmount { get; set; }
+    }
+
+    [Table("vend_apvl_audit_hs", Schema = "public")]
+    public class VendApvlAuditHs
+    {
+        [Column("entr_user_id")]
+        public string? EntrUserId { get; set; }
+
+        [Column("company_id")]
+        public string? CompanyId { get; set; }
+
+        [Column("frm_vend_apprvl_cd")]
+        public string? FrmVendApprvlCd { get; set; }
+
+        [Column("to_vend_apprvl_cd")]
+        public string? ToVendApprvlCd { get; set; }
+
+        [Column("frm_vend_id")]
+        public string? FrmVendId { get; set; }
+
+        [Column("frm_pay_vend_id")]
+        public string? FrmPayVendId { get; set; }
+
+        [Column("frm_pay_apprvl_cd")]
+        public string? FrmPayApprvlCd { get; set; }
+
+        [Column("to_pay_apprvl_cd")]
+        public string? ToPayApprvlCd { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public decimal? RowVersion { get; set; }
+    }
+
+    public class VendApvlAuditDto
+    {
+        public string? EntrUserId { get; set; }
+        public string? CompanyId { get; set; }
+        public string? FrmVendApprvlCd { get; set; }
+        public string? ToVendApprvlCd { get; set; }
+        public string? FrmVendId { get; set; }
+        public string? FrmPayVendId { get; set; }
+        public string? FrmPayApprvlCd { get; set; }
+        public string? ToPayApprvlCd { get; set; }
+    }
+
+    [Table("ve_apvl_audit_hs")]
+    public class VeApvlAuditHs
+    {
+        [Key]
+        [Column("audit_key")]
+        public long AuditKey { get; set; }
+
+        [Column("vend_empl_id")]
+        [MaxLength(12)]
+        public string? VendEmplId { get; set; }
+
+        [Column("vend_id")]
+        [MaxLength(12)]
+        public string? VendId { get; set; }
+
+        [Column("ve_apprvl_grp_cd")]
+        [MaxLength(6)]
+        public string? VeApprvlGrpCd { get; set; }
+
+        [Column("frm_ve_apprvr_id")]
+        [MaxLength(20)]
+        public string? FrmVeApprvrId { get; set; }
+
+        [Column("to_ve_apprvr_id")]
+        [MaxLength(20)]
+        public string? ToVeApprvrId { get; set; }
+
+        [Column("frm_ve_apprvl_cd")]
+        [MaxLength(1)]
+        public string? FrmVeApprvlCd { get; set; }
+
+        [Column("to_ve_apprvl_cd")]
+        [MaxLength(1)]
+        public string? ToVeApprvlCd { get; set; }
+
+        [Column("frm_ve_apprvl_dt")]
+        public DateTime? FrmVeApprvlDt { get; set; }
+
+        [Column("to_ve_apprvl_dt")]
+        public DateTime? ToVeApprvlDt { get; set; }
+
+        [Column("company_id")]
+        [MaxLength(10)]
+        public string? CompanyId { get; set; }
+
+        [Column("modified_by")]
+        [MaxLength(20)]
+        public string? ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? Rowversion { get; set; }
     }
 }

@@ -320,6 +320,24 @@ namespace PlanningAPI.Controllers
                 data = projects
             });
         }
+
+        [HttpGet("GetActiveProjects")]
+        public async Task<IActionResult> GetActiveProjects()
+        {
+            var data = await _context.PlProjects
+                .AsNoTracking()
+                .Where(p => p.ActiveFl.Equals("Y")) // 🔴 adjust if your flag is different
+                .Select(p => new
+                {
+                    p.ProjId,
+                    p.ProjName,
+                    p.AcctGrpCd                    
+                })
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
         [NonAction]
         public string GetFriendlyErrorMessage(DbUpdateException ex)
         {

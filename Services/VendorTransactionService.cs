@@ -35,6 +35,7 @@ namespace PlanningAPI.Services
                 {
                     vendor.TimeStamp = DateTime.UtcNow;
                     await _context.Vendors.AddAsync(vendor);
+                    await _context.SaveChangesAsync();
                 }
                 else
                 {
@@ -297,5 +298,6 @@ namespace PlanningAPI.Services
 
             await _context.Database.ExecuteSqlRawAsync(sql.ToString());
         }
+
     }
 }

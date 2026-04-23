@@ -20,6 +20,7 @@ namespace PlanningAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(
             string? vendId,
+            string? vendEmplId,
             string? skillId,
             string? companyId,
             int page = 1,
@@ -29,6 +30,9 @@ namespace PlanningAPI.Controllers
 
             if (!string.IsNullOrEmpty(vendId))
                 query = query.Where(x => x.VendId == vendId);
+
+            if (!string.IsNullOrEmpty(vendEmplId))
+                query = query.Where(x => x.VendEmplId == vendEmplId);
 
             if (!string.IsNullOrEmpty(skillId))
                 query = query.Where(x => x.SkillId == skillId);

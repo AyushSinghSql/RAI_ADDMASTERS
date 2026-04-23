@@ -147,5 +147,49 @@ namespace PlanningAPI.Models
         //[MaxLength(1)]
         //public string? SpCreated { get; set; }
     }
+    [Table("subcontractor_certification")]
+    public class SubcontractorCertification
+    {
+        [Column("certification_key")]
+        public long CertificationKey { get; set; }
 
+        [Column("vendor_employee_id"), MaxLength(12)]
+        public string VendorEmployeeId { get; set; }
+
+        [Column("vendor_id"), MaxLength(12)]
+        public string VendorId { get; set; }
+
+        [Column("company_id"), MaxLength(10)]
+        public string CompanyId { get; set; }
+
+        [Column("certification_id"), MaxLength(15)]
+        public string CertificationId { get; set; }
+
+        [Column("professional_org_id"), MaxLength(10)]
+        public string ProfessionalOrgId { get; set; }
+
+        [Column("state_code"), MaxLength(15)]
+        public string StateCode { get; set; }
+
+        [Column("license_number"), MaxLength(30)]
+        public string LicenseNumber { get; set; }
+
+        [Column("certification_years")]
+        public int? CertificationYears { get; set; }
+
+        [Column("expiration_date")]
+        public DateTime? ExpirationDate { get; set; }
+
+        [Column("last_renewal_date")]
+        public DateTime? LastRenewalDate { get; set; }
+
+        [Column("modified_by"), MaxLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("row_version")]
+        public long? RowVersion { get; set; }
+    }
 }

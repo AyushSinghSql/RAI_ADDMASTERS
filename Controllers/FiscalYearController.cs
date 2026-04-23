@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningAPI.Models;
+using System.ComponentModel.Design;
 
 namespace PlanningAPI.Controllers
 {
@@ -100,6 +101,23 @@ namespace PlanningAPI.Controllers
 
             if (entity == null)
                 return NotFound();
+
+            await _context.AccountingPeriods
+                .Where(x => x.FyCd == fyCd && x.CompanyId == CompanyId)
+                .ExecuteDeleteAsync();
+
+            await _context.SubPeriods
+                .Where(x => x.FyCd == fyCd && x.CompanyId == CompanyId)
+                .ExecuteDeleteAsync();
+
+
+            await _context.SubPeriodJournalStatuses
+                .Where(x => x.FyCd == fyCd && x.CompanyId == CompanyId)
+                .ExecuteDeleteAsync();
+
+            await _context.JournalStatuses
+                .Where(x => x.FyCd == fyCd && x.CompanyId == CompanyId)
+                .ExecuteDeleteAsync();
 
             _context.FiscalYears.Remove(entity);
             await _context.SaveChangesAsync();

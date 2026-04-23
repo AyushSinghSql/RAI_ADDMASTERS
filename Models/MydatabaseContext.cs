@@ -213,6 +213,49 @@ public partial class MydatabaseContext : DbContext
     public DbSet<CertificationLevel> CertificationLevels { get; set; }
 
     public DbSet<CertificationStatus> CertificationStatuses { get; set; }
+    public DbSet<ProfOrg> ProfOrgs { get; set; }
+    public DbSet<Skill> Skills { get; set; }
+    public DbSet<HSkillLvl> HSkillLvls { get; set; }
+    public DbSet<Training> Trainings { get; set; }
+    public DbSet<TrainingDetlJobTitle> TrainingDetlJobTitles { get; set; }
+    public DbSet<TrainingSrce> TrainingSources { get; set; }
+    public DbSet<CompanyProperty> CompanyProperties { get; set; }
+    public DbSet<EmployeeProperty> EmployeeProperties { get; set; }
+    public DbSet<ReasonCode> ReasonCodes { get; set; }
+    public DbSet<ReasonUsageCode> ReasonUsageCodes { get; set; }
+    public DbSet<PolicyType> PolicyTypes { get; set; }
+    public DbSet<BondType> BondTypes { get; set; }
+    public DbSet<ApSettings> ApSettings { get; set; }
+    public DbSet<DefaultApAccount> DefaultApAccounts { get; set; }
+    public DbSet<DfltCashAcct> DfltCashAccts { get; set; }
+    public DbSet<VoucherSettings> VoucherSettings { get; set; }
+    public DbSet<VoucherApprover> VoucherApprovers { get; set; }
+    public DbSet<VoucherApproverUser> VoucherApproverUsers { get; set; }
+    public DbSet<VendorCreditCard> VendorCreditCards { get; set; }
+    public DbSet<VendApvlAuditHs> VendApvlAuditHs { get; set; }
+    public DbSet<VeApvlAuditHs> VeApvlAuditHs { get; set; }
+    public DbSet<EmployeeDefaultTimesheet> EmployeeDefaultTimesheets { get; set; }
+    public DbSet<EmployeePhone> EmployeePhones { get; set; }
+    public DbSet<EmployeeDefaultPayType> EmployeeDefaultPayTypes { get; set; }
+    public DbSet<PayType> PayTypes { get; set; }
+    public DbSet<EmployeeLeaveBalance> EmployeeLeaveBalances { get; set; }
+    public DbSet<AllowanceCode> AllowanceCodes { get; set; }
+    public DbSet<EmployeeAllowance> EmployeeAllowances { get; set; }
+    public DbSet<SubcontractorInsuranceHeader> SubcontractorInsuranceHeaders { get; set; }
+    public DbSet<SubcontractorInsuranceLine> SubcontractorInsuranceLines { get; set; }
+    public DbSet<SubcontractorLien> SubcontractorLiens { get; set; }
+    public DbSet<SubcontractorCarrier> SubcontractorCarriers { get; set; }
+    public DbSet<CisCode> CisCodes { get; set; }
+    public DbSet<SubcontractorCertification> SubcontractorCertifications { get; set; }
+    public DbSet<SecurityClearance> SecurityClearances { get; set; }
+    public DbSet<SecurityLevel> SecurityLevels { get; set; }
+    public DbSet<RecurringVoucherGroup> RecurringVoucherGroups { get; set; }
+    public DbSet<RecurringVoucherPeriod> RecurringVoucherPeriods { get; set; }
+    public DbSet<ScisapClearance> ScisapClearances { get; set; }
+    public DbSet<LienWaiverDocument> LienWaiverDocuments { get; set; }
+    public DbSet<VeApvlGrp> VeApvlGrps { get; set; }
+    public DbSet<VeApvlGrpUsers> VeApvlGrpUsers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -223,6 +266,173 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
+
+        modelBuilder.Entity<VeApvlGrpUsers>()
+        .HasKey(x => new { x.VeApprvlGrpCd, x.ApprvrUserId, x.CompanyId });
+
+        modelBuilder.Entity<VeApvlGrp>()
+        .HasKey(x => new { x.VeApprvlGrpCd, x.CompanyId });
+
+        modelBuilder.Entity<RecurringVoucherPeriod>()
+        .HasKey(x => new {
+            x.VoucherGroupCode,
+            x.FiscalYearCode,
+            x.PeriodNo,
+            x.SubPeriodNo,
+            x.CompanyId
+        });
+
+        modelBuilder.Entity<RecurringVoucherPeriod>()
+            .HasOne(x => x.VoucherGroup)
+            .WithMany()
+            .HasForeignKey(x => new { x.VoucherGroupCode, x.CompanyId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RecurringVoucherGroup>()
+        .HasKey(x => new { x.VoucherGroupCode, x.CompanyId });
+
+        modelBuilder.Entity<SecurityClearance>()
+        .HasOne(x => x.SecurityLevel)
+        .WithMany(x => x.Clearances)
+        .HasForeignKey(x => x.SecurityLevelCode)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SecurityLevel>()
+        .HasKey(x => x.SecurityLevelCode);
+
+        modelBuilder.Entity<SubcontractorCertification>()
+       .HasKey(x => new {
+           x.CertificationKey,
+           x.VendorEmployeeId,
+           x.VendorId,
+           x.CompanyId
+       });
+
+        modelBuilder.Entity<CisCode>()
+       .HasKey(x => new { x.CisCodeId, x.CompanyId });
+
+        modelBuilder.Entity<SubcontractorLien>()
+        .HasKey(x => new { x.VendorId, x.ProjectId, x.LienKey });
+
+        modelBuilder.Entity<SubcontractorInsuranceHeader>()
+        .HasKey(x => new { x.VendorId, x.ProjectId, x.PolicyType });
+
+        modelBuilder.Entity<SubcontractorInsuranceLine>()
+            .HasKey(x => new { x.VendorId, x.ProjectId, x.PolicyType, x.LineKey });
+
+        modelBuilder.Entity<SubcontractorInsuranceLine>()
+            .HasOne(x => x.Header)
+            .WithMany(h => h.Lines)
+            .HasForeignKey(x => new { x.VendorId, x.ProjectId, x.PolicyType });
+
+        modelBuilder.Entity<EmployeeAllowance>()
+       .HasKey(x => new { x.EmployeeId, x.AllowanceCode });
+
+        modelBuilder.Entity<AllowanceCode>()
+       .HasKey(x => x.AllowanceCd);
+
+        modelBuilder.Entity<EmployeeLeaveBalance>()
+        .HasKey(x => new { x.EmployeeId, x.LeaveYear, x.LeaveTypeCode });
+
+        modelBuilder.Entity<PayType>()
+            .HasKey(x => x.PayTypeCode);
+        modelBuilder.Entity<EmployeeDefaultPayType>()
+            .HasKey(x => new { x.EmployeeId, x.PayType });
+
+        modelBuilder.Entity<EmployeeDefaultPayType>()
+            .HasOne(e => e.PayTypeNavigation)
+            .WithMany()
+            .HasForeignKey(e => e.PayType)
+            .HasPrincipalKey(p => p.PayTypeCode);
+
+        modelBuilder.Entity<EmployeePhone>()
+           .HasKey(x => new { x.EmployeeId, x.PhoneTypeCode });
+
+        modelBuilder.Entity<EmployeeDefaultTimesheet>()
+        .HasKey(x => x.EmployeeId);
+
+        modelBuilder.Entity<VeApvlAuditHs>()
+           .HasKey(x => x.AuditKey);
+        modelBuilder.Entity<VendApvlAuditHs>().HasNoKey();
+
+        modelBuilder.Entity<VendorCreditCard>().HasKey(x => new { x.VendId, x.CompanyId });
+        modelBuilder.Entity<VoucherApprover>().HasKey(x => new { x.UserId, x.CompanyId });
+        modelBuilder.Entity<VoucherApproverUser>().HasKey(x => new {x.ApproverUserId, x.UserId, x.CompanyId });
+
+        
+        modelBuilder.Entity<VoucherSettings>()
+        .HasKey(x => x.CompanyId);
+
+        modelBuilder.Entity<DfltCashAcct>()
+      .HasKey(x => x.CashAcctsKey);
+
+        modelBuilder.Entity<BondType>(entity =>
+        {
+            entity.HasKey(x => x.BondTypeCode);
+        });
+
+        modelBuilder.Entity<PolicyType>(entity =>
+        {
+            entity.HasKey(x => x.PolicyTypeCode);
+        });
+
+        modelBuilder.Entity<ReasonUsageCode>(entity =>
+        {
+            entity.HasKey(x => x.UsageCode);
+        });
+
+        modelBuilder.Entity<ReasonCode>()
+        .HasKey(x => new { x.RsnCd, x.SRsnWhUsedCd, x.CompanyId });
+
+        modelBuilder.Entity<EmployeeProperty>(entity =>
+        {
+            entity.HasKey(x => new { x.EmplId, x.PropId, x.IssueDt });
+
+            entity.HasOne(x => x.Property)
+                  .WithMany()
+                  .HasForeignKey(x => x.PropId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CompanyProperty>(entity =>
+        {
+            entity.HasKey(x => x.PropId);
+        });
+
+        modelBuilder.Entity<TrainingSrce>(entity =>
+        {
+            entity.HasKey(x => x.TrainSrceId);
+        });
+
+        modelBuilder.Entity<TrainingDetlJobTitle>(entity =>
+        {
+            entity.HasKey(x => new { x.TrainId, x.DetlJobCd });
+
+            entity.HasOne(x => x.Training)
+                  .WithMany()
+                  .HasForeignKey(x => x.TrainId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Training>(entity =>
+        {
+            entity.HasKey(x => x.TrainId);
+        });
+
+        modelBuilder.Entity<HSkillLvl>(entity =>
+        {
+            entity.HasKey(x => x.SkillLvlCd);
+        });
+
+        modelBuilder.Entity<Skill>(entity =>
+        {
+            entity.HasKey(x => x.SkillId);
+        });
+
+        modelBuilder.Entity<ProfOrg>(entity =>
+        {
+            entity.HasKey(x => x.ProfOrgId);
+        });
 
         modelBuilder.Entity<CertificationStatus>()
     .HasKey(x => new { x.CertStatusCd, x.CertCd });
@@ -388,7 +598,7 @@ public partial class MydatabaseContext : DbContext
             entity.ToTable("vendor_expense_accounts");
 
             // ✅ Composite PK
-            entity.HasKey(e => new { e.VendId, e.VendExpLnKey });
+            entity.HasKey(e => new { e.VendId, e.VendExpLnKey, e.CompanyId });
 
             entity.Property(e => e.VendId)
                 .HasMaxLength(12)
@@ -1335,47 +1545,47 @@ public partial class MydatabaseContext : DbContext
                   .HasMaxLength(1);
         });
 
-    modelBuilder.Entity<Fs>(entity =>
-        {
-            entity.ToTable("fs", "public");
+        modelBuilder.Entity<Fs>(entity =>
+            {
+                entity.ToTable("fs", "public");
 
-            entity.HasKey(e => e.FsCd);
+                entity.HasKey(e => e.FsCd);
 
-            entity.Property(e => e.FsCd)
-                  .HasMaxLength(6)
-                  .IsRequired();
+                entity.Property(e => e.FsCd)
+                      .HasMaxLength(6)
+                      .IsRequired();
 
-            entity.Property(e => e.PrimFsFl)
-                  .HasMaxLength(1)
-                  .IsRequired();
+                entity.Property(e => e.PrimFsFl)
+                      .HasMaxLength(1)
+                      .IsRequired();
 
-            entity.Property(e => e.SFsType)
-                  .HasMaxLength(1)
-                  .IsRequired();
+                entity.Property(e => e.SFsType)
+                      .HasMaxLength(1)
+                      .IsRequired();
 
-            entity.Property(e => e.FsDesc)
-                  .HasMaxLength(30)
-                  .IsRequired();
+                entity.Property(e => e.FsDesc)
+                      .HasMaxLength(30)
+                      .IsRequired();
 
-            entity.Property(e => e.ModifiedBy)
-                  .HasMaxLength(20)
-                  .IsRequired();
+                entity.Property(e => e.ModifiedBy)
+                      .HasMaxLength(20)
+                      .IsRequired();
 
-            entity.Property(e => e.TimeStamp)
-                  .IsRequired();
+                entity.Property(e => e.TimeStamp)
+                      .IsRequired();
 
-            entity.Property(e => e.CompanyId)
-                  .HasMaxLength(10)
-                  .IsRequired();
+                entity.Property(e => e.CompanyId)
+                      .HasMaxLength(10)
+                      .IsRequired();
 
-            entity.Property(e => e.RowVersion);
+                entity.Property(e => e.RowVersion);
 
-            entity.Property(e => e.FsIsociAmtFl)
-                  .HasMaxLength(1);
+                entity.Property(e => e.FsIsociAmtFl)
+                      .HasMaxLength(1);
 
-            entity.Property(e => e.IncstmtCd)
-                  .HasMaxLength(6);
-        });
+                entity.Property(e => e.IncstmtCd)
+                      .HasMaxLength(6);
+            });
 
         modelBuilder.Entity<OrgGroupOrgMapping>(entity =>
         {
@@ -3522,13 +3732,13 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.OrgId).HasColumnName("org_id").IsRequired();
             entity.Property(e => e.AccountGroup).HasColumnName("account_group").HasMaxLength(100);
             entity.Property(e => e.BurdenTemplateId).HasColumnName("burden_template");
-            entity.Property(e => e.Status).HasColumnName("status"); 
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Trf_ProjId).HasColumnName("trf_projid");
 
             entity.Property(e => e.Stage).HasColumnName("stage");
             entity.Property(e => e.Customer).HasColumnName("customer");
-            entity.Property(e => e.Type).HasColumnName("type"); 
-            entity.Property(e => e.NBType).HasColumnName("nb_type"); 
+            entity.Property(e => e.Type).HasColumnName("type");
+            entity.Property(e => e.NBType).HasColumnName("nb_type");
             entity.Property(e => e.OurRole).HasColumnName("our_role");
             entity.Property(e => e.Workshare).HasColumnName("workshare");
             entity.Property(e => e.ContractValue).HasColumnName("contract_value");

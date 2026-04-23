@@ -179,7 +179,14 @@ namespace PlanningAPI.Controllers
             if (string.IsNullOrWhiteSpace(acctGroupCode) || string.IsNullOrWhiteSpace(CompanyId))
                 return BadRequest(new { message = "Mapping identifiers are required." });
             var data = await _context.AccountGroupSetup
-                .Where(x => x.AcctGroupCode == acctGroupCode && x.CompanyId == CompanyId).Select(p => p.AccountId).ToListAsync();
+                .AsNoTracking()
+                .Where(x => x.AcctGroupCode == acctGroupCode && x.CompanyId == CompanyId)
+                .Select(p => new
+                {
+                    p.AccountId,
+                    AcctName = p.Account != null ? p.Account.AcctName : null
+                })
+                .ToListAsync();
 
             if (data == null)
                 return NotFound(new { message = "Mapping not found." });

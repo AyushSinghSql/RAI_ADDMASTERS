@@ -16,6 +16,20 @@ namespace PlanningAPI.Controllers
             _context = context;
         }
 
+        [HttpGet("ProfOrgs")]
+        public async Task<IActionResult> ProfOrgs()
+        {
+            var data = await _context.ProfOrgs
+                .Select(x => new
+                {
+                    value = x.ProfOrgId,
+                    label = x.ProfOrgDesc
+                })
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
         // ✅ 1. Certifications Dropdown
         [HttpGet("certifications")]
         public async Task<IActionResult> GetCertifications()
@@ -69,5 +83,7 @@ namespace PlanningAPI.Controllers
 
             return Ok(data);
         }
+
+
     }
 }

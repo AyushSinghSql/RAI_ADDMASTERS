@@ -1,4 +1,6 @@
-﻿public class ProspectiveEntity
+﻿using PlanningAPI.Models;
+
+public class ProspectiveEntity
 {
     public int ProspectiveId { get; set; }
 
