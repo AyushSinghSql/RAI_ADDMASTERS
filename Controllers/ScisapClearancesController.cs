@@ -22,14 +22,14 @@ namespace PlanningAPI.Controllers
             // Required
             if (string.IsNullOrWhiteSpace(dto.ClearanceCode) ||
                 string.IsNullOrWhiteSpace(dto.ClearanceDescription))
-                return BadRequest("Code & Description required");
+                return BadRequest("Value & Description required");
 
             // Duplicate
             var exists = await _context.ScisapClearances
                 .AnyAsync(x => x.ClearanceCode == dto.ClearanceCode);
 
             if (exists)
-                return BadRequest("Duplicate Clearance Code");
+                return BadRequest("Duplicate Clearance Value");
 
             if (await _context.ScisapClearances
                 .AnyAsync(x => x.ClearanceCode == dto.ClearanceCode))

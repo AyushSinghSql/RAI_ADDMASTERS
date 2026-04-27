@@ -150,7 +150,9 @@ namespace PlanningAPI.Models
     [Table("subcontractor_certification")]
     public class SubcontractorCertification
     {
+        [Key]
         [Column("certification_key")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long CertificationKey { get; set; }
 
         [Column("vendor_employee_id"), MaxLength(12)]

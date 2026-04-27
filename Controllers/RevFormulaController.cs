@@ -43,7 +43,7 @@ namespace PlanningAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get RevFormula with Code: {formulaCd}", formulaCd);
+                _logger.LogError(ex, "Failed to get RevFormula with Value: {formulaCd}", formulaCd);
                 return StatusCode(500);
             }
         }
@@ -76,7 +76,7 @@ namespace PlanningAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update RevFormula with Code: {formulaCd}", formulaCd);
+                _logger.LogError(ex, "Failed to update RevFormula with Value: {formulaCd}", formulaCd);
                 return StatusCode(500);
             }
         }
@@ -91,7 +91,7 @@ namespace PlanningAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to delete RevFormula with Code: {formulaCd}", formulaCd);
+                _logger.LogError(ex, "Failed to delete RevFormula with Value: {formulaCd}", formulaCd);
                 return StatusCode(500);
             }
         }

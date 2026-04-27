@@ -20,8 +20,7 @@ namespace PlanningAPI.Controllers
         public async Task<IActionResult> Create(SubcontractorCertification dto)
         {
             // Required
-            if (dto.CertificationKey <= 0 ||
-                string.IsNullOrWhiteSpace(dto.VendorEmployeeId) ||
+            if (string.IsNullOrWhiteSpace(dto.VendorEmployeeId) ||
                 string.IsNullOrWhiteSpace(dto.VendorId) ||
                 string.IsNullOrWhiteSpace(dto.CompanyId))
                 return BadRequest("Key fields are required");
@@ -38,7 +37,7 @@ namespace PlanningAPI.Controllers
 
             // Duplicate prevention
             var exists = await _context.SubcontractorCertifications.AnyAsync(x =>
-                x.CertificationKey == dto.CertificationKey &&
+                //x.CertificationKey == dto.CertificationKey &&
                 x.VendorEmployeeId == dto.VendorEmployeeId &&
                 x.VendorId == dto.VendorId &&
                 x.CompanyId == dto.CompanyId);

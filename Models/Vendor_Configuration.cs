@@ -90,8 +90,8 @@ namespace PlanningAPI.Models
 
     public class DropdownDto
     {
-        public string Code { get; set; }
-        public string Description { get; set; }
+        public string Value { get; set; }
+        public string Label { get; set; }
     }
 
     [Table("prof_org")]
@@ -673,7 +673,7 @@ namespace PlanningAPI.Models
         [Column("row_version")]
         public long? RowVersion { get; set; }
 
-        public SecurityLevel SecurityLevel { get; set; }
+        public SecurityLevel? SecurityLevel { get; set; }
     }
 
     [Table("recurring_voucher_group")]
@@ -805,6 +805,9 @@ namespace PlanningAPI.Models
 
         [Column("rowversion")]
         public long? RowVersion { get; set; }
+
+        public ICollection<VeApvlGrpUsers>? VeApvlGrpUsers { get; set; } 
+
     }
     public class VeApvlGrpDto
     {
@@ -836,12 +839,93 @@ namespace PlanningAPI.Models
 
         [Column("rowversion")]
         public long? RowVersion { get; set; }
+
+        public VeApvlGrp? VeApvlGrp { get; set; } = null;
+
+        public User? ApproverUser { get; set; } = null;
     }
 
     public class VeApvlGrpUsersDto
     {
         public string VeApprvlGrpCd { get; set; }
         public string ApprvrUserId { get; set; }
+        public string CompanyId { get; set; }
+        public string ModifiedBy { get; set; }
+    }
+
+    [Table("lien_waiver_hdr")]
+    public class LienWaiverHdr
+    {
+        [Key]
+        [Column("lien_no")]
+        public long LienNo { get; set; }
+
+        [Required]
+        [Column("waiver_type_cd", TypeName = "varchar(2)")]
+        public string WaiverTypeCd { get; set; }
+
+        [Required]
+        [Column("vend_cust_id", TypeName = "varchar(12)")]
+        public string VendCustId { get; set; }
+
+        [Required]
+        [Column("proj_id", TypeName = "varchar(30)")]
+        public string ProjId { get; set; }
+
+        [Required]
+        [Column("lien_amt")]
+        public decimal LienAmt { get; set; }
+
+        [Required]
+        [Column("lien_date")]
+        public DateTime LienDate { get; set; }
+
+        [Required]
+        [Column("sent_dt")]
+        public DateTime SentDt { get; set; }
+
+        [Column("returned_dt")]
+        public DateTime? ReturnedDt { get; set; }
+
+        [Required]
+        [Column("final_waiver_fl", TypeName = "varchar(1)")]
+        public string FinalWaiverFl { get; set; }
+
+        [Required]
+        [Column("addr_dc", TypeName = "varchar(10)")]
+        public string AddrDc { get; set; }
+
+        [Column("chk_no")]
+        public long? ChkNo { get; set; }
+
+        [Required]
+        [Column("modified_by", TypeName = "varchar(20)")]
+        public string ModifiedBy { get; set; }
+
+        [Required]
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Required]
+        [Column("company_id", TypeName = "varchar(10)")]
+        public string CompanyId { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+    public class LienWaiverHdrDto
+    {
+        public long LienNo { get; set; }
+        public string WaiverTypeCd { get; set; }
+        public string VendCustId { get; set; }
+        public string ProjId { get; set; }
+        public decimal LienAmt { get; set; }
+        public DateTime LienDate { get; set; }
+        public DateTime SentDt { get; set; }
+        public DateTime? ReturnedDt { get; set; }
+        public string FinalWaiverFl { get; set; }
+        public string AddrDc { get; set; }
+        public long? ChkNo { get; set; }
         public string CompanyId { get; set; }
         public string ModifiedBy { get; set; }
     }

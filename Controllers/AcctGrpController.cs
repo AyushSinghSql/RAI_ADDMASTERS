@@ -89,7 +89,7 @@ namespace PlanningAPI.Controllers
         public async Task<IActionResult> Delete(string acctGrpCd)
         {
             if (string.IsNullOrWhiteSpace(acctGrpCd))
-                return BadRequest(new { message = "Account Group Code and Company Id are required." });
+                return BadRequest(new { message = "Account Group Value and Company Id are required." });
 
             try
             {

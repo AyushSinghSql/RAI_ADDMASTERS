@@ -299,5 +299,73 @@ namespace PlanningAPI.Services
             await _context.Database.ExecuteSqlRawAsync(sql.ToString());
         }
 
+        public async Task<(bool Success, string Message)> DeleteVendorAsync(string vendorId, string companyId)
+        {
+            var vendor = await _context.Vendors
+                .FirstOrDefaultAsync(v => v.VendId == vendorId && v.CompanyId == companyId);
+
+            if (vendor == null)
+                return (false, "Vendor not found");
+
+            // 🔒 VALIDATIONS
+
+            //// 1. Check AP Transactions
+            //bool hasInvoices = await _context.APInvoices
+            //    .AnyAsync(x => x.VendorId == vendorId && x.CompanyId == companyId);
+
+            //if (hasInvoices)
+            //    return (false, "Vendor has AP transactions. Cannot delete.");
+
+            //// 2. Check Purchase Orders
+            //bool hasPO = await _context.PurchaseOrders
+            //    .AnyAsync(x => x.VendorId == vendorId && x.CompanyId == companyId);
+
+            //if (hasPO)
+            //    return (false, "Vendor used in Purchase Orders.");
+
+            // 3. Check Tax / 1099
+            bool hasTax = await _context.Vendor1099Details
+                .AnyAsync(x => x.PayVendorId == vendorId && x.CompanyId == companyId);
+
+            if (hasTax)
+                return (false, "Vendor has tax records.");
+
+            // 4. Check Active Status
+            if (vendor.VendApprvlCd == "A")
+                return (false, "Approved vendor cannot be deleted.");
+
+            //// 🟡 SOFT DELETE
+            //vendor.IsDeleted = true;
+            //vendor.DeletedAt = DateTime.UtcNow;
+            //vendor.DeletedBy = "system"; // replace with logged user
+
+            // 🧹 OPTIONAL: Soft delete child records
+            var addresses = await _context.VendorAddresses
+                .Where(x => x.VendorId == vendorId && x.CompanyId == companyId)
+                .ToListAsync();
+
+            if(addresses.Any())
+            {
+                _context.VendorAddresses.RemoveRange(addresses);
+            }
+
+            //addresses.ForEach(a => a.IsDeleted = true);
+
+            var employees = await _context.VendorEmployees
+                .Where(x => x.VendId == vendorId && x.CompanyId == companyId)
+                .ToListAsync();
+
+            if(employees.Any())
+            {
+                _context.VendorEmployees.RemoveRange(employees);
+            }
+
+            //employees.ForEach(e => e.IsDeleted = true);
+
+            await _context.SaveChangesAsync();
+
+            return (true, "Vendor deleted successfully (soft delete)");
+        }
+
     }
 }

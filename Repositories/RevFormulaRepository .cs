@@ -44,7 +44,7 @@ namespace PlanningAPI.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving RevFormula with Code: {Code}", formulaCd);
+                _logger.LogError(ex, "Error retrieving RevFormula with Value: {Value}", formulaCd);
                 throw;
             }
         }
@@ -74,7 +74,7 @@ namespace PlanningAPI.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating RevFormula with Code: {Code}", formula.FormulaCd);
+                _logger.LogError(ex, "Error updating RevFormula with Value: {Value}", formula.FormulaCd);
                 return false;
             }
         }
@@ -92,7 +92,7 @@ namespace PlanningAPI.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting RevFormula with Code: {Code}", formulaCd);
+                _logger.LogError(ex, "Error deleting RevFormula with Value: {Value}", formulaCd);
                 return false;
             }
         }

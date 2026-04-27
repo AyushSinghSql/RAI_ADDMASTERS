@@ -61,7 +61,7 @@ namespace PlanningAPI.Controllers
                 .AnyAsync(x => x.UsageCode == model.UsageCode);
 
             if (exists)
-                return BadRequest("Usage Code already exists");
+                return BadRequest("Usage Value already exists");
 
             model.TimeStamp = DateTime.UtcNow;
 
@@ -103,7 +103,7 @@ namespace PlanningAPI.Controllers
                 .AnyAsync(x => x.SRsnWhUsedCd == code);
 
             if (isUsed)
-                return BadRequest("Cannot delete. Usage Code is used in Reason Codes.");
+                return BadRequest("Cannot delete. Usage Value is used in Reason Codes.");
 
             _context.ReasonUsageCodes.Remove(db);
             await _context.SaveChangesAsync();

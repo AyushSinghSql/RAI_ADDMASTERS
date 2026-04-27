@@ -10,6 +10,7 @@ using NPOI.SS.Formula.Functions;
 using PlanningAPI.Helpers;
 using PlanningAPI.Models;
 using PlanningAPI.Repositories;
+using PlanningAPI.Services;
 using QuestPDF.Infrastructure;
 using Serilog;
 using System;
@@ -19,6 +20,7 @@ using WebApi.Models;
 using WebApi.Repositories;
 using WebApi.Services;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,18 @@ builder.Host.UseSerilog(); // Use Serilog instead of default logging
       )
       .UseFunctionInvocation()
       .Build());
+    //  builder.Services.AddChatClient(services =>
+    //new ChatClientBuilder(
+    //  (
+    //    !string.IsNullOrEmpty(apiKey)
+    //      ? new AzureOpenAIClient(new Uri(endpoint!), new AzureKeyCredential(apiKey))
+    //      : new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
+    //  )
+    //  .GetChatClient(model)
+    //  .AsIChatClient()
+    //)
+    //.Build());
+
 
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -76,7 +90,7 @@ builder.Host.UseSerilog(); // Use Serilog instead of default logging
     //services.AddSingleton<DataContext>();
     builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
     builder.Services.AddHostedService<PlanningAPI.Services.QueuedHostedService>();
-
+    
 
     services.AddScoped<IOrgRepository, OrgRepository>();
     services.AddScoped<IOrgService, OrgService>();
@@ -108,6 +122,7 @@ builder.Host.UseSerilog(); // Use Serilog instead of default logging
     services.AddScoped<IHolidayCalendarRepository, HolidayCalendarRepository>();
     services.AddScoped<IHolidayCalendarRepository, HolidayCalendarRepository>();
     services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<VendorTransactionService>();
     //services.AddScoped<IAiService, OpenAiService>();
 
     builder.Services.AddHttpClient<IAiService, OpenAiService>();

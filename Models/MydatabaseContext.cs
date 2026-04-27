@@ -255,7 +255,21 @@ public partial class MydatabaseContext : DbContext
     public DbSet<LienWaiverDocument> LienWaiverDocuments { get; set; }
     public DbSet<VeApvlGrp> VeApvlGrps { get; set; }
     public DbSet<VeApvlGrpUsers> VeApvlGrpUsers { get; set; }
+    public DbSet<LienWaiverHdr> LienWaiverHdrs { get; set; }
 
+    public DbSet<Cust> Custs { get; set; }
+    public DbSet<CustType> CustTypes { get; set; }
+    public DbSet<ArCrLimit> ArCrLimits { get; set; }
+    public DbSet<ArCrRating> ArCrRatings { get; set; }
+    public DbSet<ArSalesTerr> ArSalesTerrs { get; set; }
+    public DbSet<IssueByAddr> IssueByAddrs { get; set; }
+    public DbSet<SalesAbbrvCd> SalesAbbrvCds { get; set; }
+    public DbSet<CustDfltAcct> CustDfltAccts { get; set; }
+    public DbSet<CustAlias> CustAliases { get; set; }
+    public DbSet<CustAddr> CustAddrs { get; set; }
+    public DbSet<CustAddrCntact> CustAddrCntacts { get; set; }
+    public DbSet<SCustTrnType> SCustTrnTypes { get; set; }
+    public DbSet<CustLimitCrncy> CustLimitCrncies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -267,8 +281,156 @@ public partial class MydatabaseContext : DbContext
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
 
+        modelBuilder.Entity<CustLimitCrncy>(entity =>
+        {
+            entity.ToTable("cust_limit_crncy", "public");
+
+            entity.HasKey(e => new
+            {
+                e.CustId,
+                e.SCrncyCd,
+                e.CrncyTypeCd,
+                e.CompanyId
+            });
+
+            entity.Property(e => e.TimeStamp)
+                  .HasColumnType("timestamp")
+                  .IsRequired();
+
+            // Relation with CUST
+            entity.HasOne(e => e.Cust)
+                  .WithMany(c => c.CustLimitCrncies)
+                  .HasForeignKey(e => new { e.CustId, e.CompanyId })
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SCustTrnType>(entity =>
+        {
+
+            entity.HasKey(e => e.SCustTrnTypeCode);
+
+            entity.Property(e => e.SCustTrnTypeCode)
+                .HasColumnName("s_cust_trn_type")
+                .HasMaxLength(1);
+
+            entity.Property(e => e.Description)
+                .HasColumnName("cust_trn_type_desc")
+                .HasMaxLength(30)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<CustDfltAcct>(entity =>
+        {
+            entity.HasKey(e => new { e.CustId, e.SCustTrnType, e.CompanyId });
+
+            entity.HasOne(d => d.SCustTrnTypeNavigation)
+                .WithMany(p => p.CustDefaultAccounts)
+                .HasForeignKey(d => d.SCustTrnType);
+
+            entity.HasOne(d => d.Cust)
+                .WithMany(p => p.CustDefaultAccounts)
+                .HasForeignKey(d => new { d.CustId, d.CompanyId });
+        });
+
+        modelBuilder.Entity<CustAlias>(entity =>
+        {
+            entity.HasKey(x => new { x.CustId, x.CustAliasKey, x.CompanyId });
+
+            entity.HasOne(x => x.Cust)
+                .WithMany(c => c.Aliases)
+                .HasForeignKey(x => new { x.CustId, x.CompanyId })
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(x => x.TimeStamp)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<CustAddrCntact>(entity =>
+        {
+            entity.HasKey(x => new { x.CustId, x.AddrDc, x.CntactId, x.CompanyId });
+
+            entity.HasOne(x => x.CustAddr)
+                .WithMany(a => a.Contacts)
+                .HasForeignKey(x => new { x.CustId, x.AddrDc, x.CompanyId })
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(x => x.TimeStamp)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<CustAddr>()
+            .HasKey(x => new { x.CustId, x.AddrDc, x.CompanyId });
+
+        modelBuilder.Entity<CustAddr>()
+            .HasOne(x => x.Cust)
+            .WithMany()
+            .HasForeignKey(x => new { x.CustId, x.CompanyId });
+
+        modelBuilder.Entity<Cust>()
+            .HasKey(x => new { x.CustId, x.CompanyId });
+
+        modelBuilder.Entity<Cust>()
+            .HasOne(x => x.CustType)
+            .WithMany()
+            .HasForeignKey(x => x.CustTypeDc);
+
+        modelBuilder.Entity<Cust>()
+            .HasOne(x => x.ArCrLimit)
+            .WithMany()
+            .HasForeignKey(x => x.ArCrLimitKey);
+
+        modelBuilder.Entity<Cust>()
+            .HasOne(x => x.ArCrRating)
+            .WithMany()
+            .HasForeignKey(x => x.ArCrRatingKey);
+
+        modelBuilder.Entity<Cust>()
+            .HasOne(x => x.SalesTerr)
+            .WithMany()
+            .HasForeignKey(x => x.SalesTerrKey);
+
+        //modelBuilder.Entity<Cust>()
+        //    .HasOne(x => x.IssueByAddr)
+        //    .WithMany()
+        //    .HasForeignKey(x => x.IssueByAddrCd);
+
+        modelBuilder.Entity<Cust>()
+            .HasOne(x => x.SalesAbbrv)
+            .WithMany()
+            .HasForeignKey(x => x.SalesAbbrvCd);
+
+        modelBuilder.Entity<LienWaiverHdr>(entity =>
+        {
+            entity.HasKey(e => e.LienNo);
+
+            entity.Property(e => e.TimeStamp)
+                  .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.LienAmt)
+                  .HasPrecision(17, 2);
+        });
+
         modelBuilder.Entity<VeApvlGrpUsers>()
         .HasKey(x => new { x.VeApprvlGrpCd, x.ApprvrUserId, x.CompanyId });
+        
+        //// ✅ 2. Relationship → VeApvlGrp
+        //modelBuilder.Entity<VeApvlGrpUsers>().HasOne(e => e.VeApvlGrp)
+        //    .WithMany(g => g.VeApvlGrpUsers) // make sure this exists in VeApvlGrp
+        //    .HasForeignKey(e => new
+        //    {
+        //        e.VeApprvlGrpCd,
+        //        e.CompanyId
+        //    })
+        //    .OnDelete(DeleteBehavior.Cascade); // or Restrict based on ERP rules
+
+        //// ✅ 3. Relationship → User
+        //modelBuilder.Entity<VeApvlGrpUsers>().HasOne(e => e.ApproverUser)
+        //    .WithMany(u => u.VeApvlGrpUsers) // make sure this exists in User
+        //    .HasForeignKey(e => new
+        //    {
+        //        e.ApprvrUserId
+        //    })
+        //    .OnDelete(DeleteBehavior.Restrict); // safer for ERP
 
         modelBuilder.Entity<VeApvlGrp>()
         .HasKey(x => new { x.VeApprvlGrpCd, x.CompanyId });
@@ -300,13 +462,62 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<SecurityLevel>()
         .HasKey(x => x.SecurityLevelCode);
 
-        modelBuilder.Entity<SubcontractorCertification>()
-       .HasKey(x => new {
-           x.CertificationKey,
-           x.VendorEmployeeId,
-           x.VendorId,
-           x.CompanyId
-       });
+        // modelBuilder.Entity<SubcontractorCertification>()
+        //.HasKey(x => new {
+        //    x.CertificationKey,
+        //    x.VendorEmployeeId,
+        //    x.VendorId,
+        //    x.CompanyId
+        //});
+
+        modelBuilder.Entity<SubcontractorCertification>(entity =>
+        {
+            // ✅ PK (single identity key)
+            entity.HasKey(e => e.CertificationKey);
+
+            // ✅ Identity (PostgreSQL)
+            entity.Property(e => e.CertificationKey)
+                  .UseIdentityAlwaysColumn();
+
+            // ✅ Default timestamp
+            entity.Property(e => e.TimeStamp)
+                  .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // ✅ Concurrency (optional)
+            entity.Property(e => e.RowVersion)
+                  .IsConcurrencyToken();
+
+            //// ✅ Relationship (composite FK)
+            //entity.HasOne(e => e.VendorEmployeeId)
+            //      .WithMany(v => v.Certifications)
+            //      .HasForeignKey(e => new
+            //      {
+            //          e.VendorEmployeeId,
+            //          e.VendorId,
+            //          e.CompanyId
+            //      })
+            //      .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Unique constraint (ERP rule)
+            entity.HasIndex(e => new
+            {
+                e.VendorEmployeeId,
+                e.VendorId,
+                e.CompanyId,
+                e.CertificationId
+            }).IsUnique();
+        });
+
+        //// Parent composite key
+        //modelBuilder.Entity<VendorEmployee>(entity =>
+        //{
+        //    entity.HasKey(e => new
+        //    {
+        //        e.VendorEmployeeId,
+        //        e.VendorId,
+        //        e.CompanyId
+        //    });
+        //});
 
         modelBuilder.Entity<CisCode>()
        .HasKey(x => new { x.CisCodeId, x.CompanyId });

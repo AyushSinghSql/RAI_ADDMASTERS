@@ -22,7 +22,7 @@ namespace PlanningAPI.Controllers
             // Required
             if (string.IsNullOrWhiteSpace(dto.DocumentCode) ||
                 string.IsNullOrWhiteSpace(dto.DocumentName))
-                return BadRequest("Document Code & Name required");
+                return BadRequest("Document Value & Name required");
 
             // Flag validation
             var validFlags = new[] { "Y", "N" };
@@ -38,7 +38,7 @@ namespace PlanningAPI.Controllers
                 .AnyAsync(x => x.DocumentCode == dto.DocumentCode);
 
             if (exists)
-                return BadRequest("Duplicate Document Code");
+                return BadRequest("Duplicate Document Value");
 
             _context.Add(dto);
             await _context.SaveChangesAsync();

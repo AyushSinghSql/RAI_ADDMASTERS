@@ -42,6 +42,8 @@ namespace PlanningAPI.Models
 
         public ICollection<UserFavorite> Favorites { get; set; } = new List<UserFavorite>();
 
+        public ICollection<VeApvlGrpUsers>? VeApvlGrpUsers { get; set; }
+
     }
 
     public class UserProjectMap

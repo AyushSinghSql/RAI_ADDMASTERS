@@ -97,7 +97,7 @@ namespace PlanningAPI.Controllers
         private async Task<string> Validate(VeApvlGrpUsersDto dto, bool isUpdate = false)
         {
             if (string.IsNullOrWhiteSpace(dto.VeApprvlGrpCd))
-                return "Group Code required";
+                return "Group Value required";
 
             if (string.IsNullOrWhiteSpace(dto.ApprvrUserId))
                 return "User required";

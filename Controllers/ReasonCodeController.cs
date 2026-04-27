@@ -75,7 +75,7 @@ namespace PlanningAPI.Controllers
                 x.CompanyId == model.CompanyId);
 
             if (exists)
-                return BadRequest("Reason Code already exists");
+                return BadRequest("Reason Value already exists");
 
             // Normalize flags
             model.UpdLastCtDtFl = model.UpdLastCtDtFl == "Y" ? "Y" : "N";

@@ -21,7 +21,7 @@ namespace PlanningAPI.Controllers
             // Required fields
             if (string.IsNullOrWhiteSpace(dto.CisCodeId) ||
                 string.IsNullOrWhiteSpace(dto.CompanyId))
-                return BadRequest("CIS Code and Company required");
+                return BadRequest("CIS Value and Company required");
 
             // Rate validation
             if (dto.WithholdingRate < 0 || dto.WithholdingRate > 1)
@@ -33,7 +33,7 @@ namespace PlanningAPI.Controllers
                 x.CompanyId == dto.CompanyId);
 
             if (exists)
-                return BadRequest("Duplicate CIS Code");
+                return BadRequest("Duplicate CIS Value");
 
             // Optional FK validations (recommended)
             if (!string.IsNullOrEmpty(dto.AccountId))

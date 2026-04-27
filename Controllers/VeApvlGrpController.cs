@@ -51,8 +51,8 @@ namespace PlanningAPI.Controllers
         [HttpGet("{code}/{companyId}")]
         public async Task<IActionResult> GetById(string code, string companyId)
         {
-            var entity = await _context.VeApvlGrps
-                .FindAsync(code, companyId);
+            var entity = await _context.VeApvlGrpUsers.Include(x => x.VeApvlGrp).Include(x => x.ApproverUser).Where(x => x.CompanyId == companyId && x.VeApprvlGrpCd == code)
+                .FirstOrDefaultAsync();
 
             if (entity == null)
                 return NotFound();
@@ -108,7 +108,7 @@ namespace PlanningAPI.Controllers
         private async Task<string> Validate(VeApvlGrpDto dto, bool isUpdate = false)
         {
             if (string.IsNullOrWhiteSpace(dto.VeApprvlGrpCd))
-                return "Group Code is required";
+                return "Group Value is required";
 
             if (string.IsNullOrWhiteSpace(dto.CompanyId))
                 return "Company Id is required";
@@ -117,7 +117,7 @@ namespace PlanningAPI.Controllers
                 return "Description is required";
 
             if (dto.VeApprvlGrpCd.Length > 6)
-                return "Group Code max length is 6";
+                return "Group Value max length is 6";
 
             if (dto.CompanyId.Length > 10)
                 return "Company Id max length is 10";

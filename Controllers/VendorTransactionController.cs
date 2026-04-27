@@ -74,5 +74,16 @@ namespace PlanningAPI.Controllers
             await _service.BulkUpdateVendorApprovalRaw(dtos);
             return Ok("Successfully updated vendor approvals.");
         }
+
+        [HttpDelete("{vendorId}")]
+        public async Task<IActionResult> DeleteVendor(string vendorId, string companyId)
+        {
+            var result = await _service.DeleteVendorAsync(vendorId, companyId);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
     }
 }
