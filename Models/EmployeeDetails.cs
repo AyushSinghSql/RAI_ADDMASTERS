@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using NPOI.SS.Formula.Functions;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace PlanningAPI.Models
 {
     public class EmployeeDetails
@@ -509,5 +510,217 @@ namespace PlanningAPI.Models
         public long? RowVersion { get; set; }
 
         public SubcontractorInsuranceHeader Header { get; set; }
+    }
+
+    [Table("s_lv_ceil_mthd", Schema = "public")]
+    public class SLvCeilMthd
+    {
+        [Key]
+        [Column("s_lv_ceil_mthd_cd"), StringLength(6)]
+        public string Code { get; set; }
+
+        [Required, Column("lv_ceil_mthd_desc"), StringLength(30)]
+        public string Description { get; set; }
+
+        [Column("modified_by")] public string ModifiedBy { get; set; }
+        [Column("time_stamp")] public DateTime TimeStamp { get; set; }
+        [Column("rowversion")] public long? RowVersion { get; set; }
+
+        public List<LvType> LvTypes { get; set; }
+    }
+
+    [Table("lv_type", Schema = "public")]
+    public class LvType
+    {
+        [Key]
+        [Column("lv_type_cd"), StringLength(4)]
+        public string LvTypeCd { get; set; }
+
+        [Column("lv_type_desc")] public string Description { get; set; }
+
+        [Column("s_lv_ceil_mthd_cd")]
+        public string CeilMethodCd { get; set; }
+
+        [Column("expns_acct_id")] public string ExpnsAcctId { get; set; }
+        [Column("accrl_acct_id")] public string? AccrlAcctId { get; set; }
+        [Column("modified_by")] public string? ModifiedBy { get; set; }
+        [Column("time_stamp")] public DateTime TimeStamp { get; set; }
+        [Column("company_id")] public string CompanyId { get; set; }
+
+        [Column("lv_bal_flr_amt")] public decimal LvBalFlrAmt { get; set; }
+
+        public SLvCeilMthd CeilMethod { get; set; }
+        public List<LvTable> Leaves { get; set; }
+    }
+    [Table("lv_table", Schema = "public")]
+    public class LvTable
+    {
+        [Key]
+        [Column("lv_cd")]
+        public string LvCd { get; set; }
+
+        [Column("lv_type_cd")]
+        public string LvTypeCd { get; set; }
+
+        [Column("lv_desc")]
+        public string Description { get; set; }
+        [Column("modified_by")] public string? ModifiedBy { get; set; }
+        [Column("time_stamp")] public DateTime TimeStamp { get; set; }
+
+        public LvType LvType { get; set; }
+    }
+    [Table("empl_lv_accrl", Schema = "public")]
+    public class EmplLvAccrl
+    {
+        [Column("empl_id")]
+        public string EmplId { get; set; }
+
+        [Column("lv_type_cd")]
+        public string LvTypeCd { get; set; }
+
+        [Column("lv_cd")]
+        public string LvCd { get; set; }
+
+        [Column("lv_hire_dt")]
+        public DateTime? LvHireDt { get; set; }
+
+        [Column("modified_by")] public string? ModifiedBy { get; set; }
+        [Column("time_stamp")] public DateTime TimeStamp { get; set; }
+
+        public LvType LvType { get; set; }
+        public LvTable Lv { get; set; }
+    }
+
+
+    [Table("empl_bond_hdr2", Schema = "public")]
+    public class EmplBondHdr2
+    {
+        // 🔑 Composite Key
+        [Column("empl_id"), StringLength(12)]
+        public string EmplId { get; set; }
+
+        [Column("ded_cd"), StringLength(6)]
+        public string DedCd { get; set; }
+
+        // 📅 Business Fields
+        [Required]
+        [Column("empl_bond_eff_dt")]
+        public DateTime EmplBondEffDt { get; set; }
+
+        [Required]
+        [Column("bond_beg_bal")]
+        public decimal BondBegBal { get; set; }
+
+        // 🧾 Audit
+        [Required, Column("modified_by"), StringLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Required, Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+
+
+    [Table("empl_ded", Schema = "public")]
+    public class EmplDed
+    {
+        // 🔑 Composite Key
+        [Column("empl_id"), StringLength(12)]
+        public string EmplId { get; set; }
+
+        [Column("ded_cd"), StringLength(6)]
+        public string DedCd { get; set; }
+
+        // 📌 Deduction Config
+        [Required, Column("s_ded_mthd_cd"), StringLength(6)]
+        public string SDedMthdCd { get; set; }
+
+        [Required, Column("ded_rt_amt")]
+        public decimal DedRtAmt { get; set; }
+
+        [Required, Column("ded_ann_ceil_amt")]
+        public decimal DedAnnCeilAmt { get; set; }
+
+        [Required, Column("ded_priority_no")]
+        public int DedPriorityNo { get; set; }
+
+        // 📅 Dates
+        [Column("ded_start_dt")]
+        public DateTime? DedStartDt { get; set; }
+
+        [Column("ded_end_dt")]
+        public DateTime? DedEndDt { get; set; }
+
+        [Column("ded_end_cvg_dt")]
+        public DateTime? DedEndCvgDt { get; set; }
+
+        [Column("ded_start_cvg_dt")]
+        public DateTime? DedStartCvgDt { get; set; }
+
+        // 🧾 Audit
+        [Required, Column("modified_by"), StringLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Required, Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+
+    [Table("empl_bond_ln2", Schema = "public")]
+    public class EmplBondLn2
+    {
+        // 🔑 Composite Key
+        [Column("empl_id"), StringLength(12)]
+        public string EmplId { get; set; }
+
+        [Column("ded_cd"), StringLength(6)]
+        public string DedCd { get; set; }
+
+        [Column("bond_ln_key")]
+        public int BondLnKey { get; set; }
+
+        // 📊 Fields
+        [Column("seq_no")]
+        public int SeqNo { get; set; }
+
+        [Column("next_purch_fl")] public string NextPurchFl { get; set; }
+        [Column("empl_is_owner_fl")] public string EmplIsOwnerFl { get; set; }
+        [Column("reg_type")] public string RegType { get; set; }
+
+        [Column("bond_owner_nm")] public string? BondOwnerNm { get; set; }
+        [Column("bond_owner_ssn")] public string? BondOwnerSsn { get; set; }
+        [Column("coowner_nm")] public string? CoownerNm { get; set; }
+
+        [Column("empl_is_ben_fl")] public string EmplIsBenFl { get; set; }
+        [Column("beneficiary_nm")] public string? BeneficiaryNm { get; set; }
+
+        [Column("bond_series")] public string BondSeries { get; set; }
+
+        [Column("bond_face_amt")] public decimal BondFaceAmt { get; set; }
+        [Column("bond_cost_amt")] public decimal BondCostAmt { get; set; }
+
+        [Column("use_empl_addr_fl")] public string UseEmplAddrFl { get; set; }
+
+        [Column("designee_name")] public string? DesigneeName { get; set; }
+
+        [Column("ln_1_adr")] public string? Ln1Adr { get; set; }
+        [Column("ln_2_adr")] public string? Ln2Adr { get; set; }
+        [Column("ln_3_adr")] public string? Ln3Adr { get; set; }
+
+        [Column("city_name")] public string? CityName { get; set; }
+        [Column("mail_st_dc")] public string? MailStDc { get; set; }
+        [Column("postal_cd")] public string? PostalCd { get; set; }
+
+        // 🧾 Audit
+        [Column("modified_by")] public string ModifiedBy { get; set; }
+        [Column("time_stamp")] public DateTime TimeStamp { get; set; }
+        [Column("rowversion")] public long? RowVersion { get; set; }
+
+        // 🔗 Navigation
+        public EmplBondHdr2 Header { get; set; }
     }
 }

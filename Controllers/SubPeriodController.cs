@@ -20,8 +20,26 @@ namespace PlanningAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var data = await _context.SubPeriods.Include(p => p.AccountingPeriod)
+                .OrderBy(x => x.SubPeriodNo)
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
+        [HttpGet("GetWithAccountingPeriod")]
+        public async Task<IActionResult> GetWithAccountingPeriod()
+        {
             var data = await _context.SubPeriods
                 .OrderBy(x => x.SubPeriodNo)
+                .Select(x => new
+                {
+                    x.SubPeriodNo,
+                    x.FyCd,
+                    x.SubPeriodEndDate,
+                    PeriodEndDate = x.AccountingPeriod.PeriodEndDate,
+                    PeriodNo = x.AccountingPeriod.PeriodNo
+                })
                 .ToListAsync();
 
             return Ok(data);

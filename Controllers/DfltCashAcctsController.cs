@@ -106,7 +106,7 @@ namespace PlanningAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(decimal id)
         {
-            var entity = await _context.DfltCashAccts.FindAsync(id);
+            var entity = await _context.DfltCashAccts.Where(x => x.CashAcctsKey == id).FirstOrDefaultAsync();
 
             if (entity == null)
                 return NotFound();

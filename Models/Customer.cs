@@ -4,67 +4,147 @@ using static PlanningAPI.Models.ArCrRating;
 
 namespace PlanningAPI.Models
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+
     [Table("cust", Schema = "public")]
     public class Cust
     {
+        // ✅ Keys (NOT NULL)
         [Key, Column("cust_id"), MaxLength(12)]
         public string CustId { get; set; }
 
         [Key, Column("company_id"), MaxLength(10)]
         public string CompanyId { get; set; }
 
-        [Required, Column("cust_name"), MaxLength(25)]
-        public string CustName { get; set; }
+        // ✅ Existing fields (converted to nullable)
+        [Column("cust_name"), MaxLength(25)]
+        public string? CustName { get; set; }
 
         [Column("vend_id"), MaxLength(12)]
         public string? VendId { get; set; }
 
-        [Required, Column("ext_tax_exmpt_id"), MaxLength(20)]
-        public string ExtTaxExemptId { get; set; }
+        [Column("ext_tax_exmpt_id"), MaxLength(20)]
+        public string? ExtTaxExemptId { get; set; }
 
-        [Required, Column("apply_fin_chg_fl"), MaxLength(1)]
-        public string ApplyFinChgFl { get; set; }
+        [Column("apply_fin_chg_fl"), MaxLength(1)]
+        public string? ApplyFinChgFl { get; set; }
 
         [Column("grace_days_no")]
-        public int GraceDaysNo { get; set; }
+        public int? GraceDaysNo { get; set; }
 
-        [Column("annl_fin_rt")]
-        public decimal AnnlFinRt { get; set; }
+        [Column("annl_fin_rt", TypeName = "numeric(5,4)")]
+        public decimal? AnnlFinRt { get; set; }
 
         [Column("ar_cr_limit_key")]
-        public int? ArCrLimitKey { get; set; }
+        public int ArCrLimitKey { get; set; }
 
         [Column("ar_cr_rating_key")]
-        public int? ArCrRatingKey { get; set; }
+        public int ArCrRatingKey { get; set; }
 
         [Column("sales_terr_key")]
-        public int? SalesTerrKey { get; set; }
+        public int SalesTerrKey { get; set; }
 
-        [Required, Column("cust_type_dc"), MaxLength(15)]
-        public string CustTypeDc { get; set; }
+        [Column("cust_type_dc"), MaxLength(15)]
+        public string? CustTypeDc { get; set; }
 
         [Column("sales_abbrv_cd"), MaxLength(6)]
         public string? SalesAbbrvCd { get; set; }
 
-        [Required, Column("modified_by"), MaxLength(20)]
-        public string ModifiedBy { get; set; }
+        [Column("modified_by"), MaxLength(20)]
+        public string? ModifiedBy { get; set; }
 
-        [Required, Column("time_stamp")]
-        public DateTime TimeStamp { get; set; }
+        [Column("time_stamp")]
+        public DateTime? TimeStamp { get; set; }
 
         [Column("rowversion")]
-        public int? RowVersion { get; set; }
+        public long? RowVersion { get; set; }
 
-        // 🔗 Navigation Properties
+        // ✅ New fields (aligned same style)
+
+        [Column("cr_rating_dt")]
+        public DateTime? CrRatingDt { get; set; }
+
+        [Column("ext_cr_id"), MaxLength(15)]
+        public string? ExtCrId { get; set; }
+
+        [Column("fob_fld"), MaxLength(15)]
+        public string? FobFld { get; set; }
+
+        [Column("s_credit_status_cd"), MaxLength(6)]
+        public string? SCreditStatusCd { get; set; }
+
+        [Column("ovrshp_allow_fl"), MaxLength(1)]
+        public string? OvrshpAllowFl { get; set; }
+
+        [Column("srce_insp_fl"), MaxLength(1)]
+        public string? SrceInspFl { get; set; }
+
+        [Column("cert_of_cnfrm_fl"), MaxLength(1)]
+        public string? CertOfCnfrmFl { get; set; }
+
+        [Column("partial_ship_fl"), MaxLength(1)]
+        public string? PartialShipFl { get; set; }
+
+        [Column("allow_subst_fl"), MaxLength(1)]
+        public string? AllowSubstFl { get; set; }
+
+        [Column("acceptance_pt_fl"), MaxLength(1)]
+        public string? AcceptancePtFl { get; set; }
+
+        [Column("user_def1_fld"), MaxLength(20)]
+        public string? UserDef1Fld { get; set; }
+
+        [Column("user_def2_fld"), MaxLength(20)]
+        public string? UserDef2Fld { get; set; }
+
+        [Column("cust_long_name"), MaxLength(40)]
+        public string? CustLongName { get; set; }
+
+        [Column("apprvd_ord_bal_amt", TypeName = "numeric(17,2)")]
+        public decimal? ApprvdOrdBalAmt { get; set; }
+
+        [Column("disc_allow_fl"), MaxLength(1)]
+        public string? DiscAllowFl { get; set; }
+
+        [Column("disc_pct_rt", TypeName = "numeric(5,4)")]
+        public decimal? DiscPctRt { get; set; }
+
+        [Column("sls_cnt_first_name"), MaxLength(25)]
+        public string? SlsCntFirstName { get; set; }
+
+        [Column("sls_cnt_last_name"), MaxLength(25)]
+        public string? SlsCntLastName { get; set; }
+
+        [Column("phone_id"), MaxLength(25)]
+        public string? PhoneId { get; set; }
+
+        [Column("fax_id"), MaxLength(25)]
+        public string? FaxId { get; set; }
+
+        [Column("ackn_reqd_fl"), MaxLength(1)]
+        public string? AcknReqdFl { get; set; }
+
+        [Column("issue_by_addr_cd"), MaxLength(6)]
+        public string? IssueByAddrCd { get; set; }
+
+        [Column("use_wawf_fl"), MaxLength(1)]
+        public string? UseWawfFl { get; set; }
+
+        // 🔗 Navigation Properties (unchanged)
+
         public CustType? CustType { get; set; }
         public ArCrLimit? ArCrLimit { get; set; }
         public ArCrRating? ArCrRating { get; set; }
         public ArSalesTerr? SalesTerr { get; set; }
         public SalesAbbrvCd? SalesAbbrv { get; set; }
+        public IssueByAddr? IssueByAddr { get; set; }
+
         public ICollection<CustAlias>? Aliases { get; set; }
         public ICollection<CustLimitCrncy>? CustLimitCrncies { get; set; }
         public ICollection<CustDfltAcct>? CustDefaultAccounts { get; set; }
-        //public IssueByAddr? IssueByAddr { get; set; }    
     }
 
     [Table("cust_type", Schema = "public")]
@@ -525,5 +605,172 @@ namespace PlanningAPI.Models
 
         [Required, MaxLength(10)]
         public string CompanyId { get; set; }
+    }
+
+
+    [Table("cust_notes", Schema = "public")]
+    public class CustNotes
+    {
+        [Column("cust_id")]
+        [StringLength(12)]
+        public string CustId { get; set; }
+
+        [Column("company_id")]
+        [StringLength(10)]
+        public string CompanyId { get; set; }
+
+        [Column("notes_tx")]
+        public string? NotesTx { get; set; }
+
+        [Required]
+        [Column("modified_by")]
+        [StringLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Required]
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+
+
+    [Table("cust_vat_info", Schema = "public")]
+    public class CustVatInfo
+    {
+        [Column("cust_id")]
+        [StringLength(12)]
+        public string CustId { get; set; }
+
+        [Column("tax_id")]
+        [StringLength(20)]
+        public string TaxId { get; set; }
+
+        [Column("tax_loc_cd")]
+        [StringLength(30)]
+        public string TaxLocCd { get; set; }
+
+        [Required]
+        [Column("dflt_tax_id_fl")]
+        [StringLength(1)]
+        public string DfltTaxIdFl { get; set; }
+
+        [Required]
+        [Column("modified_by")]
+        [StringLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Required]
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("company_id")]
+        [StringLength(10)]
+        public string CompanyId { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+
+    [Table("ar_ship_mthd", Schema = "public")]
+    public class ArShipMthd
+    {
+        [Key]
+        [Column("ar_ship_mthd_key")]
+        public long ArShipMthdKey { get; set; }
+
+        [Required]
+        [Column("ship_mthd_dc")]
+        [StringLength(15)]
+        public string ShipMthdDc { get; set; }
+
+        [Required]
+        [Column("modified_by")]
+        [StringLength(20)]
+        public string ModifiedBy { get; set; }
+
+        [Required]
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+    }
+
+    [Table("cust_terms", Schema = "public")]
+    public class CustTerms
+    {
+        [Key]
+        [Column("cust_terms_key")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long CustTermsKey { get; set; }
+
+        [Required, StringLength(15)]
+        [Column("cust_terms_dc")]
+        public string CustTermsDc { get; set; }
+
+        [Column("disc_pct_rt")]
+        public decimal DiscPctRt { get; set; }
+
+        [Column("disc_days_no")]
+        public int DiscDaysNo { get; set; }
+
+        [Column("s_terms_basis_cd")]
+        public string STermsBasisCd { get; set; }
+
+        [Column("s_due_date_cd")]
+        public string SDueDateCd { get; set; }
+
+        [Column("no_days_no")]
+        public int NoDaysNo { get; set; }
+
+        [Column("day_of_mth_due_no")]
+        public int? DayOfMthDueNo { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+
+        public List<CustTermsSch>? Schedules { get; set; }
+    }
+
+    [Table("cust_terms_sch", Schema = "public")]
+    public class CustTermsSch
+    {
+        [Column("cust_terms_key")]
+        public long CustTermsKey { get; set; }
+
+        [Column("cust_terms_sch_key")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long CustTermsSchKey { get; set; }
+
+        [Column("from_day_no")]
+        public int FromDayNo { get; set; }
+
+        [Column("to_day_no")]
+        public int ToDayNo { get; set; }
+
+        [Column("due_day_no")]
+        public int DueDayNo { get; set; }
+
+        [Column("s_cur_next_mth_cd")]
+        public string SCurNextMthCd { get; set; }
+
+        [Column("modified_by")]
+        public string ModifiedBy { get; set; }
+
+        [Column("time_stamp")]
+        public DateTime TimeStamp { get; set; }
+
+        [Column("rowversion")]
+        public long? RowVersion { get; set; }
+
+        public CustTerms? CustTerms { get; set; }
     }
 }

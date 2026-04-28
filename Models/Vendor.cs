@@ -136,6 +136,8 @@
 
         [Column("cl_lgbtq_fl")] public string? ClLgbtqFl { get; set; }
 
+
+
         // Navigation
         public ICollection<VendorAddress>? Addresses { get; set; }
         public ICollection<Vendor1099Detail>? Vendor1099Details { get; set; }

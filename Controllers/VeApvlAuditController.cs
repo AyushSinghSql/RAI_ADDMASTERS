@@ -43,8 +43,8 @@ namespace PlanningAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(VeApvlAuditHs dto)
         {
-            if (dto.AuditKey == 0)
-                return BadRequest("AuditKey is required");
+            //if (dto.AuditKey == 0)
+            //    return BadRequest("AuditKey is required");
 
             dto.TimeStamp = DateTime.UtcNow;
 

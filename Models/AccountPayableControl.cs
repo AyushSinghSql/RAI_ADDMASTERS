@@ -244,7 +244,8 @@
     {
         [Key]
         [Column("cash_accts_key")]
-        public decimal CashAcctsKey { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int CashAcctsKey { get; set; }
 
         [Required]
         [Column("acct_id")]
@@ -303,163 +304,163 @@
         public string CompanyId { get; set; }
 
         [Column("approval_required_flag")]
-        public string ApprovalRequiredFlag { get; set; }
+        public string? ApprovalRequiredFlag { get; set; }
 
         [Column("approval_required_amount")]
-        public decimal ApprovalRequiredAmount { get; set; }
+        public decimal? ApprovalRequiredAmount { get; set; }
 
         [Column("voucher_number_method_code")]
-        public string VoucherNumberMethodCode { get; set; }
+        public string? VoucherNumberMethodCode { get; set; }
 
         [Column("last_voucher_number")]
-        public decimal LastVoucherNumber { get; set; }
+        public decimal? LastVoucherNumber { get; set; }
 
         [Column("discount_method_code")]
-        public string DiscountMethodCode { get; set; }
+        public string? DiscountMethodCode { get; set; }
 
         [Column("discount_account_id")]
-        public string DiscountAccountId { get; set; }
+        public string? DiscountAccountId { get; set; }
 
         [Column("discount_org_id_code")]
-        public string DiscountOrgIdCode { get; set; }
+        public string? DiscountOrgIdCode { get; set; }
 
         [Column("po_voucher_change_flag")]
-        public string PoVoucherChangeFlag { get; set; }
+        public string? PoVoucherChangeFlag { get; set; }
 
         [Column("match_goods_code")]
-        public string MatchGoodsCode { get; set; }
+        public string? MatchGoodsCode { get; set; }
 
         [Column("match_services_code")]
-        public string MatchServicesCode { get; set; }
+        public string? MatchServicesCode { get; set; }
 
         [Column("match_misc_code")]
-        public string MatchMiscCode { get; set; }
+        public string? MatchMiscCode { get; set; }
 
         [Column("partial_receipt_flag")]
-        public string PartialReceiptFlag { get; set; }
+        public string? PartialReceiptFlag { get; set; }
 
         [Column("service_receipt_flag")]
-        public string ServiceReceiptFlag { get; set; }
+        public string? ServiceReceiptFlag { get; set; }
 
         [Column("goods_receipt_flag")]
-        public string GoodsReceiptFlag { get; set; }
+        public string? GoodsReceiptFlag { get; set; }
 
         [Column("misc_receipt_flag")]
-        public string MiscReceiptFlag { get; set; }
+        public string? MiscReceiptFlag { get; set; }
 
         [Column("discrepancy_unit_price_amount")]
-        public decimal DiscrepancyUnitPriceAmount { get; set; }
+        public decimal? DiscrepancyUnitPriceAmount { get; set; }
 
         [Column("discrepancy_unit_price_rate")]
-        public decimal DiscrepancyUnitPriceRate { get; set; }
+        public decimal? DiscrepancyUnitPriceRate { get; set; }
 
         [Column("discrepancy_quantity_rate")]
-        public decimal DiscrepancyQuantityRate { get; set; }
+        public decimal? DiscrepancyQuantityRate { get; set; }
 
         [Column("default_po_tax_source_code")]
-        public string DefaultPoTaxSourceCode { get; set; }
+        public string? DefaultPoTaxSourceCode { get; set; }
 
         [Column("default_ap_tax_source_code")]
-        public string DefaultApTaxSourceCode { get; set; }
+        public string? DefaultApTaxSourceCode { get; set; }
 
         [Column("post_discount_gl_code")]
-        public string PostDiscountGlCode { get; set; }
+        public string? PostDiscountGlCode { get; set; }
 
         [Column("partial_match_option_code")]
-        public string PartialMatchOptionCode { get; set; }
+        public string? PartialMatchOptionCode { get; set; }
 
         [Column("goods_match_option_code")]
-        public string GoodsMatchOptionCode { get; set; }
+        public string? GoodsMatchOptionCode { get; set; }
 
         [Column("services_match_option_code")]
-        public string ServicesMatchOptionCode { get; set; }
+        public string? ServicesMatchOptionCode { get; set; }
 
         [Column("misc_match_option_code")]
-        public string MiscMatchOptionCode { get; set; }
+        public string? MiscMatchOptionCode { get; set; }
 
         [Column("default_use_tax_flag")]
-        public string DefaultUseTaxFlag { get; set; }
+        public string? DefaultUseTaxFlag { get; set; }
 
         [Column("discrepancy_total_amount")]
-        public decimal DiscrepancyTotalAmount { get; set; }
+        public decimal? DiscrepancyTotalAmount { get; set; }
 
         [Column("auto_approve_po_flag")]
-        public string AutoApprovePoFlag { get; set; }
+        public string? AutoApprovePoFlag { get; set; }
 
         [Column("po_approval_required_amount")]
-        public decimal PoApprovalRequiredAmount { get; set; }
+        public decimal? PoApprovalRequiredAmount { get; set; }
 
         [Column("match_parts_code")]
-        public string MatchPartsCode { get; set; }
+        public string? MatchPartsCode { get; set; }
 
         [Column("auto_voucher_code")]
-        public string AutoVoucherCode { get; set; }
+        public string? AutoVoucherCode { get; set; }
 
         [Column("modified_by")]
-        public string ModifiedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         [Column("modified_ts")]
         public DateTime ModifiedAt { get; set; }
 
         [Column("discrepancy_po_total_amount")]
-        public decimal DiscrepancyPoTotalAmount { get; set; }
+        public decimal? DiscrepancyPoTotalAmount { get; set; }
 
         [Column("receipt_load_code")]
-        public string ReceiptLoadCode { get; set; }
+        public string? ReceiptLoadCode { get; set; }
 
         [Column("discrepancy_tax_flag")]
-        public string DiscrepancyTaxFlag { get; set; }
+        public string? DiscrepancyTaxFlag { get; set; }
 
         [Column("row_version")]
         public decimal? RowVersion { get; set; }
 
         [Column("allow_duplicate_invoice_flag")]
-        public string AllowDuplicateInvoiceFlag { get; set; }
+        public string? AllowDuplicateInvoiceFlag { get; set; }
 
         [Column("voucher_po_receipt_flag")]
-        public string VoucherPoReceiptFlag { get; set; }
+        public string? VoucherPoReceiptFlag { get; set; }
 
         [Column("exchange_rate_code")]
-        public string ExchangeRateCode { get; set; }
+        public string? ExchangeRateCode { get; set; }
 
         [Column("allow_iwo_voucher_flag")]
-        public string AllowIwoVoucherFlag { get; set; }
+        public string? AllowIwoVoucherFlag { get; set; }
 
         [Column("iwo_entry_user")]
-        public string IwoEntryUser { get; set; }
+        public string? IwoEntryUser { get; set; }
 
         [Column("iwo_unapproved_voucher_flag")]
-        public string IwoUnapprovedVoucherFlag { get; set; }
+        public string? IwoUnapprovedVoucherFlag { get; set; }
 
         [Column("recalc_detail_flag")]
-        public string RecalcDetailFlag { get; set; }
+        public string? RecalcDetailFlag { get; set; }
 
         [Column("invoice_email_flag")]
-        public string InvoiceEmailFlag { get; set; }
+        public string? InvoiceEmailFlag { get; set; }
 
         [Column("invoice_email_id")]
-        public string InvoiceEmailId { get; set; }
+        public string? InvoiceEmailId { get; set; }
 
         [Column("individual_voucher_msg_code")]
-        public string IndividualVoucherMsgCode { get; set; }
+        public string? IndividualVoucherMsgCode { get; set; }
 
         [Column("individual_posted_voucher_msg_code")]
-        public string IndividualPostedVoucherMsgCode { get; set; }
+        public string? IndividualPostedVoucherMsgCode { get; set; }
 
         [Column("total_voucher_msg_code")]
-        public string TotalVoucherMsgCode { get; set; }
+        public string? TotalVoucherMsgCode { get; set; }
 
         [Column("total_posted_voucher_msg_code")]
-        public string TotalPostedVoucherMsgCode { get; set; }
+        public string? TotalPostedVoucherMsgCode { get; set; }
 
         [Column("receipt_email_flag")]
-        public string ReceiptEmailFlag { get; set; }
+        public string? ReceiptEmailFlag { get; set; }
 
         [Column("receipt_email_id")]
-        public string ReceiptEmailId { get; set; }
+        public string? ReceiptEmailId { get; set; }
 
         [Column("multi_level_approval_flag")]
-        public string MultiLevelApprovalFlag { get; set; }
+        public string? MultiLevelApprovalFlag { get; set; }
 
         [Column("multi_level_approval_tolerance")]
         public decimal? MultiLevelApprovalTolerance { get; set; }
@@ -469,16 +470,16 @@
     public class VoucherApprover
     {
         [Column("user_id")]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         [Column("company_id")]
-        public string CompanyId { get; set; }
+        public string? CompanyId { get; set; }
 
         [Column("modified_by")]
-        public string ModifiedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         [Column("modified_ts")]
-        public DateTime ModifiedTs { get; set; }
+        public DateTime? ModifiedTs { get; set; }
 
         [Column("row_version")]
         public decimal? RowVersion { get; set; }
@@ -498,16 +499,16 @@
     public class VoucherApproverUser
     {
         [Column("approver_user_id")]
-        public string ApproverUserId { get; set; }
+        public string? ApproverUserId { get; set; }
 
         [Column("user_id")]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         [Column("company_id")]
-        public string CompanyId { get; set; }
+        public string? CompanyId { get; set; }
 
         [Column("modified_by")]
-        public string ModifiedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         [Column("modified_ts")]
         public DateTime ModifiedTs { get; set; }

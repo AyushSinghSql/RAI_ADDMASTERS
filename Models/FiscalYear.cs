@@ -141,6 +141,8 @@ namespace PlanningAPI.Models
 
         // 🔗 Navigation
         public AccountingPeriod? AccountingPeriod { get; set; }
+        [NotMapped]
+        public DateOnly? PeriodEndDate { get; set; }
 
     }
 

@@ -270,6 +270,24 @@ public partial class MydatabaseContext : DbContext
     public DbSet<CustAddrCntact> CustAddrCntacts { get; set; }
     public DbSet<SCustTrnType> SCustTrnTypes { get; set; }
     public DbSet<CustLimitCrncy> CustLimitCrncies { get; set; }
+    public DbSet<CustNotes> CustNotes { get; set; }
+    public DbSet<CustVatInfo> CustVatInfos { get; set; }
+    public DbSet<ArShipMthd> ArShipMthds { get; set; }
+    public DbSet<CustTerms> CustTerms { get; set; }
+    public DbSet<CustTermsSch> CustTermsSch { get; set; }
+    public DbSet<DirDepBank> DirDepBanks { get; set; }
+    public DbSet<NonUsBank> NonUsBanks { get; set; }
+    public DbSet<BankAcct> BankAccts { get; set; }
+    public DbSet<SArTrnType> SArTrnTypes { get; set; }
+    public DbSet<ArDfltAcct> ArDfltAccts { get; set; }
+    public DbSet<SLvCeilMthd> SLvCeilMthds { get; set; }
+    public DbSet<LvType> LvTypes { get; set; }
+    public DbSet<LvTable> LvTables { get; set; }
+    public DbSet<EmplLvAccrl> EmplLvAccrls { get; set; }
+    public DbSet<EmplBondHdr2> EmplBondHdr2s { get; set; }
+    public DbSet<EmplDed> EmplDeds { get; set; }
+    public DbSet<EmplBondLn2> EmplBondLn2s { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -280,6 +298,100 @@ public partial class MydatabaseContext : DbContext
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
         .IsUnique();
+
+        modelBuilder.Entity<EmplBondLn2>()
+        .HasKey(x => new { x.EmplId, x.DedCd, x.BondLnKey });
+
+        modelBuilder.Entity<EmplBondLn2>()
+            .HasOne(x => x.Header)
+            .WithMany()
+            .HasForeignKey(x => new { x.EmplId, x.DedCd });
+
+        modelBuilder.Entity<EmplDed>()
+      .HasKey(x => new { x.EmplId, x.DedCd });
+
+        modelBuilder.Entity<EmplBondHdr2>()
+        .HasKey(x => new { x.EmplId, x.DedCd });
+
+        modelBuilder.Entity<EmplLvAccrl>()
+       .HasKey(x => new { x.EmplId, x.LvTypeCd });
+
+        modelBuilder.Entity<LvType>()
+            .HasOne(x => x.CeilMethod)
+            .WithMany(x => x.LvTypes)
+            .HasForeignKey(x => x.CeilMethodCd);
+
+        modelBuilder.Entity<LvTable>()
+            .HasOne(x => x.LvType)
+            .WithMany(x => x.Leaves)
+            .HasForeignKey(x => x.LvTypeCd);
+
+        modelBuilder.Entity<EmplLvAccrl>()
+            .HasOne(x => x.LvType)
+            .WithMany()
+            .HasForeignKey(x => x.LvTypeCd);
+
+        modelBuilder.Entity<EmplLvAccrl>()
+            .HasOne(x => x.Lv)
+            .WithMany()
+            .HasForeignKey(x => x.LvCd);
+
+        modelBuilder.Entity<BankAcct>()
+        .HasKey(x => new { x.BankAcctAbbrv, x.CompanyId });
+
+        modelBuilder.Entity<ArDfltAcct>()
+            .HasKey(x => new { x.SArTrnType, x.CompanyId });
+
+        modelBuilder.Entity<ArDfltAcct>()
+            .HasOne(x => x.BankAcct)
+            .WithMany(x => x.DefaultAccounts)
+            .HasForeignKey(x => new { x.BankAcctAbbrv, x.CompanyId });
+
+        modelBuilder.Entity<ArDfltAcct>()
+            .HasOne(x => x.TrnType)
+            .WithMany()
+            .HasForeignKey(x => x.SArTrnType);
+
+        modelBuilder.Entity<BankAcct>()
+            .HasOne(x => x.UsBank)
+            .WithMany(x => x.BankAccounts)
+            .HasForeignKey(x => x.BankAbaNo);
+
+        modelBuilder.Entity<BankAcct>()
+            .HasOne(x => x.NonUsBank)
+            .WithMany(x => x.BankAccounts)
+            .HasForeignKey(x => x.NonUsBankId);
+
+        modelBuilder.Entity<ArDfltAcct>()
+            .HasOne(x => x.BankAcct)
+            .WithMany(x => x.DefaultAccounts)
+            .HasForeignKey(x => new { x.BankAcctAbbrv, x.CompanyId });
+
+        modelBuilder.Entity<ArDfltAcct>()
+            .HasOne(x => x.TrnType)
+            .WithMany()
+            .HasForeignKey(x => x.SArTrnType);
+
+        modelBuilder.Entity<CustTerms>()
+            .HasKey(x => x.CustTermsKey);
+
+        modelBuilder.Entity<CustTermsSch>()
+            .HasKey(x => new { x.CustTermsKey, x.CustTermsSchKey });
+
+        modelBuilder.Entity<CustTermsSch>()
+            .HasOne(x => x.CustTerms)
+            .WithMany(x => x.Schedules)
+            .HasForeignKey(x => x.CustTermsKey)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArShipMthd>()
+        .HasKey(x => x.ArShipMthdKey);
+
+        modelBuilder.Entity<CustVatInfo>()
+        .HasKey(x => new { x.CustId, x.TaxId, x.CompanyId });
+
+        modelBuilder.Entity<CustNotes>()
+           .HasKey(x => new { x.CustId, x.CompanyId });
 
         modelBuilder.Entity<CustLimitCrncy>(entity =>
         {
@@ -412,25 +524,44 @@ public partial class MydatabaseContext : DbContext
 
         modelBuilder.Entity<VeApvlGrpUsers>()
         .HasKey(x => new { x.VeApprvlGrpCd, x.ApprvrUserId, x.CompanyId });
-        
-        //// ✅ 2. Relationship → VeApvlGrp
-        //modelBuilder.Entity<VeApvlGrpUsers>().HasOne(e => e.VeApvlGrp)
-        //    .WithMany(g => g.VeApvlGrpUsers) // make sure this exists in VeApvlGrp
-        //    .HasForeignKey(e => new
-        //    {
-        //        e.VeApprvlGrpCd,
-        //        e.CompanyId
-        //    })
-        //    .OnDelete(DeleteBehavior.Cascade); // or Restrict based on ERP rules
 
-        //// ✅ 3. Relationship → User
-        //modelBuilder.Entity<VeApvlGrpUsers>().HasOne(e => e.ApproverUser)
-        //    .WithMany(u => u.VeApvlGrpUsers) // make sure this exists in User
-        //    .HasForeignKey(e => new
-        //    {
-        //        e.ApprvrUserId
-        //    })
-        //    .OnDelete(DeleteBehavior.Restrict); // safer for ERP
+        modelBuilder.Entity<VeApvlGrpUsers>(entity =>
+        {
+            // ✅ Composite PK
+            entity.HasKey(e => new
+            {
+                e.VeApprvlGrpCd,
+                e.ApprvrUserId,
+                e.CompanyId
+            });
+
+            // ✅ VeApvlGrp relation
+            entity.HasOne(e => e.VeApvlGrp)
+                .WithMany(g => g.VeApvlGrpUsers)
+                .HasForeignKey(e => new
+                {
+                    e.VeApprvlGrpCd,
+                    e.CompanyId
+                })
+                .HasPrincipalKey(g => new
+                {
+                    g.VeApprvlGrpCd,
+                    g.CompanyId
+                });
+
+            // ✅ 🔥 FIX: ApproverUser relation (IMPORTANT)
+            entity.HasOne(e => e.ApproverUser)
+                .WithMany(u => u.VeApvlGrpUsers)
+                .HasForeignKey(e => new
+                {
+                    e.ApprvrUserId
+                })
+                .HasPrincipalKey(u => new
+                {
+                    u.Username     // 👈 MUST match User entity
+                })
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<VeApvlGrp>()
         .HasKey(x => new { x.VeApprvlGrpCd, x.CompanyId });
