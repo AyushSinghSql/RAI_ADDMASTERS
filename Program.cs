@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -11,6 +11,8 @@ using PlanningAPI.Helpers;
 using PlanningAPI.Models;
 using PlanningAPI.Repositories;
 using PlanningAPI.Services;
+using PlanningAPI.Options;
+using Npgsql;
 using QuestPDF.Infrastructure;
 using Serilog;
 using System;
@@ -30,6 +32,7 @@ Serilog.Log.Logger = new LoggerConfiguration()
                   rollingInterval: RollingInterval.Day,
                   retainedFileCountLimit: 7,    // Optional: keep last 7 logs
                   outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Console()
     .Enrich.FromLogContext()
     .CreateLogger();
 QuestPDF.Settings.License = LicenseType.Community;
@@ -126,11 +129,15 @@ builder.Host.UseSerilog(); // Use Serilog instead of default logging
     //services.AddScoped<IAiService, OpenAiService>();
 
     builder.Services.AddHttpClient<IAiService, OpenAiService>();
-    //services.AddDbContext<MydatabaseContext>(options => options.UseNpgsql("Host=localhost;Database=planning;Username=myuser;Password=mypassword;Include Error Detail=true;"));
-    //services.AddDbContext<MydatabaseContext>(options => options.UseNpgsql("Host=dpg-d0n1vd2li9vc7380m3o0-a.singapore-postgres.render.com;Database=planning;Username=myuser;Password=ODIfyKykuj6zdwchsnqAzccSMNeRgGQ7;Include Error Detail=true;"));
+
+    // Configure Voucher Database Options
+    builder.Services.Configure<VoucherDatabaseOptions>(options =>
+    {
+        options.Schema = builder.Configuration["VoucherSchema"] ?? "public";
+    });
 
     services.AddDbContext<MydatabaseContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
     //services.AddDbContext<MydatabaseContext>(options => options.UseNpgsql("Host=dpg-d0n1vd2li9vc7380m3o0-a.singapore-postgres.render.com;Database=Test_Import;Username=myuser;Password=ODIfyKykuj6zdwchsnqAzccSMNeRgGQ7;Include Error Detail=true;"));
 }
 

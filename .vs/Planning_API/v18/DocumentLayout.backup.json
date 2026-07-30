@@ -1,7 +1,28 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\FinAxis\\Backend\\RAI\\PlanningAPI\\",
-  "Documents": [],
+  "WorkspaceRootPath": "E:\\Backend1\\Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|e:\\backend1\\backend\\models\\acctgrpcs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|solutionrelative:models\\acctgrpcs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|e:\\backend1\\backend\\models\\mydatabasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|solutionrelative:models\\mydatabasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|e:\\backend1\\backend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|e:\\backend1\\backend\\controllers\\countriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|solutionrelative:controllers\\countriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|e:\\backend1\\backend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AA2CBF6-F3DF-CF1B-9AC8-2420BB750214}|Planning_API.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,39 +30,68 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 1,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MydatabaseContext.cs",
+              "DocumentMoniker": "E:\\Backend1\\Backend\\Models\\MydatabaseContext.cs",
+              "RelativeDocumentMoniker": "Models\\MydatabaseContext.cs",
+              "ToolTip": "E:\\Backend1\\Backend\\Models\\MydatabaseContext.cs",
+              "RelativeToolTip": "Models\\MydatabaseContext.cs",
+              "ViewState": "AgIAABIBAAAAAAAAAAAnwBEBAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-27T15:23:23.131Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AcctGrpcs.cs",
+              "DocumentMoniker": "E:\\Backend1\\Backend\\Models\\AcctGrpcs.cs",
+              "RelativeDocumentMoniker": "Models\\AcctGrpcs.cs",
+              "ToolTip": "E:\\Backend1\\Backend\\Models\\AcctGrpcs.cs",
+              "RelativeToolTip": "Models\\AcctGrpcs.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-27T15:22:39.481Z",
+              "EditorCaption": ""
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CountriesController.cs",
+              "DocumentMoniker": "E:\\Backend1\\Backend\\Controllers\\CountriesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\CountriesController.cs",
+              "ToolTip": "E:\\Backend1\\Backend\\Controllers\\CountriesController.cs",
+              "RelativeToolTip": "Controllers\\CountriesController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAuwBcAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-24T23:10:39.342Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:132:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\Backend1\\Backend\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "E:\\Backend1\\Backend\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABYAAACDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-07-24T16:55:53.217Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:133:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:134:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Backend1\\Backend\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "E:\\Backend1\\Backend\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T15:10:01.732Z"
             }
           ]
         }

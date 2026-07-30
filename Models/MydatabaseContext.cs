@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -271,11 +271,18 @@ public partial class MydatabaseContext : DbContext
     public DbSet<SCustTrnType> SCustTrnTypes { get; set; }
     public DbSet<CustLimitCrncy> CustLimitCrncies { get; set; }
 
+    // Added by kartikay
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<State> States { get; set; }
+    public DbSet<PostalCode> PostalCodes { get; set; }
+    public DbSet<SalesTax> SalesTaxes { get; set; }
+    public DbSet<SalesTaxAccount> SalesTaxAccounts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ModuleRights>()
-        .HasKey(x => new { x.UserGroupId, x.ModuleId, x.CompanyId })
-        .HasName("pk_module_rights");
+            .HasKey(x => new { x.UserGroupId, x.ModuleId, x.CompanyId })
+            .HasName("pk_module_rights");
 
         modelBuilder.Entity<UserFavorite>()
         .HasIndex(e => new { e.UserId, e.ItemId })
@@ -4276,6 +4283,133 @@ public partial class MydatabaseContext : DbContext
             entity.Property(e => e.Rowversion).HasColumnName("rowversion");
             entity.Property(e => e.CompanyId).HasColumnName("company_id");
         });
+
+        // Added by kartikay
+        modelBuilder.Entity<Country>(entity =>
+        {
+            entity.ToTable("country", "public");
+            entity.HasKey(e => e.CountryCode);
+            entity.Property(e => e.CountryCode).HasColumnName("country_code");
+            entity.Property(e => e.CountryName).HasColumnName("country_name");
+            entity.Property(e => e.ChangedBy).HasColumnName("changed_by");
+            entity.Property(e => e.ChangedDate).HasColumnName("changed_date");
+        });
+
+        modelBuilder.Entity<State>(entity =>
+        {
+            entity.ToTable("state", "public");
+            entity.HasKey(e => new { e.CountryCode, e.StateCode });
+            entity.Property(e => e.CountryCode).HasColumnName("country_code");
+            entity.Property(e => e.StateCode).HasColumnName("state_code");
+            entity.Property(e => e.StateName).HasColumnName("state_name");
+            entity.Property(e => e.ChangedBy).HasColumnName("changed_by");
+            entity.Property(e => e.ChangedDate).HasColumnName("changed_date");
+        });
+
+        modelBuilder.Entity<PostalCode>(entity =>
+        {
+            entity.ToTable("postal_code", "public");
+            entity.HasKey(e => e.PostalKey);
+            entity.Property(e => e.PostalKey).HasColumnName("postal_key");
+            entity.Property(e => e.CityName).HasColumnName("city_name");
+            entity.Property(e => e.CountryCode).HasColumnName("country_code");
+            entity.Property(e => e.StateCode).HasColumnName("state_code");
+            entity.Property(e => e.PostalCd).HasColumnName("postal_cd");
+            entity.Property(e => e.ChangedBy).HasColumnName("changed_by");
+            entity.Property(e => e.ChangedDate).HasColumnName("changed_date");
+        });
+
+        modelBuilder.Entity<SalesTax>(entity =>
+        {
+            entity.ToTable("tax", "public");
+            entity.HasKey(e => new { e.CompanyId, e.TaxCode });
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.TaxCode).HasColumnName("sales_tax_cd");
+            entity.Property(e => e.CertificateNo).HasColumnName("certificate_no");
+            
+            // Map boolean to 'Y' / 'N' column in PostgreSQL
+            entity.Property(e => e.Exempt)
+                  .HasColumnName("exempt_flag")
+                  .HasConversion(
+                      v => v ? "Y" : "N",
+                      v => v == "Y"
+                  );
+            entity.Property(e => e.RequiresVatInfo)
+                  .HasColumnName("vat_customs_flag")
+                  .HasConversion(
+                      v => v ? "Y" : "N",
+                      v => v == "Y"
+                  );
+
+            entity.Property(e => e.Description).HasColumnName("sales_tax_desc");
+            entity.Property(e => e.StateProvince).HasColumnName("state_code");
+            entity.Property(e => e.Country).HasColumnName("country_code");
+            entity.Property(e => e.ModifiedBy).HasColumnName("changed_by");
+            entity.Property(e => e.TimeStamp).HasColumnName("changed_date");
+            entity.Property(e => e.CompositeTaxRate).HasColumnName("sales_tax_rate");
+            
+            // Divide recovery pct by 100 on write, multiply on read
+            entity.Property(e => e.RecoveryPercent)
+                  .HasColumnName("recovery_pct")
+                  .HasConversion(
+                      v => v / 100m,
+                      v => v * 100m
+                  );
+
+            entity.Ignore(e => e.StateName);
+            entity.Ignore(e => e.CountryName);
+            entity.Ignore(e => e.RecoveryPercentOverride);
+
+            // Relationship mapping
+            entity.HasMany(e => e.Accounts)
+                  .WithOne()
+                  .HasForeignKey(a => new { a.CompanyId, a.TaxCode });
+        });
+
+        modelBuilder.Entity<SalesTaxAccount>(entity =>
+        {
+            entity.ToTable("tax_account", "public");
+            entity.HasKey(e => e.AccountKey);
+            entity.Property(e => e.AccountKey).HasColumnName("sales_tax_acct_key");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.TaxCode).HasColumnName("sales_tax_cd");
+            entity.Property(e => e.Account).HasColumnName("acct_id");
+            entity.Property(e => e.Organization).HasColumnName("org_id");
+            entity.Property(e => e.TaxRate).HasColumnName("sales_tax_rt");
+            entity.Property(e => e.ChangedBy).HasColumnName("changed_by");
+            entity.Property(e => e.ChangedDate).HasColumnName("changed_date");
+            entity.Property(e => e.TaxType).HasColumnName("tax_type_cd");
+            entity.Property(e => e.EffectiveTaxRate).HasColumnName("base_sales_tax_rt");
+            
+            entity.Property(e => e.CompoundTax)
+                  .HasColumnName("compound_tax_fl")
+                  .HasConversion(
+                      v => v ? "Y" : "N",
+                      v => v == "Y"
+                  );
+            entity.Property(e => e.AcctRecovPct)
+                  .HasColumnName("acct_recov_pct")
+                  .HasConversion(
+                      v => v / 100m,
+                      v => v * 100m
+                  );
+                  
+            entity.Property(e => e.RecAccount).HasColumnName("recov_acct_id");
+            entity.Property(e => e.RecOrg).HasColumnName("recov_org_id");
+            entity.Property(e => e.SuspenseAccount).HasColumnName("recov_susp_acct_id");
+            entity.Property(e => e.SuspenseOrg).HasColumnName("recov_susp_org_id");
+
+            entity.Ignore(e => e.AccountDesc);
+            entity.Ignore(e => e.OrgDesc);
+            entity.Ignore(e => e.RefNo1);
+            entity.Ignore(e => e.RefNo2);
+            entity.Ignore(e => e.Recoverable);
+            entity.Ignore(e => e.RecRefNo1);
+            entity.Ignore(e => e.RecRefNo2);
+            entity.Ignore(e => e.SuspenseRefNo1);
+            entity.Ignore(e => e.SuspenseRefNo2);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 
